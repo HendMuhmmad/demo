@@ -1,4 +1,4 @@
-package com.luv2code.springboot.thymeleafdemo.entity;
+package com.example.demo.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
