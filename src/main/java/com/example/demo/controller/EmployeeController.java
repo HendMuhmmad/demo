@@ -49,14 +49,36 @@ public class EmployeeController {
 	}
 	
 	
+
+
+	
+	// add mapping for "/list"
+
+	@GetMapping("/list")
+	public List<Employee> listEmployees(Model theModel) {
+		
+		// get employees from db
+		List<Employee> theEmployees = employeeService.findAll();
+		
+		// add to the spring model
+//		theModel.addAttribute("employees", theEmployees);
+		return theEmployees;
+//		return "employees/list-employees";
+	}
+
+
+
+	
+	
+
+
 	@PostMapping("/delete")
-	public String delete(@RequestParam("employeeId") int theId) {
+	public void delete(@RequestParam("employeeId") int theId) {
 		
 		// delete the employee
 		employeeService.deleteById(theId);
 		
-		// redirect to /employees/list
-		return "redirect:/employees/list";
+ 
 		
 	}
 }
