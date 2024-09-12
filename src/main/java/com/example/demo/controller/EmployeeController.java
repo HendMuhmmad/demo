@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,6 +25,33 @@ public class EmployeeController {
 		employeeService = theEmployeeService;
 	}
 	
+
+
+
+	@PostMapping("/update")
+	public void updateEmployee(@RequestBody Employee theEmployee) {
+		
+		// update the employee
+		 employeeService.save(theEmployee);
+		
+		 
+	}	
+	
+	
+	@PostMapping("/save")
+	public Employee saveEmployee(@RequestBody Employee theEmployee) {
+		
+		// save the employee
+		 return employeeService.save(theEmployee);
+		
+		// use a redirect to prevent duplicate submissions
+		 
+	}
+	
+	
+
+
+	
 	// add mapping for "/list"
 
 	@GetMapping("/list")
@@ -37,44 +65,13 @@ public class EmployeeController {
 		return theEmployees;
 //		return "employees/list-employees";
 	}
-	
-	@GetMapping("/showFormForAdd")
-	public String showFormForAdd(Model theModel) {
-		
-		// create model attribute to bind form data
-		Employee theEmployee = new Employee();
-		
-		theModel.addAttribute("employee", theEmployee);
-		
-		return "employees/employee-form";
-	}
 
-	@PostMapping("/showFormForUpdate")
-	public String showFormForUpdate(@RequestParam("employeeId") int theId,
-									Model theModel) {
-		
-		// get the employee from the service
-		Employee theEmployee = employeeService.findById(theId);
-		
-		// set employee as a model attribute to pre-populate the form
-		theModel.addAttribute("employee", theEmployee);
-		
-		// send over to our form
-		return "employees/employee-form";			
-	}
+
+
 	
 	
-	@PostMapping("/save")
-	public String saveEmployee(@ModelAttribute("employee") Employee theEmployee) {
-		
-		// save the employee
-		employeeService.save(theEmployee);
-		
-		// use a redirect to prevent duplicate submissions
-		return "redirect:/employees/list";
-	}
-	
-	
+
+
 	@PostMapping("/delete")
 	public void delete(@RequestParam("employeeId") int theId) {
 		
