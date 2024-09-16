@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.mapper.UserMapper;
-import com.example.demo.model.dto.UserDto;
+import com.example.demo.model.dto.UserDTO;
 import com.example.demo.model.orm.User;
 import com.example.demo.service.UserService;
 
@@ -40,12 +40,13 @@ public class UserController {
 	return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
+  
     @GetMapping("getUserById/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable int id) {
-	Optional<User> user = userService.getUserById(id);
-	return user.map(ResponseEntity::ok)
-		.orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }
+    public ResponseEntity<UserDTO> getUserById(@PathVariable int id) {
+        Optional<User> user = userService.getUserById(id);
+
+        return user.map(u -> ResponseEntity.ok(UserMapper.INSTANCE.mapUser(u)))  
+                   .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
     @PostMapping("/createUser")
     public ResponseEntity<Map<String, String>> createUser(@RequestBody UserDto userDto) {
@@ -63,12 +64,19 @@ public class UserController {
     }
   
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable int id, @RequestBody User user) {
+    public ResponseEntity<Map<String, String>> updateUser(@PathVariable int id, @RequestBody User user) {
+    	System.out.println("In Update User" + id);
+        HashMap<String, String> response = new HashMap<>();
+        	
         try {
             User updatedUser = userService.updateUser(id, user);
-            return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+            response.put("response", "User updated successfully.");
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            response.put("Response", "An Error Occurred.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+
+
         }
     }
 
