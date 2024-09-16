@@ -47,7 +47,7 @@ public class UserController {
 
         return user.map(u -> ResponseEntity.ok(UserMapper.INSTANCE.mapUser(u)))  
                    .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-
+    }
     @PostMapping("/createUser")
     public ResponseEntity<Map<String, String>> createUser(@RequestBody UserDto userDto) {
         Map<String, String> response = new HashMap<>();
