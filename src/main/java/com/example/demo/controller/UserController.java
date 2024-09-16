@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.mapper.UserMapper;
-import com.example.demo.model.dto.UserDTO;
+import com.example.demo.model.dto.UserDto;
 import com.example.demo.model.orm.User;
 import com.example.demo.service.UserService;
 
@@ -40,66 +40,64 @@ public class UserController {
 	return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
-  
     @GetMapping("getUserById/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable int id) {
-        Optional<User> user = userService.getUserById(id);
+    public ResponseEntity<UserDto> getUserById(@PathVariable int id) {
+	Optional<User> user = userService.getUserById(id);
 
-        return user.map(u -> ResponseEntity.ok(UserMapper.INSTANCE.mapUser(u)))  
-                   .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+	return user.map(u -> ResponseEntity.ok(UserMapper.INSTANCE.mapUser(u)))
+		.orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
+
     @PostMapping("/createUser")
     public ResponseEntity<Map<String, String>> createUser(@RequestBody UserDto userDto) {
-        Map<String, String> response = new HashMap<>();
-        try {
-        	userService.createUser(UserMapper.INSTANCE.mapUserDto(userDto));
-        	response.put("status", "Success");
-            response.put("message", "Created Successfully");
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } catch (IllegalArgumentException exc) {
-            response.put("status", "Error");
-            response.put("message", exc.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-        }
+	Map<String, String> response = new HashMap<>();
+	try {
+	    userService.createUser(UserMapper.INSTANCE.mapUserDto(userDto));
+	    response.put("status", "Success");
+	    response.put("message", "Created Successfully");
+	    return new ResponseEntity<>(response, HttpStatus.CREATED);
+	} catch (IllegalArgumentException exc) {
+	    response.put("status", "Error");
+	    response.put("message", exc.getMessage());
+	    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+	}
     }
-  
+
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, String>> updateUser(@PathVariable int id, @RequestBody User user) {
-    	System.out.println("In Update User" + id);
-        HashMap<String, String> response = new HashMap<>();
-        	
-        try {
-            User updatedUser = userService.updateUser(id, user);
-            response.put("response", "User updated successfully.");
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            response.put("Response", "An Error Occurred.");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+	System.out.println("In Update User" + id);
+	HashMap<String, String> response = new HashMap<>();
 
+	try {
+	    User updatedUser = userService.updateUser(id, user);
+	    response.put("response", "User updated successfully.");
+	    return ResponseEntity.ok(response);
+	} catch (RuntimeException e) {
+	    response.put("Response", "An Error Occurred.");
+	    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 
-        }
+	}
     }
 
-    
     @DeleteMapping("/deleteUser")
     public ResponseEntity<Map<String, String>> deleteUser(
-            @RequestParam int loginId, 
-            @RequestParam int customerId) {
+	    @RequestParam int loginId,
+	    @RequestParam int customerId) {
 
-        Map<String, String> response = new HashMap<>();
-        try {
-            userService.deleteUser(loginId, customerId);
-            response.put("status", "Success");
-            response.put("message", "Deleted Successfully");
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            response.put("status", "Error");
-            response.put("message", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-        } catch (RuntimeException e) {
-            response.put("status", "Error");
-            response.put("message", "User not found");
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        }
+	Map<String, String> response = new HashMap<>();
+	try {
+	    userService.deleteUser(loginId, customerId);
+	    response.put("status", "Success");
+	    response.put("message", "Deleted Successfully");
+	    return new ResponseEntity<>(response, HttpStatus.OK);
+	} catch (IllegalArgumentException e) {
+	    response.put("status", "Error");
+	    response.put("message", e.getMessage());
+	    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+	} catch (RuntimeException e) {
+	    response.put("status", "Error");
+	    response.put("message", "User not found");
+	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	}
     }
 }
