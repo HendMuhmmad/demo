@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.mapper.UserMapper;
@@ -30,34 +31,37 @@ public class UserController {
 
     @Autowired
     public UserController(UserService userService) {
-        this.userService = userService;
+	this.userService = userService;
     }
 
- 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.getAllUsers();
-        return new ResponseEntity<>(users, HttpStatus.OK);
+	List<User> users = userService.getAllUsers();
+	return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
- 
-    @GetMapping("/{id}")
+  
+    @GetMapping("getUserById/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable int id) {
         Optional<User> user = userService.getUserById(id);
 
         return user.map(u -> ResponseEntity.ok(UserMapper.INSTANCE.mapUser(u)))  
                    .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
-
+    @PostMapping("/createUser")
+    public ResponseEntity<Map<String, String>> createUser(@RequestBody UserDto userDto) {
+        Map<String, String> response = new HashMap<>();
+        try {
+        	userService.createUser(UserMapper.INSTANCE.mapUserDto(userDto));
+        	response.put("status", "Success");
+            response.put("message", "Created Successfully");
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+        } catch (IllegalArgumentException exc) {
+            response.put("status", "Error");
+            response.put("message", exc.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
     }
-
- 
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User createdUser = userService.createUser(user);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
-    }
-
   
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, String>> updateUser(@PathVariable int id, @RequestBody User user) {
@@ -77,13 +81,25 @@ public class UserController {
     }
 
     
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable int id) {
+    @DeleteMapping("/deleteUser")
+    public ResponseEntity<Map<String, String>> deleteUser(
+            @RequestParam int loginId, 
+            @RequestParam int customerId) {
+
+        Map<String, String> response = new HashMap<>();
         try {
-            userService.deleteUser(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            userService.deleteUser(loginId, customerId);
+            response.put("status", "Success");
+            response.put("message", "Deleted Successfully");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            response.put("status", "Error");
+            response.put("message", e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            response.put("status", "Error");
+            response.put("message", "User not found");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
     }
 }
