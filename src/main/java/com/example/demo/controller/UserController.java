@@ -1,6 +1,8 @@
 package com.example.demo.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.mapper.UserMapper;
+import com.example.demo.model.dto.UserDTO;
 import com.example.demo.model.orm.User;
 import com.example.demo.service.UserService;
 
@@ -38,10 +42,13 @@ public class UserController {
 
  
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable int id) {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable int id) {
         Optional<User> user = userService.getUserById(id);
-        return user.map(ResponseEntity::ok)
+
+        return user.map(u -> ResponseEntity.ok(UserMapper.INSTANCE.mapUser(u)))  
                    .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
+
     }
 
  
@@ -53,12 +60,19 @@ public class UserController {
 
   
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable int id, @RequestBody User user) {
+    public ResponseEntity<Map<String, String>> updateUser(@PathVariable int id, @RequestBody User user) {
+    	System.out.println("In Update User" + id);
+        HashMap<String, String> response = new HashMap<>();
+        	
         try {
             User updatedUser = userService.updateUser(id, user);
-            return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+            response.put("response", "User updated successfully.");
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            response.put("Response", "An Error Occurred.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+
+
         }
     }
 
