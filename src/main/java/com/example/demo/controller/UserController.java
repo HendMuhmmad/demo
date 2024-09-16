@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.mapper.UserMapper;
+import com.example.demo.model.dto.user.UserDto;
 import com.example.demo.model.orm.User;
 import com.example.demo.service.UserService;
 
@@ -26,50 +28,46 @@ public class UserController {
 
     @Autowired
     public UserController(UserService userService) {
-        this.userService = userService;
+	this.userService = userService;
     }
 
- 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.getAllUsers();
-        return new ResponseEntity<>(users, HttpStatus.OK);
+	List<User> users = userService.getAllUsers();
+	return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
- 
-    @GetMapping("/{id}")
+    @GetMapping("getUserById/{id}")
     public ResponseEntity<User> getUserById(@PathVariable int id) {
-        Optional<User> user = userService.getUserById(id);
-        return user.map(ResponseEntity::ok)
-                   .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+	Optional<User> user = userService.getUserById(id);
+	return user.map(ResponseEntity::ok)
+		.orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
- 
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User createdUser = userService.createUser(user);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+    @PostMapping("/createUser")
+    public ResponseEntity<User> createUser(@RequestBody UserDto userDto) {
+	User createdUser = userService.createUser(UserMapper.INSTANCE.mapUserDto(userDto));
+	return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 
-  
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable int id, @RequestBody User user) {
-        try {
-            User updatedUser = userService.updateUser(id, user);
-            return new ResponseEntity<>(updatedUser, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+	try {
+
+	    User updatedUser = userService.updateUser(id, user);
+	    return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+	} catch (RuntimeException e) {
+	    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	}
     }
 
-    
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable int id) {
-        try {
-            userService.deleteUser(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+	try {
+	    userService.deleteUser(id);
+	    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	} catch (RuntimeException e) {
+	    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	}
     }
 }
