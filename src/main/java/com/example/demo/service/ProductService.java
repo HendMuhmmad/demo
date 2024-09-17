@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 
 import com.example.demo.model.orm.Product;
@@ -13,4 +15,5 @@ public interface ProductService {
 
     public ResponseEntity<String> updateProductQuantity(int productId, int newQuantity, int loginId);
 
+    public List<Product> getAllProduct();
 }

@@ -1,5 +1,7 @@
 package com.example.demo.mapper;
 
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
@@ -19,5 +21,7 @@ public interface ProductMapper {
     public ProductDto mapCreateProduct(Product product);
 
     public Product mapCreateProduct(ProductDto productdto);
+
+    public List<ProductDto> mapProducts(List<Product> products);
 
 }

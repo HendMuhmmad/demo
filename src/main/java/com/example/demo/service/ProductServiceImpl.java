@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,11 @@ public class ProductServiceImpl implements ProductService {
 	    return true;
 	}
 	return false;
+    }
+
+    @Override
+    public List<Product> getAllProduct() {
+	return productRepository.findAll();
     }
 
 }

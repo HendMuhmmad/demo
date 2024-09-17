@@ -78,7 +78,7 @@ public class OrderServiceImpl implements OrderService {
 	List<ProductDto> items = details.stream()
 		.map(detail -> {
 		    ProductDto item = new ProductDto();
-		    item.setQuantity(detail.getProductQuantity());
+		    item.setStockQuantity(detail.getProductQuantity());
 		    item.setPrice(detail.getTotalPrice());
 		    item.setProductName(detail.getProductName());
 		    item.setColor(detail.getProductColor());
