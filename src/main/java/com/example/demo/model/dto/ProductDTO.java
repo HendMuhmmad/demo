@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CreateProductDTO {
+public class ProductDTO {
 
     private String productName;
     private double price;

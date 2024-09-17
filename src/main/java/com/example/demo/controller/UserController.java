@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,13 +25,8 @@ import com.example.demo.service.UserService;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-
-    private final UserService userService;
-
     @Autowired
-    public UserController(UserService userService) {
-	this.userService = userService;
-    }
+    private UserService userService;
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
@@ -50,54 +44,18 @@ public class UserController {
 
     @PostMapping("/createUser")
     public ResponseEntity<Map<String, String>> createUser(@RequestBody UserDto userDto) {
-	Map<String, String> response = new HashMap<>();
-	try {
-	    userService.createUser(UserMapper.INSTANCE.mapUserDto(userDto));
-	    response.put("status", "Success");
-	    response.put("message", "Created Successfully");
-	    return new ResponseEntity<>(response, HttpStatus.CREATED);
-	} catch (IllegalArgumentException exc) {
-	    response.put("status", "Error");
-	    response.put("message", exc.getMessage());
-	    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-	}
+	return userService.createUser(UserMapper.INSTANCE.mapUserDto(userDto));
     }
 
     @PutMapping("updateUser/{id}")
     public ResponseEntity<Map<String, String>> updateUser(@PathVariable int id, @RequestBody User user) {
-	System.out.println("In Update User" + id);
-	HashMap<String, String> response = new HashMap<>();
-
-	try {
-	    User updatedUser = userService.updateUser(id, user);
-	    response.put("response", "User updated successfully.");
-	    return ResponseEntity.ok(response);
-	} catch (RuntimeException e) {
-	    response.put("Response", "An Error Occurred.");
-	    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-
-	}
+	return userService.updateUser(id, user);
     }
 
     @DeleteMapping("/deleteUser")
     public ResponseEntity<Map<String, String>> deleteUser(
 	    @RequestParam int loginId,
 	    @RequestParam int customerId) {
-
-	Map<String, String> response = new HashMap<>();
-	try {
-	    userService.deleteUser(loginId, customerId);
-	    response.put("status", "Success");
-	    response.put("message", "Deleted Successfully");
-	    return new ResponseEntity<>(response, HttpStatus.OK);
-	} catch (IllegalArgumentException e) {
-	    response.put("status", "Error");
-	    response.put("message", e.getMessage());
-	    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-	} catch (RuntimeException e) {
-	    response.put("status", "Error");
-	    response.put("message", "User not found");
-	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-	}
+	return userService.deleteUser(loginId, customerId);
     }
 }

@@ -3,6 +3,8 @@ package com.example.demo.service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.enums.RoleEnum;
@@ -14,10 +16,6 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     public ProductRepository productRepository;
 
-    public ProductServiceImpl(ProductRepository productRepo) {
-	this.productRepository = productRepo;
-    }
-
     @Override
     public Product findbyId(int theId) {
 	Optional<Product> product = productRepository.findById(theId);
@@ -27,18 +25,18 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
-    @Override
-    public int save(Product theProduct, int loginId) {
+    public ResponseEntity<String> save(Product theProduct, int loginId) {
 	if (loginId == RoleEnum.SUPER_ADMIN.getCode() || loginId == RoleEnum.ADMIN.getCode()) {
 	    Product product = productRepository.save(theProduct);
-	    return product.getId();
+	    // Return a success response with the product ID
+	    return new ResponseEntity<>("ID=" + product.getId() + "\nProduct added successfully", HttpStatus.CREATED);
+	} else {
+	    // Return an error response indicating unauthorized access
+	    return new ResponseEntity<>("Product addition failed - Unauthorized", HttpStatus.UNAUTHORIZED);
 	}
-	return -1;
-
     }
 
-    @Override
-    public boolean updateProductQuantity(int productId, int newQuantity, int loginId) {
+    public ResponseEntity<String> updateProductQuantity(int productId, int newQuantity, int loginId) {
 	if (loginId == RoleEnum.SUPER_ADMIN.getCode() || loginId == RoleEnum.ADMIN.getCode()) {
 	    Product product = productRepository.findById(productId).orElse(null);
 
@@ -46,12 +44,13 @@ public class ProductServiceImpl implements ProductService {
 		// Update product stock quantity
 		product.setStockQuantity(newQuantity);
 		productRepository.save(product);
-		return true;
+		return new ResponseEntity<>("Product quantity updated successfully.", HttpStatus.OK);
 	    } else {
-		return false; // Product not found
+		return new ResponseEntity<>("Product not found.", HttpStatus.NOT_FOUND);
 	    }
+	} else {
+	    return new ResponseEntity<>("Unauthorized to perform this action.", HttpStatus.UNAUTHORIZED);
 	}
-	return false;
     }
 
     @Override

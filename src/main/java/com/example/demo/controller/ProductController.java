@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.mapper.ProductMapper;
-import com.example.demo.model.dto.CreateProductDTO;
+import com.example.demo.model.dto.ProductDTO;
 import com.example.demo.model.dto.ProductUpdateStockQuantityDTO;
 import com.example.demo.service.ProductService;
 
@@ -23,31 +23,14 @@ public class ProductController {
     @Autowired
     public ProductService productService;
 
-    public ProductController(ProductService ps) {
-	this.productService = ps;
-
-    }
-
     @PostMapping("/createProduct")
-    public ResponseEntity<String> postProduct(@RequestBody CreateProductDTO productdto) {
-
-	int ProductId = (int) productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId());
-	if (ProductId != -1) {
-	    return ResponseEntity.ok("ID=" + ProductId + "\n" + "Product added successfully");
-	} else {
-	    return ResponseEntity.badRequest().body("Product addition failed-Unautherized");
-	}
+    public ResponseEntity<String> createProduct(@RequestBody ProductDTO productdto) {
+	return productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId());
     }
 
     @PutMapping("/updateProductStockQuantity")
     public ResponseEntity<String> updateProductStockQuantity(@RequestBody ProductUpdateStockQuantityDTO productdto) {
-	boolean updated = productService.updateProductQuantity(productdto.getId(), productdto.getStockQuantity(), productdto.getLoginId());
-
-	if (updated) {
-	    return ResponseEntity.ok("Product quantity updated successfully.");
-	} else {
-	    return ResponseEntity.badRequest().body("Failed to update product quantity.");
-	}
+	return productService.updateProductQuantity(productdto.getId(), productdto.getStockQuantity(), productdto.getLoginId());
     }
 
     @DeleteMapping("/deleteProduct/{productId}")
