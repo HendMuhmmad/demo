@@ -5,14 +5,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.mapper.OrderListMapper;
 import com.example.demo.mapper.OrderMapper;
 import com.example.demo.model.dto.order.OrderDTO;
-import com.example.demo.model.dto.order.OrderListDTO;
 import com.example.demo.model.orm.Order;
 import com.example.demo.model.orm.OrderDetails;
 import com.example.demo.model.orm.Product;
@@ -35,11 +32,6 @@ public class OrderServiceImpl implements OrderService {
 
 	@Autowired
 	private ProductRepository productRepository;
-
-	@Override
-	public List<OrderListDTO> getAllUserOrders(int userId) {
-        return OrderListMapper.MAPPER.mapOrders(orderRepository.findByUserId(userId));
-	}
 
 	@Override
 	public OrderDTO createOrder(int userId, List<OrderDetails> orderDetails) {
@@ -66,11 +58,9 @@ public class OrderServiceImpl implements OrderService {
 		orderRepository.save(order);
 		// create orderDetails
 		for (OrderDetails orderDetail : orderDetails) {
-			// validate product
-			Product product = validateProduct(orderDetail.getProduct_id());
 			// validate order detail
-			validateOrderDetailAndReturnProduct(orderDetail, product);
-			 int remainingQuantity = product.getStockQuantity() - orderDetail.getQuantity();
+			Product product = validateOrderDetailAndReturnProduct(orderDetail);
+			int remainingQuantity = product.getStockQuantity() - orderDetail.getQuantity();
 			// update quantity
 			product.setStockQuantity(remainingQuantity);
 			// need repository to update
@@ -86,8 +76,10 @@ public class OrderServiceImpl implements OrderService {
 
 	
 	
-	private Product validateProduct(int productId) {
-		// validate presence of product
+
+
+	private Product validateOrderDetailAndReturnProduct(OrderDetails orderDetail) {
+		int productId = orderDetail.getProduct_id();
 		Optional<Product> result = productRepository.findById(productId);
 		Product theProduct = null;
 		if (result.isPresent()) {
@@ -95,19 +87,18 @@ public class OrderServiceImpl implements OrderService {
 		} else {
 			throw new RuntimeException("Did not find product id - " + productId);
 		}
-
-		return theProduct;
-	}
-
-	private void validateOrderDetailAndReturnProduct(OrderDetails orderDetail, Product product) {
 		int quantityRequested = orderDetail.getQuantity();
 		// validate quantity
-		int stockQuantity = product.getStockQuantity();
+		int stockQuantity = theProduct.getStockQuantity();
+		if(quantityRequested <= 0 ) {
+			throw new RuntimeException("Quantity must be positive");
+		}
 		if (stockQuantity < quantityRequested) {
 			throw new RuntimeException("Not enough stock available. Requested " + quantityRequested + " and only "
 					+ stockQuantity + " available");
 
 		}
+		return theProduct;
 	}
 	
     private String generateUUID() {

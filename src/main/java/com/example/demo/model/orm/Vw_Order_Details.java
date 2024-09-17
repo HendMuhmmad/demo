@@ -1,17 +1,20 @@
 package com.example.demo.model.orm;
 
- 
-
 import java.util.Date;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import lombok.Data;
 
 @Entity
 @Data
 @Table(name = "VW_ORDER_DETAILS")
-public class VW_ORDER_DETAILS  {
+public class Vw_Order_Details {
 
     @Id
     private int id;
@@ -56,4 +59,4 @@ public class VW_ORDER_DETAILS  {
     @Column(name = "ORDER_NUMBER")
     private String orderNumber;
 
- }
+}
