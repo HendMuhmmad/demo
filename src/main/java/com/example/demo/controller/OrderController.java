@@ -17,7 +17,7 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    @GetMapping("/{orderNumber}")
+    @GetMapping("getOrderDetails/{orderNumber}")
     public ResponseEntity<OrderResponseDto> getOrderDetails(@PathVariable String orderNumber) {
 	try {
 	    OrderResponseDto orderResponse = orderService.getOrderDetails(orderNumber);
