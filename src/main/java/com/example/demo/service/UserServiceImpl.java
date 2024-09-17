@@ -3,16 +3,15 @@ package com.example.demo.service;
 import java.util.List;
 import java.util.Optional;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.enumeration.UserEnum;
 import com.example.demo.model.orm.User;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
-
-
-
-import javax.persistence.EntityNotFoundException;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -41,19 +40,28 @@ public class UserServiceImpl implements UserService {
 
     @Override
 	public void createUser(User user) {
-        if (!isOperationAllowed(user.getLoginId(), user.getRoleId())) {
+        UserEnum creatorType = UserEnum.fromRoleId(user.getLoginId());
+        UserEnum userType = UserEnum.fromRoleId(user.getRoleId());
+        
+        if (!isOperationAllowed(creatorType, userType)) {
             throw new IllegalArgumentException("Cannot create this user");
         }
 		
 		userRepository.save(user);
 	}
-	private boolean isOperationAllowed(int creatorRoleId , int roleId) {
-		if(creatorRoleId == 1 && roleId == 2) return true;
-		else if(creatorRoleId == 2 && roleId == 3) return true;
-		else if(creatorRoleId == 2 && roleId == 4) return true;
-		else if(creatorRoleId == 3 && roleId == 4) return true;
-		return false;
-	}
+    private boolean isOperationAllowed(UserEnum creatorType, UserEnum userType) {
+        if (creatorType == UserEnum.HEAD_OF_DEPARTMENT && userType == UserEnum.SUPER_ADMIN) {
+            return true;
+        }
+        if (creatorType == UserEnum.SUPER_ADMIN && (userType == UserEnum.ADMIN || userType == UserEnum.CUSTOMER)) {
+            return true;
+        }
+        if (creatorType == UserEnum.ADMIN && userType == UserEnum.CUSTOMER) {
+            return true;
+        }
+
+        return false;
+    }
 
 	@Override
 	public User updateUser(int id, User updatedUser) {
@@ -103,9 +111,9 @@ public class UserServiceImpl implements UserService {
 		User customer = userRepository.findById(customerId)
 		            .orElseThrow(() -> new RuntimeException("User not found"));
 		 
-		int customerRoleId = customer.getRoleId();
-		 
-	    if (!isOperationAllowed(loginId, customerRoleId)) {
+		UserEnum creatorType = UserEnum.fromRoleId(loginId);
+        UserEnum customerType = UserEnum.fromRoleId(customer.getRoleId());
+	    if (!isOperationAllowed(creatorType, customerType)) {
 	        throw new IllegalArgumentException("Cannot delete this user: insufficient permissions");
 	    }
 
