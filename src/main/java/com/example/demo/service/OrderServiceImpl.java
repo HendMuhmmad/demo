@@ -29,7 +29,6 @@ public class OrderServiceImpl implements OrderService {
         OrderResponseDto orderResponse = new OrderResponseDto();
         orderResponse.setOrderId(orderDetail.getOrderId());
         orderResponse.setUserId(orderDetail.getUserId());
-        orderResponse.setTotalPrice(orderDetail.getTotalPrice());
         orderResponse.setTransactionDate(orderDetail.getTransactionDate());
         orderResponse.setOrderNumber(orderDetail.getOrderNumber());
 
@@ -42,14 +41,11 @@ public class OrderServiceImpl implements OrderService {
         List<ProductDto> items = orderDetailsList.stream()
             .map(detail -> {
             	ProductDto item = new ProductDto();
-                item.setId(detail.getId());
                 item.setQuantity(detail.getProductQuantity());
                 item.setPrice(detail.getTotalPrice());
-                item.setProductId(detail.getProductId());
                 item.setProductName(detail.getProductName());
                 item.setColor(detail.getProductColor());
                 item.setDescription(detail.getProductDescription());
-                item.setActualPrice(detail.getTotalPrice());
                 item.setProductQuantity(detail.getProductQuantity());
                 item.setCreatorId(detail.getUserId()); 
                 item.setCreationDate(detail.getTransactionDate()); 
@@ -58,7 +54,10 @@ public class OrderServiceImpl implements OrderService {
             .collect(Collectors.toList());
 
         orderResponse.setItems(items);
-
+        double totalPrice = items.stream()
+                .mapToDouble(ProductDto::getPrice)
+                .sum();
+        orderResponse.setTotalPrice(totalPrice);
         return orderResponse;
     }
 }
