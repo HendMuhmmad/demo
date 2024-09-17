@@ -17,12 +17,5 @@ public enum UserEnum {
         return code;
     }
     
-//    public static UserEnum fromRoleId(int roleId) {
-//        for (UserEnum type : UserEnum.values()) {
-//            if (type.getRoleId() == roleId) {
-//                return type;
-//            }
-//        }
-//        throw new IllegalArgumentException("Invalid roleId: " + roleId);
-//    }
+ 
 }
