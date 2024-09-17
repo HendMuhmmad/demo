@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.mapper.ProductMapper;
 import com.example.demo.model.dto.ProductDto;
+import com.example.demo.model.dto.ProductUpdateDto;
 import com.example.demo.model.dto.ProductUpdateStockQuantityDTO;
 import com.example.demo.service.ProductService;
 
@@ -34,6 +35,11 @@ public class ProductController {
     @PutMapping("/updateProductStockQuantity")
     public ResponseEntity<String> updateProductStockQuantity(@RequestBody ProductUpdateStockQuantityDTO productdto) {
 	return productService.updateProductQuantity(productdto.getId(), productdto.getStockQuantity(), productdto.getLoginId());
+    }
+
+    @PutMapping("/updateProduct")
+    public ResponseEntity<String> updateProduct(@RequestBody ProductUpdateDto productUpdateDto) {
+    	return productService.save(ProductMapper.INSTANCE.mapUpdateProduct(productUpdateDto), productUpdateDto.getLoginId());
     }
 
     @DeleteMapping("/deleteProduct/{productId}")

@@ -6,6 +6,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
 import com.example.demo.model.dto.ProductDto;
+import com.example.demo.model.dto.ProductUpdateDto;
 import com.example.demo.model.dto.ProductUpdateStockQuantityDTO;
 import com.example.demo.model.orm.Product;
 
@@ -18,6 +19,8 @@ public interface ProductMapper {
 
     public Product mapUpdateProduct(ProductUpdateStockQuantityDTO productdto);
 
+    public Product mapUpdateProduct(ProductUpdateDto productdto);
+    
     public ProductDto mapCreateProduct(Product product);
 
     public Product mapCreateProduct(ProductDto productdto);
