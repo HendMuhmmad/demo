@@ -15,4 +15,6 @@ public interface VWOrderDetailsRepository extends JpaRepository<Vw_Order_Details
     @Query("SELECT v FROM Vw_Order_Details v WHERE v.orderNumber = :orderNumber")
     List<Vw_Order_Details> findByOrderNumber(@Param("orderNumber") String orderNumber);
 
+    List<Vw_Order_Details> findByUserId(int userId);
+
 }

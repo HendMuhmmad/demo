@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.mapper.OrderMapper;
@@ -42,15 +43,25 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private ProductRepository productRepository;
 
-    @Override
-    public OrderResponseDto getOrderDetails(String orderNumber) {
+    public ResponseEntity<OrderResponseDto> getOrderDetailsByOrderNum(String orderNumber) {
 	List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByOrderNumber(orderNumber);
-
 	if (orderDetailsList.isEmpty()) {
-	    throw new RuntimeException("Order not found");
+	    return ResponseEntity.notFound().build();
 	}
+	return ResponseEntity.ok(constructOrderResponseDto(orderDetailsList));
+    }
 
-	Vw_Order_Details orderDetail = orderDetailsList.get(0);
+    @Override
+    public ResponseEntity<OrderResponseDto> getOrderDetailsByUserId(int userId) {
+	List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByUserId(userId);
+	if (orderDetailsList.isEmpty()) {
+	    return ResponseEntity.notFound().build();
+	}
+	return ResponseEntity.ok(constructOrderResponseDto(orderDetailsList));
+    }
+
+    public OrderResponseDto constructOrderResponseDto(List<Vw_Order_Details> details) {
+	Vw_Order_Details orderDetail = details.get(0);
 
 	OrderResponseDto orderResponse = new OrderResponseDto();
 	orderResponse.setOrderId(orderDetail.getOrderId());
@@ -64,7 +75,7 @@ public class OrderServiceImpl implements OrderService {
 	customerDTO.setPhone(orderDetail.getCustomerPhone());
 	orderResponse.setCustomer(customerDTO);
 
-	List<ProductDto> items = orderDetailsList.stream()
+	List<ProductDto> items = details.stream()
 		.map(detail -> {
 		    ProductDto item = new ProductDto();
 		    item.setQuantity(detail.getProductQuantity());
@@ -84,7 +95,9 @@ public class OrderServiceImpl implements OrderService {
 		.mapToDouble(ProductDto::getPrice)
 		.sum();
 	orderResponse.setTotalPrice(totalPrice);
+
 	return orderResponse;
+
     }
 
     @Override
