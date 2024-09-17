@@ -1,20 +1,19 @@
 package com.example.demo.enums;
 
 public enum RoleEnum {
-    
-    HEAD_OF_DEPARTMENT(1),     
-    SUPER_ADMIN(2),            
-    ADMIN(3),                           
+
+    HEAD_OF_DEPARTMENT(1),
+    SUPER_ADMIN(2),
+    ADMIN(3),
     CUSTOMER(4);
 
-    private final int value;
+    private final int code;
 
-    // Constructor to set the integer value
-    RoleEnum(int value) {
-        this.value = value;
+    private RoleEnum(int roleId) {
+	this.code = roleId;
     }
 
     public int getCode() {
-        return value;
+	return code;
     }
 }

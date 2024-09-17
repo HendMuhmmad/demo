@@ -63,7 +63,7 @@ public class UserController {
 	}
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("updateUser/{id}")
     public ResponseEntity<Map<String, String>> updateUser(@PathVariable int id, @RequestBody User user) {
 	System.out.println("In Update User" + id);
 	HashMap<String, String> response = new HashMap<>();
