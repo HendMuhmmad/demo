@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,23 +14,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.mapper.UserMapper;
-import com.example.demo.model.dto.user.UserDto;
+import com.example.demo.model.dto.UserDto;
 import com.example.demo.model.orm.User;
 import com.example.demo.service.UserService;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-
-    private final UserService userService;
-
     @Autowired
-    public UserController(UserService userService) {
-	this.userService = userService;
-    }
+    private UserService userService;
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
@@ -38,36 +35,27 @@ public class UserController {
     }
 
     @GetMapping("getUserById/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable int id) {
+    public ResponseEntity<UserDto> getUserById(@PathVariable int id) {
 	Optional<User> user = userService.getUserById(id);
-	return user.map(ResponseEntity::ok)
+
+	return user.map(u -> ResponseEntity.ok(UserMapper.INSTANCE.mapUser(u)))
 		.orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PostMapping("/createUser")
-    public ResponseEntity<User> createUser(@RequestBody UserDto userDto) {
-	User createdUser = userService.createUser(UserMapper.INSTANCE.mapUserDto(userDto));
-	return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+    public ResponseEntity<Map<String, String>> createUser(@RequestBody UserDto userDto) {
+	return userService.createUser(UserMapper.INSTANCE.mapUserDto(userDto));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable int id, @RequestBody User user) {
-	try {
-
-	    User updatedUser = userService.updateUser(id, user);
-	    return new ResponseEntity<>(updatedUser, HttpStatus.OK);
-	} catch (RuntimeException e) {
-	    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
+    @PutMapping("updateUser/{id}")
+    public ResponseEntity<Map<String, String>> updateUser(@PathVariable int id, @RequestBody User user) {
+	return userService.updateUser(id, user);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable int id) {
-	try {
-	    userService.deleteUser(id);
-	    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-	} catch (RuntimeException e) {
-	    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
+    @DeleteMapping("/deleteUser")
+    public ResponseEntity<Map<String, String>> deleteUser(
+	    @RequestParam int loginId,
+	    @RequestParam int customerId) {
+	return userService.deleteUser(loginId, customerId);
     }
 }

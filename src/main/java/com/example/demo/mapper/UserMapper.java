@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;
 
-import com.example.demo.model.dto.user.UserDto;
+import com.example.demo.model.dto.UserDto;
 import com.example.demo.model.orm.User;
 
 @Mapper

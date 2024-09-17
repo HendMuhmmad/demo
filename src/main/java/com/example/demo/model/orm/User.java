@@ -20,7 +20,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Data
-@Table(name = "User")
+@Table(name = "user")
 public class User {
 
     @Id
@@ -37,7 +37,7 @@ public class User {
 
     @Column(name = "ROLE_ID",
 	    nullable = false)
-    private Long roleId;
+    private int roleId;
 
     @Column(name = "Password",
 	    nullable = false)
@@ -67,7 +67,8 @@ public class User {
     @Column(name = "Birthday")
     @Temporal(TemporalType.DATE)
     private Date birthday;
+    
     @Transient
-    private long loginId;
+    private int loginId;
 
 }

@@ -7,7 +7,7 @@ import java.util.Date;
 
 @Entity
 @Data
-@Table(name = "Product")
+@Table(name = "product")
 public class Product {
 
     @Id
@@ -32,6 +32,13 @@ public class Product {
     @Column(name = "Creation_Date")
     @Temporal(TemporalType.DATE)
     private Date creationDate;
+    
+    @PrePersist
+    protected void onCreate() {
+        this.creationDate = new Date(); // Sets the current date
+    } 
+
+	
 
  }
 

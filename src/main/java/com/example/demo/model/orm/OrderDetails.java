@@ -13,13 +13,9 @@ public class OrderDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-//    @ManyToOne
-//    @JoinColumn(name = "Order_ID", nullable = false)
     @Column(name="ORDER_ID")
     private int orderId;
 
-//    @ManyToOne
-//    @JoinColumn(name = "Product_ID", nullable = false)
     @Column(name="PRODUCT_ID")
     private int product_id;
 

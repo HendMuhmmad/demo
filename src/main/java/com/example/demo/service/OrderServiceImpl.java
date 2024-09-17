@@ -1,13 +1,18 @@
 package com.example.demo.service;
-
-import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.model.dto.CustomerDto;
+import com.example.demo.model.dto.OrderResponseDto;
+import com.example.demo.model.dto.ProductDto;
+import com.example.demo.model.orm.Vw_Order_Details;
+import com.example.demo.repository.VWOrderDetailsRepository;
 import com.example.demo.mapper.OrderMapper;
 import com.example.demo.model.dto.order.OrderDTO;
 import com.example.demo.model.orm.Order;
@@ -21,6 +26,9 @@ import com.example.demo.repository.UserRepository;
 @Service
 public class OrderServiceImpl implements OrderService {
 
+    @Autowired
+    private VWOrderDetailsRepository orderDetailsViewRepository;
+	
 	@Autowired
 	private OrderRepository orderRepository;
 
@@ -32,7 +40,53 @@ public class OrderServiceImpl implements OrderService {
 
 	@Autowired
 	private ProductRepository productRepository;
+	
+	@Override
+    public OrderResponseDto getOrderDetails(String orderNumber) {
+        List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByOrderNumber(orderNumber);
 
+        if (orderDetailsList.isEmpty()) {
+            throw new RuntimeException("Order not found");
+        }
+
+        Vw_Order_Details orderDetail = orderDetailsList.get(0);
+
+        OrderResponseDto orderResponse = new OrderResponseDto();
+        orderResponse.setOrderId(orderDetail.getOrderId());
+        orderResponse.setUserId(orderDetail.getUserId());
+        orderResponse.setTotalPrice(orderDetail.getTotalPrice());
+        orderResponse.setTransactionDate(orderDetail.getTransactionDate());
+        orderResponse.setOrderNumber(orderDetail.getOrderNumber());
+
+        CustomerDto customerDTO = new CustomerDto();
+        customerDTO.setName(orderDetail.getCustomerName());
+        customerDTO.setAddress(orderDetail.getCustomerAddress());
+        customerDTO.setPhone(orderDetail.getCustomerPhone());
+        orderResponse.setCustomer(customerDTO);
+
+        List<ProductDto> items = orderDetailsList.stream()
+            .map(detail -> {
+            	ProductDto item = new ProductDto();
+                item.setId(detail.getId());
+                item.setQuantity(detail.getProductQuantity());
+                item.setPrice(detail.getTotalPrice());
+                item.setProductId(detail.getProductId());
+                item.setProductName(detail.getProductName());
+                item.setColor(detail.getProductColor());
+                item.setDescription(detail.getProductDescription());
+                item.setActualPrice(detail.getTotalPrice());
+                item.setProductQuantity(detail.getProductQuantity());
+                item.setCreatorId(detail.getUserId()); 
+                item.setCreationDate(detail.getTransactionDate()); 
+                return item;
+            })
+            .collect(Collectors.toList());
+
+        orderResponse.setItems(items);
+
+        return orderResponse;
+    }
+	
 	@Override
 	public OrderDTO createOrder(int userId, List<OrderDetails> orderDetails) {
 		// get user by Id
