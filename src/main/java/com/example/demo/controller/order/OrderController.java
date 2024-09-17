@@ -23,21 +23,22 @@ import com.example.demo.service.OrderService;
 @RequestMapping("/api/v1/orders")
 public class OrderController {
 
-	@Autowired
-	private OrderService orderService;
+    @Autowired
+    private OrderService orderService;
 
-	@GetMapping("getOrderDetails/{orderNumber}")
-	public ResponseEntity<OrderResponseDto> getOrderDetails(@PathVariable String orderNumber) {
-		try {
-			OrderResponseDto orderResponse = orderService.getOrderDetails(orderNumber);
-			return ResponseEntity.ok(orderResponse);
-		} catch (RuntimeException e) {
-			return ResponseEntity.notFound().build();
-		}
+    @GetMapping("/getOrderDetails/{orderNumber}")
+    public ResponseEntity<OrderResponseDto> getOrderDetails(@PathVariable String orderNumber) {
+	try {
+	    OrderResponseDto orderResponse = orderService.getOrderDetails(orderNumber);
+	    return ResponseEntity.ok(orderResponse);
+	} catch (RuntimeException e) {
+	    return ResponseEntity.notFound().build();
 	}
-   @PostMapping
+    }
+
+    @PostMapping("/createOrder")
     public ResponseEntity<OrderDTO> createOrder(@RequestParam int userId, @RequestBody List<OrderDetailsCreationDTO> orderDetailsDto) {
-        OrderDTO createdOrder = orderService.createOrder(userId, OrderDetailsMapper.INSTANCE.mapOrderDetailsCreationDtos(orderDetailsDto));
-        return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
+	OrderDTO createdOrder = orderService.createOrder(userId, OrderDetailsMapper.INSTANCE.mapOrderDetailsCreationDtos(orderDetailsDto));
+	return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
     }
 }
