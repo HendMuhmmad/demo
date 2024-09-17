@@ -4,7 +4,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.demo.model.orm.Order_Details;
-import com.example.demo.model.orm.VW_ORDER_DETAILS;
+import com.example.demo.model.orm.Vw_Order_Details;
 
 public interface OrderDetailsRepository extends JpaRepository<Order_Details, Integer> {
 

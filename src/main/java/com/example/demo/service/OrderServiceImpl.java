@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo.model.dto.CustomerDto;
 import com.example.demo.model.dto.OrderResponseDto;
 import com.example.demo.model.dto.ProductDto;
-import com.example.demo.model.orm.VW_ORDER_DETAILS;
+import com.example.demo.model.orm.Vw_Order_Details;
 import com.example.demo.repository.VWOrderDetailsRepository;
 
 @Service
@@ -18,13 +18,13 @@ public class OrderServiceImpl implements OrderService {
     private VWOrderDetailsRepository orderDetailsViewRepository;
 
     public OrderResponseDto getOrderDetails(String orderNumber) {
-        List<VW_ORDER_DETAILS> orderDetailsList = orderDetailsViewRepository.findByOrderNumber(orderNumber);
+        List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByOrderNumber(orderNumber);
 
         if (orderDetailsList.isEmpty()) {
             throw new RuntimeException("Order not found");
         }
 
-        VW_ORDER_DETAILS orderDetail = orderDetailsList.get(0);
+        Vw_Order_Details orderDetail = orderDetailsList.get(0);
 
         OrderResponseDto orderResponse = new OrderResponseDto();
         orderResponse.setOrderId(orderDetail.getOrderId());

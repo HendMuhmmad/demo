@@ -6,12 +6,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.example.demo.model.orm.VW_ORDER_DETAILS;
+import com.example.demo.model.orm.Vw_Order_Details;
 
 @Repository
-public interface VWOrderDetailsRepository extends JpaRepository<VW_ORDER_DETAILS, Integer> {
+public interface VWOrderDetailsRepository extends JpaRepository<Vw_Order_Details, Integer> {
 
 	@Query("SELECT v FROM VW_ORDER_DETAILS v WHERE v.orderNumber = :orderNumber")
-    List<VW_ORDER_DETAILS> findByOrderNumber(@Param("orderNumber") String orderNumber);
+    List<Vw_Order_Details> findByOrderNumber(@Param("orderNumber") String orderNumber);
     
 }

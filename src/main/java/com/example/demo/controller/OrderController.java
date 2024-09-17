@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.model.dto.OrderResponseDto;
-import com.example.demo.model.orm.VW_ORDER_DETAILS;
+import com.example.demo.model.orm.Vw_Order_Details;
 import com.example.demo.service.OrderService;
 
 @RestController
