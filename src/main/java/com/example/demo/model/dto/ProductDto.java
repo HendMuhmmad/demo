@@ -5,7 +5,7 @@ import java.util.Date;
 import lombok.Data;
 
 @Data
-public  class ProductDto {
+public class ProductDto {
     private int id;
     private int quantity;
     private double price;
@@ -14,8 +14,9 @@ public  class ProductDto {
     private String color;
     private String description;
     private double actualPrice;
-    private int productQuantity; 
-    private int creatorId; 
-    private Date creationDate; 
+    private int productQuantity;
+    private int creatorId;
+    private Date creationDate;
+    private int loginId;
 
 }

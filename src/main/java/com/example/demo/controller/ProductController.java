@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.mapper.ProductMapper;
-import com.example.demo.model.dto.ProductDTO;
+import com.example.demo.model.dto.ProductDto;
 import com.example.demo.model.dto.ProductUpdateStockQuantityDTO;
 import com.example.demo.service.ProductService;
 
@@ -24,7 +24,7 @@ public class ProductController {
     public ProductService productService;
 
     @PostMapping("/createProduct")
-    public ResponseEntity<String> createProduct(@RequestBody ProductDTO productdto) {
+    public ResponseEntity<String> createProduct(@RequestBody ProductDto productdto) {
 	return productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId());
     }
 
