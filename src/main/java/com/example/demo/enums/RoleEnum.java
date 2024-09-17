@@ -1,6 +1,6 @@
-package com.example.demo.enumeration;
+package com.example.demo.enums;
 
-public enum UserEnum {
+public enum RoleEnum {
 
     HEAD_OF_DEPARTMENT(1),
     SUPER_ADMIN(2),
@@ -9,13 +9,11 @@ public enum UserEnum {
 
     private final int code;
 
-    private UserEnum(int roleId) {
-        this.code = roleId;
+    private RoleEnum(int roleId) {
+	this.code = roleId;
     }
 
     public int getCode() {
-        return code;
+	return code;
     }
-    
- 
 }
