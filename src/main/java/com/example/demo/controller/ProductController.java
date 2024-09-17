@@ -17,50 +17,47 @@ import com.example.demo.model.dto.ProductUpdateStockQuantityDTO;
 import com.example.demo.service.ProductService;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/p")
 public class ProductController {
-	
-	@Autowired
-	public ProductService productService;
 
+    @Autowired
+    public ProductService productService;
 
-	public ProductController(ProductService ps) {
-		this.productService=ps;
-		
+    public ProductController(ProductService ps) {
+	this.productService = ps;
+
+    }
+
+    @PostMapping("/createProduct")
+    public ResponseEntity<String> postProduct(@RequestBody CreateProductDTO productdto) {
+
+	int ProductId = (int) productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId());
+	if (ProductId != -1) {
+	    return ResponseEntity.ok("ID=" + ProductId + "\n" + "Product added successfully");
+	} else {
+	    return ResponseEntity.badRequest().body("Product addition failed-Unautherized");
 	}
-	
-	
-	@PostMapping("/createProduct")
-	public ResponseEntity<String> postProduct(@RequestBody CreateProductDTO productdto){
+    }
 
-		int ProductId=(int) productService.save( ProductMapper.INSTANCE.mapCreateProduct(productdto)
-									,productdto.getLoginId());
-		if(ProductId != -1) {
-			return  ResponseEntity.ok("ID="+ProductId+"\n" +"Product added successfully");
-		}else {
-			return ResponseEntity.badRequest().body("Product addition failed-Unautherized");
-		}
-	}
-	
-	@PutMapping("/updateProduct/quantity")
-	public ResponseEntity<String> updateProductStockQuantity(@RequestBody ProductUpdateStockQuantityDTO productdto){
-	     boolean updated = productService.updateProductQuantity(productdto.getId(), productdto.getStockQuantity(), productdto.getLoginId());
+    @PutMapping("/updateProductStockQuantity")
+    public ResponseEntity<String> updateProductStockQuantity(@RequestBody ProductUpdateStockQuantityDTO productdto) {
+	boolean updated = productService.updateProductQuantity(productdto.getId(), productdto.getStockQuantity(), productdto.getLoginId());
 
-	        if (updated) {
-	            return ResponseEntity.ok("Product quantity updated successfully.");
-	        } else {
-	            return ResponseEntity.badRequest().body("Failed to update product quantity.");
-	        }
+	if (updated) {
+	    return ResponseEntity.ok("Product quantity updated successfully.");
+	} else {
+	    return ResponseEntity.badRequest().body("Failed to update product quantity.");
 	}
-	
-	 @DeleteMapping("/deleteProduct/{productId}")
-	    public String deleteProduct(@PathVariable int productId, @RequestParam int loginId) {
-	        boolean isDeleted = productService.deleteProduct(productId, loginId);
-	        if (isDeleted) {
-	            return "Product deleted successfully";
-	        } else {
-	            return "Product deletion failed-Unautherized";
-	        }
-	    }
+    }
+
+    @DeleteMapping("/deleteProduct/{productId}")
+    public String deleteProduct(@PathVariable int productId, @RequestParam int loginId) {
+	boolean isDeleted = productService.deleteProduct(productId, loginId);
+	if (isDeleted) {
+	    return "Product deleted successfully";
+	} else {
+	    return "Product deletion failed-Unautherized";
+	}
+    }
 
 }

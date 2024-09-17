@@ -56,6 +56,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public boolean deleteProduct(int productId, int loginId) {
+	if (productRepository.findById(productId).isEmpty())
+	    throw new RuntimeException("can not find product in DB");
 	if (loginId == RoleEnum.SUPER_ADMIN.getCode() || loginId == RoleEnum.ADMIN.getCode()) {
 	    productRepository.deleteById(productId);
 	    return true;
