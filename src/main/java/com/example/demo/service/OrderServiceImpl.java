@@ -1,6 +1,7 @@
 package com.example.demo.service;
-
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,12 +40,16 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Override
-    public OrderResponseDto getOrderDetails(String orderNumber) {
-	List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByOrderNumber(orderNumber);
+	@Autowired
+	private ProductRepository productRepository;
+	
+	@Override
+	public OrderResponseDto getOrderDetails(String orderNumber) {
+	    List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByOrderNumber(orderNumber);
+	    return constructOrderResponse(orderDetailsList);
+	}
+    
+	public OrderResponseDto constructOrderResponse(List<Vw_Order_Details> orderDetailsList) {
 
 	if (orderDetailsList.isEmpty()) {
 	    throw new RuntimeException("Order not found");
@@ -79,24 +84,59 @@ public class OrderServiceImpl implements OrderService {
 		})
 		.collect(Collectors.toList());
 
-	orderResponse.setItems(items);
-	double totalPrice = items.stream()
-		.mapToDouble(ProductDto::getPrice)
-		.sum();
-	orderResponse.setTotalPrice(totalPrice);
-	return orderResponse;
+        orderResponse.setItems(items);
+        double totalPrice = items.stream()
+                .mapToDouble(ProductDto::getPrice)
+                .sum();
+        orderResponse.setTotalPrice(totalPrice);
+        return orderResponse;
     }
-
-    @Override
-    public OrderDTO createOrder(int userId, List<OrderDetails> orderDetails) {
-	// get user by Id
-	Optional<User> result = userRepository.findById(userId);
-	User theUser = null;
-	if (result.isPresent()) {
-	    theUser = result.get();
-	} else {
-	    throw new RuntimeException("Did not find user id - " + userId);
+	@Override
+	public List<OrderResponseDto> getOrdersForUserId(int userId) {
+	    List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByUserIdOrderByOrderIdAsc(userId);
+	    // get order Ids
+	    List<Integer> orderIds = getOrderIds(orderDetailsList);
+	    List<OrderResponseDto> orderResponseDtos = new ArrayList<OrderResponseDto>();
+		for (Integer orderId:orderIds) {
+			// get array of Vw_Order_Details for each orderId
+		    List<Vw_Order_Details> orderDetails = getOrdersForOrderId(orderDetailsList,orderId);
+		    orderResponseDtos.add(constructOrderResponse(orderDetails));
+			}
+	    // TODO Auto-generated method stub
+		return orderResponseDtos;
 	}
+	
+	private List<Integer> getOrderIds(List<Vw_Order_Details> orderDetailsList){
+		List<Integer> orderIds = new ArrayList<Integer>();
+		HashSet<Integer> orderIdsSet = new HashSet<Integer>();
+		for (Vw_Order_Details Vw_order_detail:orderDetailsList) {
+			orderIdsSet.add(Vw_order_detail.getOrderId());
+		}
+		orderIds.addAll(orderIdsSet);
+		return orderIds;
+	}
+	
+	private List<Vw_Order_Details> getOrdersForOrderId(List<Vw_Order_Details> orderDetailsList,int orderId){
+		List<Vw_Order_Details> orderDetails = new ArrayList<Vw_Order_Details>();
+		for (Vw_Order_Details Vw_order_detail:orderDetailsList) {
+			if (Vw_order_detail.getOrderId() == orderId) {
+				orderDetails.add(Vw_order_detail);
+			}
+		}
+		
+		return orderDetails;
+	}
+	
+	@Override
+	public OrderDTO createOrder(int userId, List<OrderDetails> orderDetails) {
+		// get user by Id
+		Optional<User> result = userRepository.findById(userId);
+		User theUser = null;
+		if (result.isPresent()) {
+			theUser = result.get();
+		} else {
+			throw new RuntimeException("Did not find user id - " + userId);
+		}
 
 	// check role
 	// if not customer return exception
@@ -125,8 +165,10 @@ public class OrderServiceImpl implements OrderService {
 	    order.setTotalPrice(order.getTotalPrice() + orderDetailPrice);
 	}
 
-	return OrderMapper.INSTANCE.mapOrder(order);
-    }
+		return OrderMapper.INSTANCE.mapOrder(order);
+	}
+	
+
 
     private Product validateOrderDetailAndReturnProduct(OrderDetails orderDetail) {
 	int productId = orderDetail.getProduct_id();
@@ -161,5 +203,8 @@ public class OrderServiceImpl implements OrderService {
 	// Return the UUID string
 	return uuidAsString;
     }
+
+	
+
 
 }

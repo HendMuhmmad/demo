@@ -41,4 +41,12 @@ public class OrderController {
 	OrderDTO createdOrder = orderService.createOrder(userId, OrderDetailsMapper.INSTANCE.mapOrderDetailsCreationDtos(orderDetailsDto));
 	return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
     }
+
+		
+	@GetMapping("getOrdersForUserId/{userId}")
+	public ResponseEntity<List<OrderResponseDto>> getOrdersForUserId(@PathVariable int userId) {
+		List<OrderResponseDto> orderResponse = orderService.getOrdersForUserId(userId);
+		return new ResponseEntity<>(orderResponse, HttpStatus.OK);
+	}
+	
 }

@@ -9,4 +9,5 @@ import com.example.demo.model.orm.OrderDetails;
 public interface OrderService {
     OrderDTO createOrder(int userId,List<OrderDetails> orderDetails);
     public OrderResponseDto getOrderDetails(String orderNumber);
+    List<OrderResponseDto> getOrdersForUserId(int userId);
 }
