@@ -7,22 +7,22 @@ public enum UserEnum {
     ADMIN(3),
     CUSTOMER(4);
 
-    private final int roleId;
+    private final int code;
 
     private UserEnum(int roleId) {
-        this.roleId = roleId;
+        this.code = roleId;
     }
 
-    public int getRoleId() {
-        return roleId;
+    public int getCode() {
+        return code;
     }
     
-    public static UserEnum fromRoleId(int roleId) {
-        for (UserEnum type : UserEnum.values()) {
-            if (type.getRoleId() == roleId) {
-                return type;
-            }
-        }
-        throw new IllegalArgumentException("Invalid roleId: " + roleId);
-    }
+//    public static UserEnum fromRoleId(int roleId) {
+//        for (UserEnum type : UserEnum.values()) {
+//            if (type.getRoleId() == roleId) {
+//                return type;
+//            }
+//        }
+//        throw new IllegalArgumentException("Invalid roleId: " + roleId);
+//    }
 }

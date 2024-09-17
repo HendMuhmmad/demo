@@ -40,28 +40,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
 	public void createUser(User user) {
-        UserEnum creatorType = UserEnum.fromRoleId(user.getLoginId());
-        UserEnum userType = UserEnum.fromRoleId(user.getRoleId());
-        
-        if (!isOperationAllowed(creatorType, userType)) {
+        if (!isOperationAllowed(user.getLoginId(), user.getRoleId())) {
             throw new IllegalArgumentException("Cannot create this user");
         }
 		
 		userRepository.save(user);
 	}
-    private boolean isOperationAllowed(UserEnum creatorType, UserEnum userType) {
-        if (creatorType == UserEnum.HEAD_OF_DEPARTMENT && userType == UserEnum.SUPER_ADMIN) {
-            return true;
-        }
-        if (creatorType == UserEnum.SUPER_ADMIN && (userType == UserEnum.ADMIN || userType == UserEnum.CUSTOMER)) {
-            return true;
-        }
-        if (creatorType == UserEnum.ADMIN && userType == UserEnum.CUSTOMER) {
-            return true;
-        }
-
-        return false;
-    }
+    private boolean isOperationAllowed(int creatorRoleId , int roleId) {
+		if(creatorRoleId == UserEnum.HEAD_OF_DEPARTMENT.getCode() && roleId == UserEnum.SUPER_ADMIN.getCode()) return true;
+		else if(creatorRoleId == UserEnum.SUPER_ADMIN.getCode() && roleId == UserEnum.ADMIN.getCode()) return true;
+		else if(creatorRoleId == UserEnum.SUPER_ADMIN.getCode() && roleId == UserEnum.CUSTOMER.getCode()) return true;
+		else if(creatorRoleId == UserEnum.ADMIN.getCode() && roleId == UserEnum.CUSTOMER.getCode()) return true;
+		return false;
+	}
 
 	@Override
 	public User updateUser(int id, User updatedUser) {
@@ -111,9 +102,7 @@ public class UserServiceImpl implements UserService {
 		User customer = userRepository.findById(customerId)
 		            .orElseThrow(() -> new RuntimeException("User not found"));
 		 
-		UserEnum creatorType = UserEnum.fromRoleId(loginId);
-        UserEnum customerType = UserEnum.fromRoleId(customer.getRoleId());
-	    if (!isOperationAllowed(creatorType, customerType)) {
+	    if (!isOperationAllowed(loginId, customer.getRoleId())) {
 	        throw new IllegalArgumentException("Cannot delete this user: insufficient permissions");
 	    }
 
