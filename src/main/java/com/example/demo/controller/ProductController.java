@@ -21,7 +21,7 @@ import com.example.demo.model.dto.ProductUpdateStockQuantityDTO;
 import com.example.demo.service.ProductService;
 
 @RestController
-@RequestMapping("/api/p")
+@RequestMapping("/api/product")
 public class ProductController {
 
     @Autowired
@@ -39,7 +39,7 @@ public class ProductController {
 
     @PutMapping("/updateProduct")
     public ResponseEntity<String> updateProduct(@RequestBody ProductUpdateDto productUpdateDto) {
-    	return productService.save(ProductMapper.INSTANCE.mapUpdateProduct(productUpdateDto), productUpdateDto.getLoginId());
+	return productService.save(ProductMapper.INSTANCE.mapUpdateProduct(productUpdateDto), productUpdateDto.getLoginId());
     }
 
     @DeleteMapping("/deleteProduct/{productId}")
