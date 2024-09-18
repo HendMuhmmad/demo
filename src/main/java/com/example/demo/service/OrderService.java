@@ -13,5 +13,5 @@ public interface OrderService {
 
     public ResponseEntity<OrderResponseDto> getOrderDetailsByOrderNum(String orderNumber);
 
-    public ResponseEntity<OrderResponseDto> getOrderDetailsByUserId(int userId);
+    public ResponseEntity<List<OrderResponseDto>>  getOrderDetailsByUserId(int userId);
 }

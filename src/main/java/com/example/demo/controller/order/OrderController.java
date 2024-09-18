@@ -37,7 +37,7 @@ public class OrderController {
     }
 
     @GetMapping("/getOrderDetailsByUserId")
-    public ResponseEntity<OrderResponseDto> getOrderDetailsByUserId(@RequestParam int userId) {
+    public ResponseEntity<List<OrderResponseDto>> getOrderDetailsByUserId(@RequestParam int userId) {
 	return orderService.getOrderDetailsByUserId(userId);
     }
 

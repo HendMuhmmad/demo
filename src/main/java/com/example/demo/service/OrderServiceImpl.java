@@ -1,6 +1,8 @@
 package com.example.demo.service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,13 +54,38 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public ResponseEntity<OrderResponseDto> getOrderDetailsByUserId(int userId) {
-	List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByUserId(userId);
-	if (orderDetailsList.isEmpty()) {
-	    return ResponseEntity.notFound().build();
-	}
-	return ResponseEntity.ok(constructOrderResponseDto(orderDetailsList));
+    public ResponseEntity<List<OrderResponseDto>> getOrderDetailsByUserId(int userId) {
+    	List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByUserId(userId);
+	    // get order Ids
+	    List<Integer> orderIds = getOrderIds(orderDetailsList);
+	    List<OrderResponseDto> orderResponseDtos = new ArrayList<OrderResponseDto>();
+		for (Integer orderId:orderIds) {
+			// get array of Vw_Order_Details for each orderId
+		    List<Vw_Order_Details> orderDetails = getOrdersForOrderId(orderDetailsList,orderId);
+		    orderResponseDtos.add(constructOrderResponseDto(orderDetails));
+			}
+		return ResponseEntity.ok(orderResponseDtos);
     }
+    private List<Integer> getOrderIds(List<Vw_Order_Details> orderDetailsList){
+		List<Integer> orderIds = new ArrayList<Integer>();
+		HashSet<Integer> orderIdsSet = new HashSet<Integer>();
+		for (Vw_Order_Details Vw_order_detail:orderDetailsList) {
+			orderIdsSet.add(Vw_order_detail.getOrderId());
+		}
+		orderIds.addAll(orderIdsSet);
+		return orderIds;
+	}
+	
+	private List<Vw_Order_Details> getOrdersForOrderId(List<Vw_Order_Details> orderDetailsList,int orderId){
+		List<Vw_Order_Details> orderDetails = new ArrayList<Vw_Order_Details>();
+		for (Vw_Order_Details Vw_order_detail:orderDetailsList) {
+			if (Vw_order_detail.getOrderId() == orderId) {
+				orderDetails.add(Vw_order_detail);
+			}
+		}
+		
+		return orderDetails;
+	}
 
     public OrderResponseDto constructOrderResponseDto(List<Vw_Order_Details> details) {
 	Vw_Order_Details orderDetail = details.get(0);
