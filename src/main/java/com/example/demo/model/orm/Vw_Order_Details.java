@@ -22,14 +22,8 @@ public class Vw_Order_Details {
     @Column(name = "Order_ID")
     private int orderId;
 
-    @Column(name = "PRODUCT_QUANTITY")
-    private int productQuantity;
-
     @Column(name = "TOTAL_PRICE")
     private double totalPrice;
-
-    @Column(name = "PRODUCT_ID")
-    private int productId;
 
     @Column(name = "USER_ID")
     private int userId;
@@ -37,6 +31,9 @@ public class Vw_Order_Details {
     @Column(name = "TRANSACTION_DATE")
     @Temporal(TemporalType.DATE)
     private Date transactionDate;
+
+    @Column(name = "PRODUCT_ID")
+    private int productId;
 
     @Column(name = "PRODUCT_NAME")
     private String productName;
@@ -47,6 +44,12 @@ public class Vw_Order_Details {
     @Column(name = "PRODUCT_DESCRIPTION")
     private String productDescription;
 
+    @Column(name = "PRODUCT_QUANTITY")
+    private int stockQuantity;
+    
+    @Column(name="PRODUCT_PRICE")
+    private int productPrice;
+    
     @Column(name = "CUSTOMER_NAME")
     private String customerName;
 
@@ -58,5 +61,7 @@ public class Vw_Order_Details {
 
     @Column(name = "ORDER_NUMBER")
     private String orderNumber;
-
+    
+    @Column(name= "ORDERED_QUANTITY")
+    private int orderedQuantity;
 }

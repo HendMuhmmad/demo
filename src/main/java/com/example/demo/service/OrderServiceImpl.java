@@ -50,7 +50,7 @@ public class OrderServiceImpl implements OrderService {
 	if (orderDetailsList.isEmpty()) {
 	    return ResponseEntity.notFound().build();
 	}
-	return ResponseEntity.ok(constructOrderResponseDto(orderDetailsList));
+	return ResponseEntity.ok(OrderMapper.INSTANCE.mapOrder(orderDetailsList));
     }
 
     @Override
@@ -62,7 +62,7 @@ public class OrderServiceImpl implements OrderService {
 	for (Integer orderId : orderIds) {
 	    // get array of Vw_Order_Details for each orderId
 	    List<Vw_Order_Details> orderDetails = getOrdersForOrderId(orderDetailsList, orderId);
-	    orderResponseDtos.add(constructOrderResponseDto(orderDetails));
+	    orderResponseDtos.add(OrderMapper.INSTANCE.mapOrder(orderDetails));
 	}
 	return ResponseEntity.ok(orderResponseDtos);
     }
@@ -106,14 +106,12 @@ public class OrderServiceImpl implements OrderService {
 	List<ProductDto> items = details.stream()
 		.map(detail -> {
 		    ProductDto item = new ProductDto();
-		    item.setStockQuantity(detail.getProductQuantity());
+		    item.setStockQuantity(detail.getStockQuantity());
 		    item.setPrice(detail.getTotalPrice());
 		    item.setProductName(detail.getProductName());
 		    item.setColor(detail.getProductColor());
 		    item.setDescription(detail.getProductDescription());
-		    item.setProductQuantity(detail.getProductQuantity());
-		    item.setCreatorId(detail.getUserId());
-		    item.setCreationDate(detail.getTransactionDate());
+		    item.setOrderedQuantity(detail.getOrderedQuantity());
 		    return item;
 		})
 		.collect(Collectors.toList());
