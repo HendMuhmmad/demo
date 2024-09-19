@@ -66,6 +66,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity<Map<String, String>> updateUser(int id, User updatedUser) {
+    	 
 	Map<String, String> response = new HashMap<>();
 	try {
 	    Optional<User> existingUserOptional = userRepository.findById(id);
