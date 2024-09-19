@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -143,13 +144,17 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDTO createOrder(int userId, List<OrderDetails> orderDetails) throws BusinessException {
 	// get user by Id
-	User user = userService.getUserById(userId).get();
-	if (user == null)
+	// User user = userService.getUserById(userId).get();
+	// if (user == null)
+	// throw new BusinessException(" user not found ");
+	Optional<User> user = userService.getUserById(userId);
+	if (!user.isPresent()) {
 	    throw new BusinessException(" user not found ");
+	}
 
 	// check role
 	// if not customer return exception
-	if (user.getRoleId() != 4) {
+	if (user.get().getRoleId() != 4) {
 	    throw new BusinessException("User is not a customer", new Object[] { "userId" });
 	}
 
@@ -163,9 +168,9 @@ public class OrderServiceImpl implements OrderService {
 	for (OrderDetails orderDetail : orderDetails) {
 	    Product returnProduct = null;
 	    returnProduct = getProductById(orderDetail.getProduct_id());
+	    int remainingQuantity = returnProduct.getStockQuantity() - orderDetail.getQuantity();
 
 	    validateOrder(orderDetail, returnProduct);
-	    int remainingQuantity = returnProduct.getStockQuantity() - orderDetail.getQuantity();
 	    returnProduct.setStockQuantity(remainingQuantity);
 	    productService.save(returnProduct, userId);
 	    orderDetail.setOrderId(order.getId());
@@ -179,8 +184,8 @@ public class OrderServiceImpl implements OrderService {
 
     public void validateOrder(OrderDetails orderDetails, Product product) {
 
-	if (orderDetails.getProduct_id() == null || orderDetails.getProduct_id() == 0)
-	    throw new BusinessException("you must enter product ");
+	if (orderDetails.getProduct_id() == null || orderDetails.getProduct_id() == 0 || product.getId() == null || product == null)
+	    throw new BusinessException("product does not exist");
 
 	if (orderDetails.getQuantity() == null)
 	    throw new BusinessException("you must enter quentity ");
@@ -188,11 +193,8 @@ public class OrderServiceImpl implements OrderService {
 	if (orderDetails.getQuantity() < 0)
 	    throw new BusinessException("quentity must be gretter than zero ");
 
-	if (product.getId() == null)
-	    throw new BusinessException(" product does not exist ");
-
-	if (product.getStockQuantity() == null || product.getStockQuantity() < 0)
-	    throw new BusinessException(" out of  Stock ");
+	if (product.getStockQuantity() == null || product.getStockQuantity() < 0 || (product.getStockQuantity() - orderDetails.getQuantity()) < 0)
+	    throw new BusinessException("out of  Stock");
 
     }
 

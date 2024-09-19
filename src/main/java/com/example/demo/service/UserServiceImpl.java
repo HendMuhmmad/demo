@@ -9,12 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.enums.RoleEnum;
+import com.example.demo.exception.BusinessException;
 import com.example.demo.model.orm.User;
 import com.example.demo.repository.UserRepository;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
@@ -27,7 +30,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<User> getUserById(int id) {
-	return userRepository.findById(id);
+	return Optional.of(userRepository.findById(id)
+		.orElseThrow(() -> new BusinessException("Cannot find user in DB")));
 
     }
 
@@ -52,7 +56,7 @@ public class UserServiceImpl implements UserService {
 	}
     }
 
-    private boolean isOperationAllowed(int creatorRoleId, int roleId) {
+    public boolean isOperationAllowed(int creatorRoleId, int roleId) {
 	if (creatorRoleId == RoleEnum.HEAD_OF_DEPARTMENT.getCode() && roleId == RoleEnum.SUPER_ADMIN.getCode())
 	    return true;
 	else if (creatorRoleId == RoleEnum.SUPER_ADMIN.getCode() && roleId == RoleEnum.ADMIN.getCode())
