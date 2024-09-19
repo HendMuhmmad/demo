@@ -31,8 +31,6 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-//    @ManyToOne
-//    @JoinColumn(name = "User_ID", nullable = false)
     @Column(name="User_ID")
     private int userId;
 
@@ -45,6 +43,4 @@ public class Order {
     
     @Transient
     private double totalPrice;
-    
-
  }

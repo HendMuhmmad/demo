@@ -31,6 +31,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleBusinessException(BusinessException ex, WebRequest request) {
 	return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage(), ex.getParams()));
     }
+    
 
     /********************* Common Exceptions *********************/
 
