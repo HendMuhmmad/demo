@@ -57,12 +57,8 @@ public class UserServiceTest {
 		Mockito.when(userRepository.findById(0)).thenReturn(autherParam);
 			
 		Optional<User> user = userService.getUserById(0);
-		
-		System.out.print(user.get());
-		
-		Mockito.when(userRepository.findById(0)).thenReturn(autherParam);
-		
-		Optional<User> user = userService.getUserById(0);
+	
+ 
 		assertEquals(true, user.isPresent());
 			
     }
