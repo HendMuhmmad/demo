@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.exception.BusinessException;
 import com.example.demo.mapper.OrderMapper;
@@ -26,6 +27,7 @@ import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.VWOrderDetailsRepository;
 
 @Service
+@Transactional
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
@@ -104,7 +106,7 @@ public class OrderServiceImpl implements OrderService {
 	List<ProductDto> items = details.stream()
 		.map(detail -> {
 		    ProductDto item = new ProductDto();
-		    item.setStockQuantity(detail.getProductQuantity());
+		    item.setStockQuantity(detail.getStockQuantity());
 		    item.setPrice(detail.getTotalPrice());
 		    item.setProductName(detail.getProductName());
 		    item.setColor(detail.getProductColor());
@@ -165,7 +167,7 @@ public class OrderServiceImpl implements OrderService {
 	return OrderMapper.INSTANCE.mapOrder(order);
     }
 
-    public void validateOrder(OrderDetails orderDetails, Product product) {
+     public void validateOrder(OrderDetails orderDetails, Product product) {
 
 	if (orderDetails.getProduct_id() == null || orderDetails.getProduct_id() == 0)
 	    throw new BusinessException("you must enter product ");
@@ -181,6 +183,7 @@ public class OrderServiceImpl implements OrderService {
 
 	if (product.getStockQuantity() == null || product.getStockQuantity() > 0)
 	    throw new BusinessException(" out of  Stock ");
+     
 
     }
 

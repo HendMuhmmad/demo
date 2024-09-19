@@ -36,7 +36,7 @@ public class OrderController {
 	return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
     }
 
-    @GetMapping("/getOrderDetailsByUserId")
+    @GetMapping("/getOrderDetailsByUserId") 
     public ResponseEntity<List<OrderResponseDto>> getOrderDetailsByUserId(@RequestParam int userId) {
 	return orderService.getOrderDetailsByUserId(userId);
     }
