@@ -43,8 +43,13 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private UserService userService;
 
-    public ResponseEntity<OrderResponseDto> getOrderDetailsByOrderNum(String orderNumber) throws BusinessException {
+    public ResponseEntity<OrderResponseDto> getOrderDetailsByOrderNum(String orderNumber) {
+	if (orderNumber == null) {
+	    return ResponseEntity.badRequest().body(null);
+	}
+
 	List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByOrderNumber(orderNumber);
+
 	if (orderDetailsList.isEmpty()) {
 	    return ResponseEntity.notFound().build();
 	}
@@ -52,8 +57,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public ResponseEntity<List<OrderResponseDto>> getOrderDetailsByUserId(int userId) throws BusinessException {
+    public ResponseEntity<List<OrderResponseDto>> getOrderDetailsByUserId(Integer userId) throws BusinessException {
+	if (userId == null) {
+	    return ResponseEntity.badRequest().body(null); // Return 400 Bad Request
+	}
 	List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByUserId(userId);
+
+	if (orderDetailsList.isEmpty()) {
+	    return ResponseEntity.notFound().build();
+	}
 	// get order Ids
 	List<Integer> orderIds = getOrderIds(orderDetailsList);
 	List<OrderResponseDto> orderResponseDtos = new ArrayList<OrderResponseDto>();
@@ -148,9 +160,7 @@ public class OrderServiceImpl implements OrderService {
 	// create orderDetails
 	for (OrderDetails orderDetail : orderDetails) {
 	    Product returnProduct = null;
-
-	    if (getProductById(orderDetail.getProduct_id()).equals(true))
-		returnProduct = getProductById(orderDetail.getProduct_id());
+	    returnProduct = getProductById(orderDetail.getProduct_id());
 
 	    validateOrder(orderDetail, returnProduct);
 	    int remainingQuantity = returnProduct.getStockQuantity() - orderDetail.getQuantity();

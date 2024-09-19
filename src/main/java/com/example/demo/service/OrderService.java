@@ -14,5 +14,5 @@ public interface OrderService {
 
     public ResponseEntity<OrderResponseDto> getOrderDetailsByOrderNum(String orderNumber) throws BusinessException;
 
-    public ResponseEntity<List<OrderResponseDto>> getOrderDetailsByUserId(int userId) throws BusinessException;
+    public ResponseEntity<List<OrderResponseDto>> getOrderDetailsByUserId(Integer userId) throws BusinessException;
 }
