@@ -78,8 +78,8 @@ public class OrderServiceTest {
 		Product p1 = new Product(productIds[0], "Blouse", 29.99, "Red", 50, "Premium material", new Date());
 		Product p2 = new Product(productIds[1], "Dress", 59.99, "Blue", 75, "Premium material", new Date());
 
-		Mockito.when(productRepository.findById(p1.getId())).thenReturn(Optional.of(p1));
-		Mockito.when(productRepository.findById(p2.getId())).thenReturn(Optional.of(p2));
+		Mockito.when(productService.findbyId(p1.getId())).thenReturn(p1);
+		Mockito.when(productService.findbyId(p2.getId())).thenReturn(p2);
 
 		// Mock order details
 		Order invalidOrder = new Order(orderId, userId, new Date(), "ORD001", 0);
@@ -91,7 +91,7 @@ public class OrderServiceTest {
 		// Mock user
 		User user = new User(userId, "Nada", "Elwazane", 4, "passw0rd", "nada@mail.com", "622 Horreya Street",
 				"01111111111", "Egyptian", "Female", new Date(), new Date(), 0);
-		Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+		Mockito.when(userService.getUserById(userId)).thenReturn(Optional.of(user));
 
 		// Mock order repository
 		Mockito.when(orderRepository.save(Mockito.any())).thenReturn(invalidOrder);
@@ -317,6 +317,30 @@ public class OrderServiceTest {
 		});
 	}
 
+	@Test
+	public void createOrderWithNoDetailsTest() {
+		int orderId = 3;
+		int userId = 6;
+
+		// Mock order details
+		Order invalidOrder = new Order(orderId, userId, new Date(), "ORD001", 0);
+		List<OrderDetails> odList = new ArrayList<OrderDetails>();
+
+		// Mock user
+		User user = new User(userId, "Nada", "Elwazane", 4, "passw0rd", "nada@mail.com", "622 Horreya Street",
+				"01111111111", "Egyptian", "Female", new Date(), new Date(), 0);
+		Mockito.when(userService.getUserById(userId)).thenReturn(Optional.of(user));
+
+		// Mock order repository
+		Mockito.when(orderRepository.save(Mockito.any())).thenReturn(invalidOrder);
+
+		// Act
+		assertThrows(BusinessException.class, () -> {
+			orderService.createOrder(userId, odList);
+		});
+	}
+
+	
 	@Test
 	public void getOrderDetailByValidOrderWithSingleDetailNumTest() {
 
@@ -570,9 +594,7 @@ public class OrderServiceTest {
 		ResponseEntity<List<OrderResponseDto>> orders = orderService.getOrderDetailsByUserId(userId);
 		// Assert
 		assertTrue(orders != null);
-        assertTrue(orders.getStatusCode() == HttpStatus.OK);
-        assertTrue(orders.getBody().size()==0);
-		
+        assertTrue(orders.getStatusCode() == HttpStatus.NOT_FOUND);		
 	}
 	@Test
 	public void getOrderDetailByInvalidUserIdTest() {
@@ -583,9 +605,7 @@ public class OrderServiceTest {
 		ResponseEntity<List<OrderResponseDto>> orders = orderService.getOrderDetailsByUserId(userId);
 		// Assert
 		assertTrue(orders != null);
-        assertTrue(orders.getStatusCode() == HttpStatus.OK);
-        assertTrue(orders.getBody().size()==0);
-		
+        assertTrue(orders.getStatusCode() == HttpStatus.NOT_FOUND);		
 	}
 	
 	
