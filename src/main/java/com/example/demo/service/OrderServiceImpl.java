@@ -143,10 +143,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDTO createOrder(int userId, List<OrderDetails> orderDetails) throws BusinessException {
-	// get user by Id
-	// User user = userService.getUserById(userId).get();
-	// if (user == null)
-	// throw new BusinessException(" user not found ");
+	if (orderDetails == null || orderDetails.isEmpty()) {
+	    throw new BusinessException("Order details cannot be null or empty");
+	}
 	Optional<User> user = userService.getUserById(userId);
 	if (!user.isPresent()) {
 	    throw new BusinessException(" user not found ");
@@ -168,9 +167,11 @@ public class OrderServiceImpl implements OrderService {
 	for (OrderDetails orderDetail : orderDetails) {
 	    Product returnProduct = null;
 	    returnProduct = getProductById(orderDetail.getProduct_id());
+	    validateProduct(returnProduct);
+	    validateOrderDetailes(orderDetail);
 	    int remainingQuantity = returnProduct.getStockQuantity() - orderDetail.getQuantity();
-
-	    validateOrder(orderDetail, returnProduct);
+	    if (remainingQuantity < 0)
+		throw new BusinessException("out of  Stock");
 	    returnProduct.setStockQuantity(remainingQuantity);
 	    productService.save(returnProduct, userId);
 	    orderDetail.setOrderId(order.getId());
@@ -182,18 +183,25 @@ public class OrderServiceImpl implements OrderService {
 	return OrderMapper.INSTANCE.mapOrder(order);
     }
 
-    public void validateOrder(OrderDetails orderDetails, Product product) {
+    public void validateOrderDetailes(OrderDetails orderDetails) {
 
-	if (orderDetails.getProduct_id() == null || orderDetails.getProduct_id() == 0 || product.getId() == null || product == null)
+	if (orderDetails.getProduct_id() == null || orderDetails.getProduct_id() == 0)
 	    throw new BusinessException("product does not exist");
 
 	if (orderDetails.getQuantity() == null)
-	    throw new BusinessException("you must enter quentity ");
+	    throw new BusinessException("you must enter quantity");
 
-	if (orderDetails.getQuantity() < 0)
-	    throw new BusinessException("quentity must be gretter than zero ");
+	if (orderDetails.getQuantity() < 0 || orderDetails.getQuantity() == 0)
+	    throw new BusinessException("quantity must be greater than zero");
 
-	if (product.getStockQuantity() == null || product.getStockQuantity() < 0 || (product.getStockQuantity() - orderDetails.getQuantity()) < 0)
+    }
+
+    public void validateProduct(Product product) {
+
+	if (product == null || product.getId() == null)
+	    throw new BusinessException("product does not exist");
+
+	if (product.getStockQuantity() == null || product.getStockQuantity() < 0)
 	    throw new BusinessException("out of  Stock");
 
     }
@@ -209,7 +217,10 @@ public class OrderServiceImpl implements OrderService {
 	return uuidAsString;
     }
 
-    private Product getProductById(Integer id) {
-	return productService.findbyId(id);
+    private Product getProductById(Integer productId) {
+	if (productId == null) {
+	    throw new BusinessException("product does not exist");
+	}
+	return productService.findbyId(productId);
     }
 }
