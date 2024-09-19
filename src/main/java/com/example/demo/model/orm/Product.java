@@ -1,9 +1,18 @@
 package com.example.demo.model.orm;
-import javax.persistence.*;
-
-import lombok.Data;
 
 import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.PrePersist;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import lombok.Data;
 
 @Entity
 @Data
@@ -12,19 +21,21 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
-    @Column(name = "Product_Name", nullable = false)
+    @Column(name = "Product_Name",
+	    nullable = false)
     private String productName;
 
-    @Column(name = "Price", nullable = false)
+    @Column(name = "Price",
+	    nullable = false)
     private double price;
 
     @Column(name = "Color")
     private String color;
 
     @Column(name = "Stock_Quantity")
-    private int stockQuantity;
+    private Integer stockQuantity;
 
     @Column(name = "Description")
     private String description;
@@ -32,13 +43,10 @@ public class Product {
     @Column(name = "Creation_Date")
     @Temporal(TemporalType.DATE)
     private Date creationDate;
-    
+
     @PrePersist
     protected void onCreate() {
-        this.creationDate = new Date(); // Sets the current date
-    } 
+	this.creationDate = new Date(); // Sets the current date
+    }
 
-	
-
- }
-
+}

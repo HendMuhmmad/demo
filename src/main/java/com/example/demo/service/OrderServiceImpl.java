@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -25,8 +24,6 @@ import com.example.demo.model.orm.Product;
 import com.example.demo.model.orm.User;
 import com.example.demo.model.orm.Vw_Order_Details;
 import com.example.demo.repository.OrderRepository;
-import com.example.demo.repository.ProductRepository;
-import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.VWOrderDetailsRepository;
 
 @Service
@@ -43,12 +40,12 @@ public class OrderServiceImpl implements OrderService {
     private OrderDetailsService orderDetailsService;
 
     @Autowired
-    private UserRepository userRepository;
+    private ProductService productService;
 
     @Autowired
-    private ProductRepository productRepository;
+    private UserService userService;
 
-    public ResponseEntity<OrderResponseDto> getOrderDetailsByOrderNum(String orderNumber) {
+    public ResponseEntity<OrderResponseDto> getOrderDetailsByOrderNum(String orderNumber) throws BusinessException {
 	List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByOrderNumber(orderNumber);
 	if (orderDetailsList.isEmpty()) {
 	    return ResponseEntity.notFound().build();
@@ -57,7 +54,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public ResponseEntity<List<OrderResponseDto>> getOrderDetailsByUserId(int userId) {
+    public ResponseEntity<List<OrderResponseDto>> getOrderDetailsByUserId(int userId) throws BusinessException {
 	List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByUserId(userId);
 	// get order Ids
 	List<Integer> orderIds = getOrderIds(orderDetailsList);
@@ -132,20 +129,16 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderDTO createOrder(int userId, List<OrderDetails> orderDetails) {
+    public OrderDTO createOrder(int userId, List<OrderDetails> orderDetails) throws BusinessException {
 	// get user by Id
-	Optional<User> result = userRepository.findById(userId);
-	User theUser = null;
-	if (result.isPresent()) {
-	    theUser = result.get();
-	} else {
-	    throw new RuntimeException("Did not find user id - " + userId);
-	}
+	User user = userService.getUserById(userId).get();
+	if (user == null)
+	    throw new BusinessException(" user not found ");
 
 	// check role
 	// if not customer return exception
-	if (theUser.getRoleId() != 4) {
-	    throw new RuntimeException("User is not a customer - " + userId);
+	if (user.getRoleId() != 4) {
+	    throw new BusinessException("User is not a customer", new Object[] { "userId" });
 	}
 
 	// create an order
@@ -156,43 +149,42 @@ public class OrderServiceImpl implements OrderService {
 	orderRepository.save(order);
 	// create orderDetails
 	for (OrderDetails orderDetail : orderDetails) {
-	    // validate order detail
-	    Product product = validateOrderDetailAndReturnProduct(orderDetail);
-	    int remainingQuantity = product.getStockQuantity() - orderDetail.getQuantity();
-	    // update quantity
-	    product.setStockQuantity(remainingQuantity);
-	    // need repository to update
-	    productRepository.save(product);
+	    Product returnProduct = null;
+
+	    if (getProductById(orderDetail.getProduct_id()).equals(true))
+		returnProduct = getProductById(orderDetail.getProduct_id());
+
+	    validateOrder(orderDetail, returnProduct);
+	    int remainingQuantity = returnProduct.getStockQuantity() - orderDetail.getQuantity();
+	    returnProduct.setStockQuantity(remainingQuantity);
+	    productService.save(returnProduct, userId);
 	    orderDetail.setOrderId(order.getId());
 	    orderDetailsService.createOrderDetail(orderDetail);
-	    double orderDetailPrice = product.getPrice() * orderDetail.getQuantity();
+	    double orderDetailPrice = returnProduct.getPrice() * orderDetail.getQuantity();
 	    order.setTotalPrice(order.getTotalPrice() + orderDetailPrice);
 	}
 
 	return OrderMapper.INSTANCE.mapOrder(order);
     }
 
-    private Product validateOrderDetailAndReturnProduct(OrderDetails orderDetail) {
-	int productId = orderDetail.getProduct_id();
-	Optional<Product> result = productRepository.findById(productId);
-	Product theProduct = null;
-	if (result.isPresent()) {
-	    theProduct = result.get();
-	} else {
-	    throw new BusinessException("Did not find product id - " + productId);
-	}
-	int quantityRequested = orderDetail.getQuantity();
-	// validate quantity
-	int stockQuantity = theProduct.getStockQuantity();
-	if (quantityRequested <= 0) {
-	    throw new BusinessException("Quantity must be positive");
-	}
-	if (stockQuantity < quantityRequested) {
-	    throw new BusinessException("Not enough stock available. Requested " + quantityRequested + " and only "
-		    + stockQuantity + " available");
+     public void validateOrder(OrderDetails orderDetails, Product product) {
 
-	}
-	return theProduct;
+	if (orderDetails.getProduct_id() == null || orderDetails.getProduct_id() == 0)
+	    throw new BusinessException("you must enter product ");
+
+	if (orderDetails.getQuantity() == null)
+	    throw new BusinessException("you must enter quentity ");
+
+	if (orderDetails.getQuantity() < 0)
+	    throw new BusinessException("quentity must be gretter than zero ");
+
+	if (product.getId() == null)
+	    throw new BusinessException(" product does not exist ");
+
+	if (product.getStockQuantity() == null || product.getStockQuantity() > 0)
+	    throw new BusinessException(" out of  Stock ");
+     
+
     }
 
     private String generateUUID() {
@@ -206,4 +198,7 @@ public class OrderServiceImpl implements OrderService {
 	return uuidAsString;
     }
 
+    private Product getProductById(Integer id) {
+	return productService.findbyId(id);
+    }
 }
