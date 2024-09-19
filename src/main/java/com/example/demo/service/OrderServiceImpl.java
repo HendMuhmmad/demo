@@ -177,7 +177,7 @@ public class OrderServiceImpl implements OrderService {
 	return OrderMapper.INSTANCE.mapOrder(order);
     }
 
-     public void validateOrder(OrderDetails orderDetails, Product product) {
+    public void validateOrder(OrderDetails orderDetails, Product product) {
 
 	if (orderDetails.getProduct_id() == null || orderDetails.getProduct_id() == 0)
 	    throw new BusinessException("you must enter product ");
@@ -191,9 +191,8 @@ public class OrderServiceImpl implements OrderService {
 	if (product.getId() == null)
 	    throw new BusinessException(" product does not exist ");
 
-	if (product.getStockQuantity() == null || product.getStockQuantity() > 0)
+	if (product.getStockQuantity() == null || product.getStockQuantity() < 0)
 	    throw new BusinessException(" out of  Stock ");
-     
 
     }
 
