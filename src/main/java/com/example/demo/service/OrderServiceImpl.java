@@ -11,7 +11,9 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.exception.BusinessException;
 import com.example.demo.mapper.OrderMapper;
 import com.example.demo.model.dto.CustomerDto;
 import com.example.demo.model.dto.OrderResponseDto;
@@ -28,6 +30,7 @@ import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.VWOrderDetailsRepository;
 
 @Service
+@Transactional
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
@@ -106,7 +109,7 @@ public class OrderServiceImpl implements OrderService {
 	List<ProductDto> items = details.stream()
 		.map(detail -> {
 		    ProductDto item = new ProductDto();
-		    item.setStockQuantity(detail.getProductQuantity());
+		    item.setStockQuantity(detail.getStockQuantity());
 		    item.setPrice(detail.getTotalPrice());
 		    item.setProductName(detail.getProductName());
 		    item.setColor(detail.getProductColor());
@@ -176,16 +179,16 @@ public class OrderServiceImpl implements OrderService {
 	if (result.isPresent()) {
 	    theProduct = result.get();
 	} else {
-	    throw new RuntimeException("Did not find product id - " + productId);
+	    throw new BusinessException("Did not find product id - " + productId);
 	}
 	int quantityRequested = orderDetail.getQuantity();
 	// validate quantity
 	int stockQuantity = theProduct.getStockQuantity();
 	if (quantityRequested <= 0) {
-	    throw new RuntimeException("Quantity must be positive");
+	    throw new BusinessException("Quantity must be positive");
 	}
 	if (stockQuantity < quantityRequested) {
-	    throw new RuntimeException("Not enough stock available. Requested " + quantityRequested + " and only "
+	    throw new BusinessException("Not enough stock available. Requested " + quantityRequested + " and only "
 		    + stockQuantity + " available");
 
 	}

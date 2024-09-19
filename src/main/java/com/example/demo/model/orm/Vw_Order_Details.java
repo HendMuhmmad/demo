@@ -58,5 +58,7 @@ public class Vw_Order_Details {
 
     @Column(name = "ORDER_NUMBER")
     private String orderNumber;
-
+    
+    @Column(name = "STOCK_QUANTITY")
+    private int stockQuantity;
 }
