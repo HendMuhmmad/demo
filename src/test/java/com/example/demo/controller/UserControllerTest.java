@@ -43,7 +43,7 @@ public class UserControllerTest {
     @Test
     public void testCreateUserUnauthorized() throws Exception {
         mockMvc.perform(post("/api/users/createUser")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType("application/json")
                 .content("{\"firstName\":\"John\",\"lastName\":\"Doe\",\"email\":\"john.doe@example.com\",\"loginId\":2,\"roleId\":1,\"password\":\"securepassword\"}"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value("Error"))
