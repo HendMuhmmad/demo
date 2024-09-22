@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -143,7 +143,7 @@ public class UserServiceTest {
 	Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
 
 	// Ensure the updateUser method does not throw any exceptions
-	User result = assertDoesNotThrow(() -> userService.updateUser(userId, updatedUser));
+	User result = assertDoesNotThrow(() -> userService.updateUser(updatedUser));
 
     }
 
