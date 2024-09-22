@@ -43,4 +43,19 @@ public class Order {
     
     @Transient
     private double totalPrice;
+
+	public Order(int userId, Date transactionDate, String orderNumber) {
+		this.userId = userId;
+		this.transactionDate = transactionDate;
+		this.orderNumber = orderNumber;
+	}
+
+	public Order(int id, int userId, Date transactionDate) {
+		this.id = id;
+		this.userId = userId;
+		this.transactionDate = transactionDate;
+	}
+    
+	
+    
  }
