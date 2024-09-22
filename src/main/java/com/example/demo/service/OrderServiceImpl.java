@@ -11,7 +11,9 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.exception.BusinessException;
 import com.example.demo.mapper.OrderMapper;
 import com.example.demo.model.dto.CustomerDto;
 import com.example.demo.model.dto.OrderResponseDto;
@@ -23,30 +25,34 @@ import com.example.demo.model.orm.Product;
 import com.example.demo.model.orm.User;
 import com.example.demo.model.orm.Vw_Order_Details;
 import com.example.demo.repository.OrderRepository;
-import com.example.demo.repository.ProductRepository;
-import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.VWOrderDetailsRepository;
 
 @Service
+@Transactional
 public class OrderServiceImpl implements OrderService {
 
-    @Autowired
-    private VWOrderDetailsRepository orderDetailsViewRepository;
+	@Autowired
+	private VWOrderDetailsRepository orderDetailsViewRepository;
+
+	@Autowired
+	private OrderRepository orderRepository;
+
+	@Autowired
+	private OrderDetailsService orderDetailsService;
 
     @Autowired
-    private OrderRepository orderRepository;
+    private ProductService productService;
 
     @Autowired
-    private OrderDetailsService orderDetailsService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
+    private UserService userService;
 
     public ResponseEntity<OrderResponseDto> getOrderDetailsByOrderNum(String orderNumber) {
+	if (orderNumber == null) {
+	    return ResponseEntity.badRequest().body(null);
+	}
+
 	List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByOrderNumber(orderNumber);
+
 	if (orderDetailsList.isEmpty()) {
 	    return ResponseEntity.notFound().build();
 	}
@@ -54,8 +60,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public ResponseEntity<List<OrderResponseDto>> getOrderDetailsByUserId(int userId) {
+    public ResponseEntity<List<OrderResponseDto>> getOrderDetailsByUserId(Integer userId) throws BusinessException {
+	if (userId == null) {
+	    return ResponseEntity.badRequest().body(null); // Return 400 Bad Request
+	}
 	List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByUserId(userId);
+
+	if (orderDetailsList.isEmpty()) {
+	    return ResponseEntity.notFound().build();
+	}
 	// get order Ids
 	List<Integer> orderIds = getOrderIds(orderDetailsList);
 	List<OrderResponseDto> orderResponseDtos = new ArrayList<OrderResponseDto>();
@@ -67,82 +80,86 @@ public class OrderServiceImpl implements OrderService {
 	return ResponseEntity.ok(orderResponseDtos);
     }
 
-    private List<Integer> getOrderIds(List<Vw_Order_Details> orderDetailsList) {
-	List<Integer> orderIds = new ArrayList<Integer>();
-	HashSet<Integer> orderIdsSet = new HashSet<Integer>();
-	for (Vw_Order_Details Vw_order_detail : orderDetailsList) {
-	    orderIdsSet.add(Vw_order_detail.getOrderId());
-	}
-	orderIds.addAll(orderIdsSet);
-	return orderIds;
-    }
-
-    private List<Vw_Order_Details> getOrdersForOrderId(List<Vw_Order_Details> orderDetailsList, int orderId) {
-	List<Vw_Order_Details> orderDetails = new ArrayList<Vw_Order_Details>();
-	for (Vw_Order_Details Vw_order_detail : orderDetailsList) {
-	    if (Vw_order_detail.getOrderId() == orderId) {
-		orderDetails.add(Vw_order_detail);
-	    }
+	private List<Integer> getOrderIds(List<Vw_Order_Details> orderDetailsList) {
+		List<Integer> orderIds = new ArrayList<Integer>();
+		HashSet<Integer> orderIdsSet = new HashSet<Integer>();
+		for (Vw_Order_Details Vw_order_detail : orderDetailsList) {
+			orderIdsSet.add(Vw_order_detail.getOrderId());
+		}
+		orderIds.addAll(orderIdsSet);
+		return orderIds;
 	}
 
-	return orderDetails;
-    }
+	private List<Vw_Order_Details> getOrdersForOrderId(List<Vw_Order_Details> orderDetailsList, int orderId) {
+		List<Vw_Order_Details> orderDetails = new ArrayList<Vw_Order_Details>();
+		for (Vw_Order_Details Vw_order_detail : orderDetailsList) {
+			if (Vw_order_detail.getOrderId() == orderId) {
+				orderDetails.add(Vw_order_detail);
+			}
+		}
 
-    public OrderResponseDto constructOrderResponseDto(List<Vw_Order_Details> details) {
-	Vw_Order_Details orderDetail = details.get(0);
+		return orderDetails;
+	}
 
-	OrderResponseDto orderResponse = new OrderResponseDto();
-	orderResponse.setOrderId(orderDetail.getOrderId());
-	orderResponse.setUserId(orderDetail.getUserId());
-	orderResponse.setTransactionDate(orderDetail.getTransactionDate());
-	orderResponse.setOrderNumber(orderDetail.getOrderNumber());
+	public OrderResponseDto constructOrderResponseDto(List<Vw_Order_Details> details) {
+		Vw_Order_Details orderDetail = details.get(0);
 
-	CustomerDto customerDTO = new CustomerDto();
-	customerDTO.setName(orderDetail.getCustomerName());
-	customerDTO.setAddress(orderDetail.getCustomerAddress());
-	customerDTO.setPhone(orderDetail.getCustomerPhone());
-	orderResponse.setCustomer(customerDTO);
+		OrderResponseDto orderResponse = new OrderResponseDto();
+		orderResponse.setOrderId(orderDetail.getOrderId());
+		orderResponse.setUserId(orderDetail.getUserId());
+		orderResponse.setTransactionDate(orderDetail.getTransactionDate());
+		orderResponse.setOrderNumber(orderDetail.getOrderNumber());
+
+		CustomerDto customerDTO = new CustomerDto();
+		customerDTO.setName(orderDetail.getCustomerName());
+		customerDTO.setAddress(orderDetail.getCustomerAddress());
+		customerDTO.setPhone(orderDetail.getCustomerPhone());
+		orderResponse.setCustomer(customerDTO);
 
 	List<ProductDto> items = details.stream()
 		.map(detail -> {
-		    ProductDto item = new ProductDto();
-		    item.setStockQuantity(detail.getProductQuantity());
-		    item.setPrice(detail.getTotalPrice());
-		    item.setProductName(detail.getProductName());
-		    item.setColor(detail.getProductColor());
-		    item.setDescription(detail.getProductDescription());
-		    item.setProductQuantity(detail.getProductQuantity());
-		    item.setCreatorId(detail.getUserId());
-		    item.setCreationDate(detail.getTransactionDate());
-		    return item;
+			ProductDto item = new ProductDto();
+			item.setStockQuantity(detail.getStockQuantity());
+			item.setPrice(detail.getTotalPrice());
+			item.setProductName(detail.getProductName());
+			item.setColor(detail.getProductColor());
+			item.setDescription(detail.getProductDescription());
+			item.setProductQuantity(detail.getProductQuantity());
+			item.setCreatorId(detail.getUserId());
+			item.setCreationDate(detail.getTransactionDate());
+			return item;
 		})
 		.collect(Collectors.toList());
 
-	orderResponse.setItems(items);
-	double totalPrice = items.stream()
+		orderResponse.setItems(items);
+		double totalPrice = items.stream()
 		.mapToDouble(ProductDto::getPrice)
-		.sum();
-	orderResponse.setTotalPrice(totalPrice);
+			    .sum();		
+		orderResponse.setTotalPrice(totalPrice);
 
-	return orderResponse;
+		return orderResponse;
 
-    }
-
-    @Override
-    public OrderDTO createOrder(int userId, List<OrderDetails> orderDetails) {
-	// get user by Id
-	Optional<User> result = userRepository.findById(userId);
-	User theUser = null;
-	if (result.isPresent()) {
-	    theUser = result.get();
-	} else {
-	    throw new RuntimeException("Did not find user id - " + userId);
 	}
 
+    @Override
+    public OrderDTO createOrder(int userId, List<OrderDetails> orderDetails) throws BusinessException {
+	if (orderDetails == null || orderDetails.isEmpty()) {
+	    throw new BusinessException("Order details cannot be null or empty");
+	}
+	Optional<User> user = userService.getUserById(userId);
+	if (!user.isPresent()) {
+	    throw new BusinessException(" user not found ");
+	}
+	
 	// check role
 	// if not customer return exception
-	if (theUser.getRoleId() != 4) {
-	    throw new RuntimeException("User is not a customer - " + userId);
+	if (user.get().getRoleId() != 4) {
+	    throw new BusinessException("User is not a customer", new Object[] { "userId" });
+	}
+	
+	// check that there are products in the order
+	if (orderDetails.size()==0) {
+	    throw new BusinessException("There are no products in the order");
 	}
 
 	// create an order
@@ -153,54 +170,62 @@ public class OrderServiceImpl implements OrderService {
 	orderRepository.save(order);
 	// create orderDetails
 	for (OrderDetails orderDetail : orderDetails) {
-	    // validate order detail
-	    Product product = validateOrderDetailAndReturnProduct(orderDetail);
-	    int remainingQuantity = product.getStockQuantity() - orderDetail.getQuantity();
-	    // update quantity
-	    product.setStockQuantity(remainingQuantity);
-	    // need repository to update
-	    productRepository.save(product);
+	    Product returnProduct = null;
+	    returnProduct = getProductById(orderDetail.getProduct_id());
+	    validateProduct(returnProduct);
+	    validateOrderDetailes(orderDetail);
+	    int remainingQuantity = returnProduct.getStockQuantity() - orderDetail.getQuantity();
+	    if (remainingQuantity < 0)
+		throw new BusinessException("out of  Stock");
+	    returnProduct.setStockQuantity(remainingQuantity);
+	    productService.save(returnProduct, userId);
 	    orderDetail.setOrderId(order.getId());
 	    orderDetailsService.createOrderDetail(orderDetail);
-	    double orderDetailPrice = product.getPrice() * orderDetail.getQuantity();
+	    double orderDetailPrice = returnProduct.getPrice() * orderDetail.getQuantity();
 	    order.setTotalPrice(order.getTotalPrice() + orderDetailPrice);
 	}
 
-	return OrderMapper.INSTANCE.mapOrder(order);
+		return OrderMapper.INSTANCE.mapOrder(order);
+	}
+
+    public void validateOrderDetailes(OrderDetails orderDetails) {
+
+	if (orderDetails.getProduct_id() == null || orderDetails.getProduct_id() == 0)
+	    throw new BusinessException("product does not exist");
+
+	if (orderDetails.getQuantity() == null)
+	    throw new BusinessException("you must enter quantity");
+
+	if (orderDetails.getQuantity() < 0 || orderDetails.getQuantity() == 0)
+	    throw new BusinessException("quantity must be greater than zero");
+
     }
 
-    private Product validateOrderDetailAndReturnProduct(OrderDetails orderDetail) {
-	int productId = orderDetail.getProduct_id();
-	Optional<Product> result = productRepository.findById(productId);
-	Product theProduct = null;
-	if (result.isPresent()) {
-	    theProduct = result.get();
-	} else {
-	    throw new RuntimeException("Did not find product id - " + productId);
-	}
-	int quantityRequested = orderDetail.getQuantity();
-	// validate quantity
-	int stockQuantity = theProduct.getStockQuantity();
-	if (quantityRequested <= 0) {
-	    throw new RuntimeException("Quantity must be positive");
-	}
-	if (stockQuantity < quantityRequested) {
-	    throw new RuntimeException("Not enough stock available. Requested " + quantityRequested + " and only "
-		    + stockQuantity + " available");
+    public void validateProduct(Product product) {
 
-	}
-	return theProduct;
+	if (product == null || product.getId() == null)
+	    throw new BusinessException("product does not exist");
+
+	if (product.getStockQuantity() == null || product.getStockQuantity() < 0)
+	    throw new BusinessException("out of  Stock");
+
     }
 
-    private String generateUUID() {
-	// Generate a UUID
-	UUID uuid = UUID.randomUUID();
+	private String generateUUID() {
+		// Generate a UUID
+		UUID uuid = UUID.randomUUID();
 
-	// Convert the UUID to a string
-	String uuidAsString = uuid.toString();
+		// Convert the UUID to a string
+		String uuidAsString = uuid.toString();
 
-	// Return the UUID string
-	return uuidAsString;
+		// Return the UUID string
+		return uuidAsString;
+	}
+
+    private Product getProductById(Integer productId) {
+	if (productId == null) {
+	    throw new BusinessException("product does not exist");
+	}
+	return productService.findbyId(productId);
     }
-
 }

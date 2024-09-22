@@ -15,7 +15,7 @@ public interface UserService {
 
     public ResponseEntity<Map<String, String>> createUser(User user);
 
-    public ResponseEntity<Map<String, String>> updateUser(int id, User user);
+    public ResponseEntity<Map<String, String>> updateUser(User user);
 
     public ResponseEntity<Map<String, String>> deleteUser(int loginId, int customerId);
 }

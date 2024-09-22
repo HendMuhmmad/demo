@@ -49,7 +49,7 @@ public class UserController {
 
     @PutMapping("updateUser/{id}")
     public ResponseEntity<Map<String, String>> updateUser(@PathVariable int id, @RequestBody User user) {
-	return userService.updateUser(id, user);
+	return userService.updateUser(user);
     }
 
     @DeleteMapping("/deleteUser")

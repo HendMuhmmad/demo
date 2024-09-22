@@ -9,10 +9,14 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "VW_ORDER_DETAILS")
 public class Vw_Order_Details {
 
@@ -58,5 +62,7 @@ public class Vw_Order_Details {
 
     @Column(name = "ORDER_NUMBER")
     private String orderNumber;
-
+    
+    @Column(name = "STOCK_QUANTITY")
+    private int stockQuantity;
 }

@@ -1,7 +1,6 @@
 package com.example.demo.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,11 +16,9 @@ public class ProductServiceImpl implements ProductService {
     public ProductRepository productRepository;
 
     @Override
-    public Product findbyId(int theId) {
-	Optional<Product> product = productRepository.findById(theId);
-	if (!product.isPresent())
-	    throw new RuntimeException("can not find product in DB");
-	return product.get();
+    public Product findbyId(int productId) {
+	return productRepository.findById(productId)
+		.orElseThrow(() -> new BusinessException("Cannot find product in DB"));
 
     }
 

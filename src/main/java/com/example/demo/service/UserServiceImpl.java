@@ -9,12 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.enums.RoleEnum;
+import com.example.demo.exception.BusinessException;
 import com.example.demo.model.orm.User;
 import com.example.demo.repository.UserRepository;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
@@ -27,7 +30,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<User> getUserById(int id) {
-	return userRepository.findById(id);
+	return Optional.of(userRepository.findById(id)
+		.orElseThrow(() -> new BusinessException("Cannot find user in DB")));
 
     }
 
@@ -52,7 +56,7 @@ public class UserServiceImpl implements UserService {
 	}
     }
 
-    private boolean isOperationAllowed(int creatorRoleId, int roleId) {
+    public boolean isOperationAllowed(int creatorRoleId, int roleId) {
 	if (creatorRoleId == RoleEnum.HEAD_OF_DEPARTMENT.getCode() && roleId == RoleEnum.SUPER_ADMIN.getCode())
 	    return true;
 	else if (creatorRoleId == RoleEnum.SUPER_ADMIN.getCode() && roleId == RoleEnum.ADMIN.getCode())
@@ -63,12 +67,19 @@ public class UserServiceImpl implements UserService {
 	    return true;
 	return false;
     }
+   
 
     @Override
-    public ResponseEntity<Map<String, String>> updateUser(int id, User updatedUser) {
-	Map<String, String> response = new HashMap<>();
-	try {
-	    Optional<User> existingUserOptional = userRepository.findById(id);
+    public ResponseEntity<Map<String, String>> updateUser( User updatedUser) {
+    	Map<String, String> response = new HashMap<>();
+    	try {
+         if (!isOperationAllowed(updatedUser.getLoginId(), updatedUser.getRoleId())) {
+		response.put("status", "Error");
+		response.put("message", "You are not authorized to update this user....");
+		return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+ 	 
+	    Optional<User> existingUserOptional = userRepository.findById(updatedUser.getId());
 
 	    if (existingUserOptional.isPresent()) {
 		User existingUser = existingUserOptional.get();
@@ -105,7 +116,7 @@ public class UserServiceImpl implements UserService {
 		response.put("response", "User updated successfully.");
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	    } else {
-		response.put("response", "User with ID " + id + " not found.");
+		response.put("response", "User with ID " + updatedUser.getId() + " not found.");
 		return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 	    }
 	} catch (Exception e) {
