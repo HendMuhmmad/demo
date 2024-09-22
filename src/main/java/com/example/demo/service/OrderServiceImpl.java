@@ -31,14 +31,14 @@ import com.example.demo.repository.VWOrderDetailsRepository;
 @Transactional
 public class OrderServiceImpl implements OrderService {
 
-    @Autowired
-    private VWOrderDetailsRepository orderDetailsViewRepository;
+	@Autowired
+	private VWOrderDetailsRepository orderDetailsViewRepository;
 
-    @Autowired
-    private OrderRepository orderRepository;
+	@Autowired
+	private OrderRepository orderRepository;
 
-    @Autowired
-    private OrderDetailsService orderDetailsService;
+	@Autowired
+	private OrderDetailsService orderDetailsService;
 
     @Autowired
     private ProductService productService;
@@ -80,66 +80,66 @@ public class OrderServiceImpl implements OrderService {
 	return ResponseEntity.ok(orderResponseDtos);
     }
 
-    private List<Integer> getOrderIds(List<Vw_Order_Details> orderDetailsList) {
-	List<Integer> orderIds = new ArrayList<Integer>();
-	HashSet<Integer> orderIdsSet = new HashSet<Integer>();
-	for (Vw_Order_Details Vw_order_detail : orderDetailsList) {
-	    orderIdsSet.add(Vw_order_detail.getOrderId());
-	}
-	orderIds.addAll(orderIdsSet);
-	return orderIds;
-    }
-
-    private List<Vw_Order_Details> getOrdersForOrderId(List<Vw_Order_Details> orderDetailsList, int orderId) {
-	List<Vw_Order_Details> orderDetails = new ArrayList<Vw_Order_Details>();
-	for (Vw_Order_Details Vw_order_detail : orderDetailsList) {
-	    if (Vw_order_detail.getOrderId() == orderId) {
-		orderDetails.add(Vw_order_detail);
-	    }
+	private List<Integer> getOrderIds(List<Vw_Order_Details> orderDetailsList) {
+		List<Integer> orderIds = new ArrayList<Integer>();
+		HashSet<Integer> orderIdsSet = new HashSet<Integer>();
+		for (Vw_Order_Details Vw_order_detail : orderDetailsList) {
+			orderIdsSet.add(Vw_order_detail.getOrderId());
+		}
+		orderIds.addAll(orderIdsSet);
+		return orderIds;
 	}
 
-	return orderDetails;
-    }
+	private List<Vw_Order_Details> getOrdersForOrderId(List<Vw_Order_Details> orderDetailsList, int orderId) {
+		List<Vw_Order_Details> orderDetails = new ArrayList<Vw_Order_Details>();
+		for (Vw_Order_Details Vw_order_detail : orderDetailsList) {
+			if (Vw_order_detail.getOrderId() == orderId) {
+				orderDetails.add(Vw_order_detail);
+			}
+		}
 
-    public OrderResponseDto constructOrderResponseDto(List<Vw_Order_Details> details) {
-	Vw_Order_Details orderDetail = details.get(0);
+		return orderDetails;
+	}
 
-	OrderResponseDto orderResponse = new OrderResponseDto();
-	orderResponse.setOrderId(orderDetail.getOrderId());
-	orderResponse.setUserId(orderDetail.getUserId());
-	orderResponse.setTransactionDate(orderDetail.getTransactionDate());
-	orderResponse.setOrderNumber(orderDetail.getOrderNumber());
+	public OrderResponseDto constructOrderResponseDto(List<Vw_Order_Details> details) {
+		Vw_Order_Details orderDetail = details.get(0);
 
-	CustomerDto customerDTO = new CustomerDto();
-	customerDTO.setName(orderDetail.getCustomerName());
-	customerDTO.setAddress(orderDetail.getCustomerAddress());
-	customerDTO.setPhone(orderDetail.getCustomerPhone());
-	orderResponse.setCustomer(customerDTO);
+		OrderResponseDto orderResponse = new OrderResponseDto();
+		orderResponse.setOrderId(orderDetail.getOrderId());
+		orderResponse.setUserId(orderDetail.getUserId());
+		orderResponse.setTransactionDate(orderDetail.getTransactionDate());
+		orderResponse.setOrderNumber(orderDetail.getOrderNumber());
+
+		CustomerDto customerDTO = new CustomerDto();
+		customerDTO.setName(orderDetail.getCustomerName());
+		customerDTO.setAddress(orderDetail.getCustomerAddress());
+		customerDTO.setPhone(orderDetail.getCustomerPhone());
+		orderResponse.setCustomer(customerDTO);
 
 	List<ProductDto> items = details.stream()
 		.map(detail -> {
-		    ProductDto item = new ProductDto();
-		    item.setStockQuantity(detail.getStockQuantity());
-		    item.setPrice(detail.getTotalPrice());
-		    item.setProductName(detail.getProductName());
-		    item.setColor(detail.getProductColor());
-		    item.setDescription(detail.getProductDescription());
-		    item.setProductQuantity(detail.getProductQuantity());
-		    item.setCreatorId(detail.getUserId());
-		    item.setCreationDate(detail.getTransactionDate());
-		    return item;
+			ProductDto item = new ProductDto();
+			item.setStockQuantity(detail.getStockQuantity());
+			item.setPrice(detail.getTotalPrice());
+			item.setProductName(detail.getProductName());
+			item.setColor(detail.getProductColor());
+			item.setDescription(detail.getProductDescription());
+			item.setProductQuantity(detail.getProductQuantity());
+			item.setCreatorId(detail.getUserId());
+			item.setCreationDate(detail.getTransactionDate());
+			return item;
 		})
 		.collect(Collectors.toList());
 
-	orderResponse.setItems(items);
-	double totalPrice = items.stream()
+		orderResponse.setItems(items);
+		double totalPrice = items.stream()
 		.mapToDouble(ProductDto::getPrice)
-		.sum();
-	orderResponse.setTotalPrice(totalPrice);
+			    .sum();		
+		orderResponse.setTotalPrice(totalPrice);
 
-	return orderResponse;
+		return orderResponse;
 
-    }
+	}
 
     @Override
     public OrderDTO createOrder(int userId, List<OrderDetails> orderDetails) throws BusinessException {
@@ -150,11 +150,16 @@ public class OrderServiceImpl implements OrderService {
 	if (!user.isPresent()) {
 	    throw new BusinessException(" user not found ");
 	}
-
+	
 	// check role
 	// if not customer return exception
 	if (user.get().getRoleId() != 4) {
 	    throw new BusinessException("User is not a customer", new Object[] { "userId" });
+	}
+	
+	// check that there are products in the order
+	if (orderDetails.size()==0) {
+	    throw new BusinessException("There are no products in the order");
 	}
 
 	// create an order
@@ -180,8 +185,8 @@ public class OrderServiceImpl implements OrderService {
 	    order.setTotalPrice(order.getTotalPrice() + orderDetailPrice);
 	}
 
-	return OrderMapper.INSTANCE.mapOrder(order);
-    }
+		return OrderMapper.INSTANCE.mapOrder(order);
+	}
 
     public void validateOrderDetailes(OrderDetails orderDetails) {
 
@@ -206,16 +211,16 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
-    private String generateUUID() {
-	// Generate a UUID
-	UUID uuid = UUID.randomUUID();
+	private String generateUUID() {
+		// Generate a UUID
+		UUID uuid = UUID.randomUUID();
 
-	// Convert the UUID to a string
-	String uuidAsString = uuid.toString();
+		// Convert the UUID to a string
+		String uuidAsString = uuid.toString();
 
-	// Return the UUID string
-	return uuidAsString;
-    }
+		// Return the UUID string
+		return uuidAsString;
+	}
 
     private Product getProductById(Integer productId) {
 	if (productId == null) {
