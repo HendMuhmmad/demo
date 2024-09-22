@@ -69,10 +69,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> updateUser(int id, User updatedUser) {
-    	 
-	Map<String, String> response = new HashMap<>();
-	try {
+    public ResponseEntity<Map<String, String>> updateUser(int loginId, User updatedUser) {
+    	Map<String, String> response = new HashMap<>();
+    	try {
+    	int id = updatedUser.getId();
+        if (loginId != id) {
+		response.put("status", "Error");
+		response.put("message", "You are not authorized to update this user....");
+		return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+ 
+ 
+	 
 	    Optional<User> existingUserOptional = userRepository.findById(id);
 
 	    if (existingUserOptional.isPresent()) {
