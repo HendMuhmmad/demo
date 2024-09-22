@@ -73,17 +73,13 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<Map<String, String>> updateUser( User updatedUser) {
     	Map<String, String> response = new HashMap<>();
     	try {
-    	int id = updatedUser.getId();
-    	 System.out.println("Login id is + " + updatedUser.getLoginId() + " While ROle Id is " +  updatedUser.getRoleId());
-        if (!isOperationAllowed(updatedUser.getLoginId(), updatedUser.getRoleId())) {
+         if (!isOperationAllowed(updatedUser.getLoginId(), updatedUser.getRoleId())) {
 		response.put("status", "Error");
 		response.put("message", "You are not authorized to update this user....");
 		return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
- 
- 
-	 
-	    Optional<User> existingUserOptional = userRepository.findById(id);
+ 	 
+	    Optional<User> existingUserOptional = userRepository.findById(updatedUser.getId());
 
 	    if (existingUserOptional.isPresent()) {
 		User existingUser = existingUserOptional.get();
@@ -120,7 +116,7 @@ public class UserServiceImpl implements UserService {
 		response.put("response", "User updated successfully.");
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	    } else {
-		response.put("response", "User with ID " + id + " not found.");
+		response.put("response", "User with ID " + updatedUser.getId() + " not found.");
 		return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 	    }
 	} catch (Exception e) {
