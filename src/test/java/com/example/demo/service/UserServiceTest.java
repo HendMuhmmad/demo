@@ -37,7 +37,8 @@ public class UserServiceTest {
     user.setId(0);
     user.setFirstName("John");
     user.setLastName("Doe");
-    user.setRoleId(1);
+    user.setRoleId(4);
+    user.setLoginId(2);
     user.setPassword("securepassword");
     user.setEmail("john.doe@example.com");
     user.setAddress("123 Main St");
@@ -152,14 +153,18 @@ public class UserServiceTest {
     existingUser.setId(userId);
     existingUser.setFirstName("John");
     existingUser.setLastName("Doe");
-
+    existingUser.setRoleId(4);
+    existingUser.setLoginId(2);
     User updatedUser = new User();
     updatedUser.setFirstName("Jane");
     updatedUser.setLastName("Smith");
     updatedUser.setId(userId);
+    updatedUser.setRoleId(4);
+    updatedUser.setLoginId(2);
+    
     Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
 
-    ResponseEntity < Map < String, String >> response = userService.updateUser(userId, updatedUser);
+    ResponseEntity < Map < String, String >> response = userService.updateUser(updatedUser);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals("User updated successfully.", response.getBody().get("response"));
@@ -170,28 +175,42 @@ public class UserServiceTest {
   public void updateUserNotFound() {
     // Mock input data
 
-    User updatedUser = new User();
-    int loginId = updatedUser.getId();
+    User updatedUser = getUser();
+   
     // Mock repository behavior
     Mockito.when(userRepository.findById(updatedUser.getId())).thenReturn(Optional.empty());
 
     // Execute the method to be tested
-    ResponseEntity < Map < String, String >> response = userService.updateUser(loginId, updatedUser);
+    ResponseEntity < Map < String, String >> response = userService.updateUser(updatedUser);
 
     // Validate the result
     assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
   }
   @Test
-  public void updateAnotherUser() {
+  public void updateUnAuthorized() {
     // Mock input data
 
-    User updatedUser = new User();
-    int loginId = 200;
+	    User user = new User();
+	    user.setId(0);
+	    user.setFirstName("John");
+	    user.setLastName("Doe");
+	    user.setRoleId(1);
+	    user.setLoginId(4);
+	    user.setPassword("securepassword");
+	    user.setEmail("john.doe@example.com");
+	    user.setAddress("123 Main St");
+	    user.setPhone("123-456-7890");
+	    user.setNationality("American");
+	    user.setGender("Male");
+	    user.setRegistrationDate(new Date());
+	    user.setBirthday(new Date(1990, 1, 1));
+
+ 
     // Mock repository behavior
-    Mockito.when(userRepository.findById(updatedUser.getId())).thenReturn(Optional.empty());
+    Mockito.when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
 
     // Execute the method to be tested
-    ResponseEntity < Map < String, String >> response = userService.updateUser(loginId, updatedUser);
+    ResponseEntity < Map < String, String >> response = userService.updateUser(user);
 
     assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
 
