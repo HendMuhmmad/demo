@@ -43,13 +43,8 @@ public class ProductController {
     }
 
     @DeleteMapping("/deleteProduct/{productId}")
-    public String deleteProduct(@PathVariable int productId, @RequestParam int loginId) {
-	boolean isDeleted = productService.deleteProduct(productId, loginId);
-	if (isDeleted) {
-	    return "Product deleted successfully";
-	} else {
-	    return "Product deletion failed-Unautherized";
-	}
+    public ResponseEntity<String> deleteProduct(@PathVariable int productId, @RequestParam int loginId) {
+	return productService.deleteProduct(productId, loginId);
     }
 
     @GetMapping("/getAllProduct")

@@ -1,12 +1,16 @@
 package com.example.demo.model.orm;
 import javax.persistence.*;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.Date;
 
 @Entity
 @Data
+@AllArgsConstructor
+@Builder
 @Table(name = "product")
 public class Product {
 

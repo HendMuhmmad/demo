@@ -11,7 +11,7 @@ public interface ProductService {
 
     public ResponseEntity<String> save(Product theProduct, int loginId);
 
-    public boolean deleteProduct(int productId, int loginId);
+    public ResponseEntity<String> deleteProduct(int productId, int loginId);
 
     public ResponseEntity<String> updateProductQuantity(int productId, int newQuantity, int loginId);
 

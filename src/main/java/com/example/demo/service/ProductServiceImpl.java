@@ -27,6 +27,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     public ResponseEntity<String> save(Product theProduct, int loginId) {
+    if(theProduct.getPrice() ==0 || theProduct.getProductName() == null) {
+    	return new ResponseEntity<>("Product price and name shoud not be null", HttpStatus.BAD_REQUEST);	
+    }
 	if (loginId == RoleEnum.SUPER_ADMIN.getCode() || loginId == RoleEnum.ADMIN.getCode()) {
 	    Product product = productRepository.save(theProduct);
 	    // Return a success response with the product ID
@@ -40,7 +43,6 @@ public class ProductServiceImpl implements ProductService {
     public ResponseEntity<String> updateProductQuantity(int productId, int newQuantity, int loginId) {
 	if (loginId == RoleEnum.SUPER_ADMIN.getCode() || loginId == RoleEnum.ADMIN.getCode()) {
 	    Product product = productRepository.findById(productId).orElse(null);
-
 	    if (product != null) {
 		// Update product stock quantity
 		product.setStockQuantity(newQuantity);
@@ -55,14 +57,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public boolean deleteProduct(int productId, int loginId) {
+    public ResponseEntity<String> deleteProduct(int productId, int loginId) {
 	if (!productRepository.findById(productId).isPresent())
-	    throw new RuntimeException("can not find product in DB");
+		return new ResponseEntity<>("Product not found.", HttpStatus.NOT_FOUND);
+
 	if (loginId == RoleEnum.SUPER_ADMIN.getCode() || loginId == RoleEnum.ADMIN.getCode()) {
 	    productRepository.deleteById(productId);
-	    return true;
+		return new ResponseEntity<>("Product deleted successfully.", HttpStatus.OK);
 	}
-	return false;
+    return new ResponseEntity<>("Unauthorized to perform this action.", HttpStatus.UNAUTHORIZED);
+
     }
 
     @Override
