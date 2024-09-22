@@ -46,6 +46,7 @@ public class UserController {
     @PostMapping("/createUser")
     public ResponseEntity<Map<String, String>> createUser(@RequestBody UserDto userDto) {
 	Map<String, String> response = new HashMap<>();
+	System.out.println("----------------------------");
 	try {
 	    User user = userService.createUser(UserMapper.INSTANCE.mapUserDto(userDto));
 	    response.put("status", "Success");
@@ -69,7 +70,7 @@ public class UserController {
 	} catch (BusinessException exc) {
 	    response.put("status", "Error");
 	    response.put("message", exc.getMessage());
-	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND); // Adjust the status as needed
+	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND); 
 	}
     }
 
@@ -86,7 +87,7 @@ public class UserController {
 	} catch (BusinessException exc) {
 	    response.put("status", "Error");
 	    response.put("message", exc.getMessage());
-	    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED); // Adjust the status as needed
+	    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED); 
 	}
     }
 
