@@ -29,22 +29,29 @@ public class ProductController {
 
     @PostMapping("/createProduct")
     public ResponseEntity<String> createProduct(@RequestBody ProductDto productdto) {
-	return productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId());
+	int productId= productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId());
+     return ResponseEntity.ok("Product created successfully with ID: " + productId);
     }
 
     @PutMapping("/updateProductStockQuantity")
     public ResponseEntity<String> updateProductStockQuantity(@RequestBody ProductUpdateStockQuantityDTO productdto) {
-	return productService.updateProductQuantity(productdto.getId(), productdto.getStockQuantity(), productdto.getLoginId());
+	 productService.updateProductQuantity(productdto.getId(), productdto.getStockQuantity(), productdto.getLoginId());
+     return ResponseEntity.ok("Product stock quantity updated successfully");
+
     }
 
     @PutMapping("/updateProduct")
     public ResponseEntity<String> updateProduct(@RequestBody ProductUpdateDto productUpdateDto) {
-	return productService.save(ProductMapper.INSTANCE.mapUpdateProduct(productUpdateDto), productUpdateDto.getLoginId());
+	 productService.save(ProductMapper.INSTANCE.mapUpdateProduct(productUpdateDto), productUpdateDto.getLoginId());
+     return ResponseEntity.ok("Product updated successfully");
+
     }
 
     @DeleteMapping("/deleteProduct/{productId}")
     public ResponseEntity<String> deleteProduct(@PathVariable int productId, @RequestParam int loginId) {
-	return productService.deleteProduct(productId, loginId);
+	productService.deleteProduct(productId, loginId);
+    return ResponseEntity.ok("Product deleted successfully");
+
     }
 
     @GetMapping("/getAllProduct")

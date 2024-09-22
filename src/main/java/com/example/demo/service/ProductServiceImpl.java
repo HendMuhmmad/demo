@@ -4,11 +4,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.enums.RoleEnum;
+import com.example.demo.exception.BusinessException;
 import com.example.demo.model.orm.Product;
 import com.example.demo.repository.ProductRepository;
 
@@ -26,47 +25,45 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
-    public ResponseEntity<String> save(Product theProduct, int loginId) {
+    public int save(Product theProduct, int loginId) throws BusinessException {
     if(theProduct.getPrice() ==0 || theProduct.getProductName() == null) {
-    	return new ResponseEntity<>("Product price and name shoud not be null", HttpStatus.BAD_REQUEST);	
+    	throw new BusinessException("Product price and name shoud not be null");
     }
 	if (loginId == RoleEnum.SUPER_ADMIN.getCode() || loginId == RoleEnum.ADMIN.getCode()) {
 	    Product product = productRepository.save(theProduct);
 	    // Return a success response with the product ID
-	    return new ResponseEntity<>("ID=" + product.getId() + "\nProduct added successfully", HttpStatus.CREATED);
+	    return  product.getId() ;
 	} else {
 	    // Return an error response indicating unauthorized access
-	    return new ResponseEntity<>("Product addition failed - Unauthorized", HttpStatus.UNAUTHORIZED);
+		  throw new BusinessException("Product addition failed - Unauthorized");
 	}
     }
 
-    public ResponseEntity<String> updateProductQuantity(int productId, int newQuantity, int loginId) {
+    public void updateProductQuantity(int productId, int newQuantity, int loginId) throws BusinessException {
 	if (loginId == RoleEnum.SUPER_ADMIN.getCode() || loginId == RoleEnum.ADMIN.getCode()) {
 	    Product product = productRepository.findById(productId).orElse(null);
 	    if (product != null) {
 		// Update product stock quantity
 		product.setStockQuantity(newQuantity);
 		productRepository.save(product);
-		return new ResponseEntity<>("Product quantity updated successfully.", HttpStatus.OK);
 	    } else {
-		return new ResponseEntity<>("Product not found.", HttpStatus.NOT_FOUND);
+	    	throw new BusinessException("Product not found.");
 	    }
 	} else {
-	    return new ResponseEntity<>("Unauthorized to perform this action.", HttpStatus.UNAUTHORIZED);
+		  throw new BusinessException("Product addition failed - Unauthorized");
 	}
     }
 
     @Override
-    public ResponseEntity<String> deleteProduct(int productId, int loginId) {
+    public void deleteProduct(int productId, int loginId) throws BusinessException {
 	if (!productRepository.findById(productId).isPresent())
-		return new ResponseEntity<>("Product not found.", HttpStatus.NOT_FOUND);
+		throw new BusinessException("Product not found.");
 
 	if (loginId == RoleEnum.SUPER_ADMIN.getCode() || loginId == RoleEnum.ADMIN.getCode()) {
 	    productRepository.deleteById(productId);
-		return new ResponseEntity<>("Product deleted successfully.", HttpStatus.OK);
+	}else {
+		  throw new BusinessException("Product addition failed - Unauthorized");
 	}
-    return new ResponseEntity<>("Unauthorized to perform this action.", HttpStatus.UNAUTHORIZED);
-
     }
 
     @Override
