@@ -96,7 +96,7 @@ public class ProductControllerTest {
 		            .content(objectMapper.writeValueAsString(product)))
 			      .andExpect(status().isBadRequest());
 	}
-	
+	 
 	
 	@Test
 	public void updateProductStockQuantity_invalidLoginId() throws Exception {
