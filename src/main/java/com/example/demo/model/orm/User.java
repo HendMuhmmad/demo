@@ -75,4 +75,21 @@ public class User {
     @Transient
     private int loginId;
 
+	public User(String firstName, String lastName, int roleId, String password, String email, String address,
+			String phone, String nationality, String gender, Date registrationDate, Date birthday) {
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.roleId = roleId;
+		this.password = password;
+		this.email = email;
+		this.address = address;
+		this.phone = phone;
+		this.nationality = nationality;
+		this.gender = gender;
+		this.registrationDate = registrationDate;
+		this.birthday = birthday;
+	}
+    
+    
+
 }
