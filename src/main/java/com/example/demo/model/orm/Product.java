@@ -55,4 +55,5 @@ public class Product {
 	this.creationDate = new Date(); // Sets the current date
     }
 
+    
 }
