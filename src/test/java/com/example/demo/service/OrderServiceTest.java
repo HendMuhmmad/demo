@@ -157,11 +157,11 @@ public class OrderServiceTest {
 	int[] orderDetailIds = { 1, 2 };
 	int[] productIds = { 1, 2 };
 
-	// Mock order details
+	// Mock order details 
 	List<OrderDetails> odList = mockOrderDetails(userId, orderId, productIds, orderDetailIds);
 
 	// Mock invalid user
-	Mockito.when(userRepository.findById(userId)).thenReturn(Optional.empty());
+	Mockito.when(userService.getUserById(userId)).thenThrow(BusinessException.class);
 
 	// Assert
 	assertThrows(BusinessException.class, () -> {

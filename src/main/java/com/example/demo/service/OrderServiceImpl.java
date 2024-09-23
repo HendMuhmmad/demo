@@ -66,9 +66,13 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrder(int userId, List<OrderDetails> orderDetails) throws BusinessException {
 
 	validateRole(userService.getUserById(userId).get());
-
+	
+	
 	// create an order
 	Order order = createAndSaveOrder(userId);
+	
+	// validate presence of orderDetails
+	validateOrderDetailsList(orderDetails);
 	// create orderDetails
 	for (OrderDetails orderDetail : orderDetails) {
 	    Product returnProduct = null;
@@ -86,7 +90,14 @@ public class OrderServiceImpl implements OrderService {
 	return order;
     }
 
-    private void validateOrderQuantityAndUpdateProduct(Product returnProduct, OrderDetails orderDetail, int userId) {
+    private void validateOrderDetailsList(List<OrderDetails> orderDetails) {
+		if (orderDetails.isEmpty()) {
+			throw new BusinessException("No products included in order");
+		}
+		
+	}
+
+	private void validateOrderQuantityAndUpdateProduct(Product returnProduct, OrderDetails orderDetail, int userId) {
 	int remainingQuantity = returnProduct.getStockQuantity() - orderDetail.getQuantity();
 	if (remainingQuantity < 0) {
 	    throw new BusinessException("Out of stock");
