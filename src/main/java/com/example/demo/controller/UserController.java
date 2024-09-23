@@ -57,9 +57,9 @@ public class UserController {
 	    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED); // Adjust the status as needed
 	}
     }
-
-    @PostMapping("/updateUser/{loginId}")
-    public ResponseEntity<Map<String, String>> updateUser(User updatedUser) {
+    //Remove Login Id From Here
+    @PostMapping("/updateUser")
+    public ResponseEntity<Map<String, String>> updateUser(@RequestBody User updatedUser) {
 	Map<String, String> response = new HashMap<>();
 	try {
 	    userService.updateUser(updatedUser);

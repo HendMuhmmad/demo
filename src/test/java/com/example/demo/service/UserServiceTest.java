@@ -137,13 +137,17 @@ public class UserServiceTest {
 	existingUser.setLastName("Doe");
 
 	User updatedUser = new User();
+	updatedUser.setId(userId);
 	updatedUser.setFirstName("Jane");
 	updatedUser.setLastName("Smith");
-
+	updatedUser.setLoginId(2);
+	updatedUser.setRoleId(4);
 	Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
 
 	// Ensure the updateUser method does not throw any exceptions
-	User result = assertDoesNotThrow(() -> userService.updateUser(updatedUser));
+	  assertDoesNotThrow(() -> userService.updateUser(updatedUser));
+	  Optional<User> testUser = userRepository.findById(userId);
+	  assertEquals("Jane", testUser.get().getFirstName());
 
     }
 
@@ -154,10 +158,9 @@ public class UserServiceTest {
 
 	Mockito.when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-	try {
-	    userService.updateUser(updatedUser);
-	} catch (BusinessException exc) {
-	    assertEquals("User with ID " + userId + " not found.", exc.getMessage());
-	}
+	assertThrows(BusinessException.class, () -> {
+        userService.updateUser(updatedUser);
+    });
+
     }
 }

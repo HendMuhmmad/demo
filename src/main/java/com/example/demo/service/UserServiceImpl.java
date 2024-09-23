@@ -57,6 +57,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUser(User updatedUser) {
+ 
 	if (!isOperationAllowed(updatedUser.getLoginId(), updatedUser.getRoleId()))
 	    throw new BusinessException("You are not authorized to update this user");
 
