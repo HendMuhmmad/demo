@@ -16,11 +16,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-<<<<<<< Upstream, based on origin/productTest
-=======
-
-import java.util.Date;
->>>>>>> 532a3c4 added product controller Test
 
 @Entity
 @Data
@@ -60,5 +55,4 @@ public class Product {
 	this.creationDate = new Date(); // Sets the current date
     }
 
-    
 }
