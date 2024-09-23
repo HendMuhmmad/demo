@@ -69,7 +69,7 @@ public class UserController {
 	} catch (BusinessException exc) {
 	    response.put("status", "Error");
 	    response.put("message", exc.getMessage());
-	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND); // Adjust the status as needed
+	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 	}
     }
 
@@ -86,7 +86,7 @@ public class UserController {
 	} catch (BusinessException exc) {
 	    response.put("status", "Error");
 	    response.put("message", exc.getMessage());
-	    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED); // Adjust the status as needed
+	    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED); 
 	}
     }
 
