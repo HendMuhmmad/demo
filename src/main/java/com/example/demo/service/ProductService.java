@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import java.util.List;
 
+import com.example.demo.exception.BusinessException;
 import com.example.demo.model.orm.Product;
 
 public interface ProductService {
@@ -14,4 +15,7 @@ public interface ProductService {
     public void updateProductQuantity(int productId, int newQuantity, int loginId);
 
     public List<Product> getAllProduct();
+
+    public void updateProductQuantityWithOutAuth(int productId, int newQuantity) throws BusinessException;
+
 }

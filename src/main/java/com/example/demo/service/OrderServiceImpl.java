@@ -2,7 +2,6 @@ package com.example.demo.service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +21,14 @@ import com.example.demo.repository.VWOrderDetailsRepository;
 @Transactional
 public class OrderServiceImpl implements OrderService {
 
-	@Autowired
-	private VWOrderDetailsRepository orderDetailsViewRepository;
+    @Autowired
+    private VWOrderDetailsRepository orderDetailsViewRepository;
 
-	@Autowired
-	private OrderRepository orderRepository;
+    @Autowired
+    private OrderRepository orderRepository;
 
-	@Autowired
-	private OrderDetailsService orderDetailsService;
+    @Autowired
+    private OrderDetailsService orderDetailsService;
 
     @Autowired
     private ProductService productService;
@@ -39,13 +38,13 @@ public class OrderServiceImpl implements OrderService {
 
     public List<Vw_Order_Details> getOrderDetailsByOrderNum(String orderNumber) {
 	if (orderNumber == null) {
-		throw new BusinessException("Please include an order number.");
+	    throw new BusinessException("Please include an order number.");
 	}
 
 	List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByOrderNumber(orderNumber);
 
 	if (orderDetailsList.isEmpty()) {
-		throw new BusinessException("Order Number not found");
+	    throw new BusinessException("Order Number not found");
 	}
 	return orderDetailsList;
     }
@@ -53,37 +52,20 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<Vw_Order_Details> getOrderDetailsByUserId(Integer userId) throws BusinessException {
 	if (userId == null) {
-		throw new BusinessException("Please include a userId");
+	    throw new BusinessException("Please include a userId");
 	}
 	List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByUserId(userId);
 
 	if (orderDetailsList.isEmpty()) {
-		throw new BusinessException("No orders found");
+	    throw new BusinessException("No orders found");
 	}
 	return orderDetailsList;
     }
 
     @Override
     public Order createOrder(int userId, List<OrderDetails> orderDetails) throws BusinessException {
-	// move to private method
-    if (orderDetails == null || orderDetails.isEmpty()) {
-	    throw new BusinessException("Order details cannot be null or empty");
-	}
-	Optional<User> user = userService.getUserById(userId);
-	if (!user.isPresent()) {
-	    throw new BusinessException(" user not found ");
-	}
-	
-	// check role
-	// if not customer return exception
-	if (user.get().getRoleId() != 4) {
-	    throw new BusinessException("User is not a customer", new Object[] { "userId" });
-	}
-	
-	// check that there are products in the order
-	if (orderDetails.size()==0) {
-	    throw new BusinessException("There are no products in the order");
-	}
+
+	validateRole(userService.getUserById(userId).get());
 
 	// create an order
 	Order order = createAndSaveOrder(userId);
@@ -92,9 +74,7 @@ public class OrderServiceImpl implements OrderService {
 	    Product returnProduct = null;
 	    returnProduct = getProductById(orderDetail.getProduct_id());
 	    // Validation
-	    validateProduct(returnProduct);
-	    validateOrderDetailes(orderDetail);
-	    validateOrderQuantityAndUpdateProduct(returnProduct,orderDetail,userId);
+	    validateOrder(orderDetail, returnProduct, userId);
 	    // update orderDetail
 	    orderDetail.setOrderId(order.getId());
 	    orderDetailsService.createOrderDetail(orderDetail);
@@ -103,25 +83,35 @@ public class OrderServiceImpl implements OrderService {
 	    order.setTotalPrice(order.getTotalPrice() + orderDetailPrice);
 	}
 
-		return order;
-	}
-    
-    private void validateOrderQuantityAndUpdateProduct(Product returnProduct, OrderDetails orderDetail, int userId) {
-        int remainingQuantity = returnProduct.getStockQuantity() - orderDetail.getQuantity();
-        if (remainingQuantity < 0) {
-            throw new BusinessException("Out of stock");
-        }
-        returnProduct.setStockQuantity(remainingQuantity);
-	    productService.save(returnProduct, userId);
+	return order;
     }
-    
+
+    private void validateOrderQuantityAndUpdateProduct(Product returnProduct, OrderDetails orderDetail, int userId) {
+	int remainingQuantity = returnProduct.getStockQuantity() - orderDetail.getQuantity();
+	if (remainingQuantity < 0) {
+	    throw new BusinessException("Out of stock");
+	}
+	// returnProduct.setStockQuantity(remainingQuantity);
+	productService.updateProductQuantityWithOutAuth(returnProduct.getId(), returnProduct.getStockQuantity());
+    }
+
     private Order createAndSaveOrder(int userId) {
-    	Order order = new Order(userId,new Date(),generateUUID());
-        orderRepository.save(order);
-        return order;
+	Order order = new Order(userId, new Date(), generateUUID());
+	orderRepository.save(order);
+	return order;
+    }
+
+    public void validateOrder(OrderDetails orderDetail, Product product, int userId) {
+	validateOrderDetailes(orderDetail);
+	validateProduct(product);
+	validateOrderQuantityAndUpdateProduct(product, orderDetail, userId);
     }
 
     public void validateOrderDetailes(OrderDetails orderDetails) {
+
+	if (orderDetails == null)
+	    throw new BusinessException("Order details cannot be null or empty");
+	// check that there are products in the order
 
 	if (orderDetails.getProduct_id() == null || orderDetails.getProduct_id() == 0)
 	    throw new BusinessException("product does not exist");
@@ -144,16 +134,24 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
-	private String generateUUID() {
-		// Generate a UUID
-		UUID uuid = UUID.randomUUID();
-
-		// Convert the UUID to a string
-		String uuidAsString = uuid.toString();
-
-		// Return the UUID string
-		return uuidAsString;
+    private void validateRole(User user) {
+	if (user == null) {
+	    throw new BusinessException(" user not found ");
 	}
+	if (user.getRoleId() != 4)
+	    throw new BusinessException("User is not a customer");
+    }
+
+    private String generateUUID() {
+	// Generate a UUID
+	UUID uuid = UUID.randomUUID();
+
+	// Convert the UUID to a string
+	String uuidAsString = uuid.toString();
+
+	// Return the UUID string
+	return uuidAsString;
+    }
 
     private Product getProductById(Integer productId) {
 	if (productId == null) {
