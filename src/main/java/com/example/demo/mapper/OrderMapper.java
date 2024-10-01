@@ -15,7 +15,7 @@ import com.example.demo.model.dto.ProductDto;
 import com.example.demo.model.dto.order.OrderDTO;
 import com.example.demo.model.dto.orderDetails.OrderDetailsCreationDTO;
 import com.example.demo.model.orm.Order;
-import com.example.demo.model.orm.Vw_Order_Details;
+import com.example.demo.model.orm.OrderDetailsData;
 
 @Mapper
 @Component
@@ -28,19 +28,19 @@ public interface OrderMapper {
     public Order mapOrderDto(OrderDetailsCreationDTO orderDto);
     
 
-    default List<OrderResponseDto> mapOrders(List<Vw_Order_Details> orderDetailsList) {
-    	List<Integer> orderIds = getOrderIds(orderDetailsList);
+    default List<OrderResponseDto> mapOrders(List<OrderDetailsData> orderDetailsList) {
+    	List<Long> orderIds = getOrderIds(orderDetailsList);
     	List<OrderResponseDto> orderResponseDtos = new ArrayList<OrderResponseDto>();
-    	for (Integer orderId : orderIds) {
+    	for (Long orderId : orderIds) {
     	    // get array of Vw_Order_Details for each orderId
-    	    List<Vw_Order_Details> orderDetails = getOrdersForOrderId(orderDetailsList, orderId);
+    	    List<OrderDetailsData> orderDetails = getOrdersForOrderId(orderDetailsList, orderId);
     	    orderResponseDtos.add(OrderMapper.INSTANCE.mapOrder(orderDetails));	
     	    }
     	
     	return orderResponseDtos;
     }
     
-    default OrderResponseDto mapOrder(List<Vw_Order_Details> orderDetails) {
+    default OrderResponseDto mapOrder(List<OrderDetailsData> orderDetails) {
 		if (orderDetails.size() == 0) {
 			return null;
 		}
@@ -61,19 +61,19 @@ public interface OrderMapper {
 		return orderResponseDto;
 	}
     
-    static List<Integer> getOrderIds(List<Vw_Order_Details> orderDetailsList) {
-		List<Integer> orderIds = new ArrayList<Integer>();
-		HashSet<Integer> orderIdsSet = new HashSet<Integer>();
-		for (Vw_Order_Details Vw_order_detail : orderDetailsList) {
+    static List<Long> getOrderIds(List<OrderDetailsData> orderDetailsList) {
+		List<Long> orderIds = new ArrayList<Long>();
+		HashSet<Long> orderIdsSet = new HashSet<Long>();
+		for (OrderDetailsData Vw_order_detail : orderDetailsList) {
 			orderIdsSet.add(Vw_order_detail.getOrderId());
 		}
 		orderIds.addAll(orderIdsSet);
 		return orderIds;
 	}
 
-	static List<Vw_Order_Details> getOrdersForOrderId(List<Vw_Order_Details> orderDetailsList, int orderId) {
-		List<Vw_Order_Details> orderDetails = new ArrayList<Vw_Order_Details>();
-		for (Vw_Order_Details Vw_order_detail : orderDetailsList) {
+	static List<OrderDetailsData> getOrdersForOrderId(List<OrderDetailsData> orderDetailsList, Long orderId) {
+		List<OrderDetailsData> orderDetails = new ArrayList<OrderDetailsData>();
+		for (OrderDetailsData Vw_order_detail : orderDetailsList) {
 			if (Vw_order_detail.getOrderId() == orderId) {
 				orderDetails.add(Vw_order_detail);
 			}

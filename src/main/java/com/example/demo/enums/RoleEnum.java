@@ -2,18 +2,18 @@ package com.example.demo.enums;
 
 public enum RoleEnum {
 
-    HEAD_OF_DEPARTMENT(1),
-    SUPER_ADMIN(2),
-    ADMIN(3),
-    CUSTOMER(4);
+    HEAD_OF_DEPARTMENT(1L),
+    SUPER_ADMIN(2L),
+    ADMIN(3L),
+    CUSTOMER(4L);
 
-    private final int code;
+    private final Long code;
 
-    private RoleEnum(int roleId) {
+    private RoleEnum(Long roleId) {
 	this.code = roleId;
     }
 
-    public int getCode() {
+    public Long getCode() {
 	return code;
     }
 }

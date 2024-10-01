@@ -16,8 +16,8 @@ public class ProductDto {
     private String color;
     private String description;
     private int productQuantity;
-    private int creatorId;
+    private Long creatorId;
     private Date creationDate;
-    private int loginId;
+    private Long loginId;
 
 }

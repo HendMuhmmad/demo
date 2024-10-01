@@ -7,9 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.demo.model.orm.Order;
 
 
-public interface OrderRepository extends JpaRepository<Order, Integer> {
+public interface OrderRepository extends JpaRepository<Order, Long> {
 
-	List<Order> findByUserId(int userId);
+	List<Order> findByUserId(Long userId);
 
 //	List<Order> findByUser_ID(int id);
  }

@@ -8,11 +8,11 @@ import com.example.demo.model.orm.User;
 public interface UserService {
     public List<User> getAllUsers();
 
-    public Optional<User> getUserById(int id);
+    public Optional<User> getUserById(Long id);
 
     public User createUser(User user);
 
     public User updateUser(User user);
 
-    public void deleteUser(int loginId, int customerId);
+    public void deleteUser(Long loginId, Long customerId);
 }

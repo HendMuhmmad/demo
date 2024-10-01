@@ -29,15 +29,15 @@ public class ProductServiceTest {
     @Test
     public void saveProduct_ValidAdminId() {
 	Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(dummyProduct());
-	int savedProductId = productService.save(dummyProduct(), RoleEnum.ADMIN.getCode());
-	assertEquals(1, savedProductId);
+	Long savedProductId = productService.save(dummyProduct(), RoleEnum.ADMIN.getCode());
+	assertEquals(1, (long)savedProductId);
     }
 
     @Test
     public void saveProduct_ValidSuperAdminId() {
 	Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(dummyProduct());
-	int savedProductId = productService.save(dummyProduct(), RoleEnum.SUPER_ADMIN.getCode());
-	assertEquals(1, savedProductId);
+	Long savedProductId = productService.save(dummyProduct(), RoleEnum.SUPER_ADMIN.getCode());
+	assertEquals(1, (long)savedProductId);
     }
 
     @Test
@@ -59,7 +59,7 @@ public class ProductServiceTest {
     @Test
     public void saveProduct_withProductPriceIsNull() {
 	Product product = Product.builder()
-		.id(1)
+		.id(1L)
 		.productName("Laptop")
 		.color("Silver")
 		.stockQuantity(50)
@@ -74,7 +74,7 @@ public class ProductServiceTest {
     @Test
     public void saveProduct_withProductNameIsNull() {
 	Product product = Product.builder()
-		.id(1)
+		.id(1L)
 		.price(1200.00)
 		.color("Silver")
 		.stockQuantity(50)
@@ -90,104 +90,104 @@ public class ProductServiceTest {
     public void saveProduct_withloginIdIsZero() {
 	Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(dummyProduct());
 	assertThrows(BusinessException.class, () -> {
-	    productService.save(dummyProduct(), 0);
+	    productService.save(dummyProduct(), 0L);
 	});
     }
 
     @Test
     public void deleteProduct_validRoleAndProductId() {
-	Mockito.when(productRepository.findById(Mockito.eq(1))).thenReturn(dummyOptionalProduct());
-	productService.deleteProduct(1, RoleEnum.ADMIN.getCode());
-	Mockito.verify(productRepository).deleteById(1); // Verifying that deleteById was called with the correct ID
+	Mockito.when(productRepository.findById(Mockito.eq(1L))).thenReturn(dummyOptionalProduct());
+	productService.deleteProduct(1L, RoleEnum.ADMIN.getCode());
+	Mockito.verify(productRepository).deleteById(1L); // Verifying that deleteById was called with the correct ID
 
     }
 
     // revise only if Mockito.eq(33) fails
     @Test
     public void deleteProduct_invalidProductId() {
-	Mockito.when(productRepository.findById(Mockito.eq(1))).thenReturn(dummyOptionalProduct());
+	Mockito.when(productRepository.findById(Mockito.eq(1L))).thenReturn(dummyOptionalProduct());
 	assertThrows(BusinessException.class, () -> {
-	    productService.deleteProduct(8, RoleEnum.ADMIN.getCode());
+	    productService.deleteProduct(8L, RoleEnum.ADMIN.getCode());
 	});
 
     }
 
     @Test
     public void deleteProduct_noProducts() {
-	Mockito.when(productRepository.findById(Mockito.eq(1))).thenReturn(Optional.empty());
+	Mockito.when(productRepository.findById(Mockito.eq(1L))).thenReturn(Optional.empty());
 	assertThrows(BusinessException.class, () -> {
-	    productService.deleteProduct(1, RoleEnum.ADMIN.getCode());
+	    productService.deleteProduct(1L, RoleEnum.ADMIN.getCode());
 	});
 
     }
 
     @Test
     public void deleteProduct_ValidSuperAdminId() {
-	Mockito.when(productRepository.findById(Mockito.eq(1))).thenReturn(dummyOptionalProduct());
-	productService.deleteProduct(1, RoleEnum.SUPER_ADMIN.getCode());
-	Mockito.verify(productRepository).deleteById(1); // Verifying that deleteById was called with the correct ID
+	Mockito.when(productRepository.findById(Mockito.eq(1L))).thenReturn(dummyOptionalProduct());
+	productService.deleteProduct(1L, RoleEnum.SUPER_ADMIN.getCode());
+	Mockito.verify(productRepository).deleteById(1L); // Verifying that deleteById was called with the correct ID
 
     }
 
     @Test
     public void deleteProduct_InvalidCustomerId() {
-	Mockito.when(productRepository.findById(Mockito.eq(1))).thenReturn(dummyOptionalProduct());
+	Mockito.when(productRepository.findById(Mockito.eq(1L))).thenReturn(dummyOptionalProduct());
 	assertThrows(BusinessException.class, () -> {
-	    productService.deleteProduct(1, RoleEnum.CUSTOMER.getCode());
+	    productService.deleteProduct(1L, RoleEnum.CUSTOMER.getCode());
 	});
     }
 
     @Test
     public void deleteProduct_InvalidHeadOfDepartmentId() {
-	Mockito.when(productRepository.findById(Mockito.eq(1))).thenReturn(dummyOptionalProduct());
+	Mockito.when(productRepository.findById(Mockito.eq(1L))).thenReturn(dummyOptionalProduct());
 	assertThrows(BusinessException.class, () -> {
-	    productService.deleteProduct(1, RoleEnum.HEAD_OF_DEPARTMENT.getCode());
+	    productService.deleteProduct(1L, RoleEnum.HEAD_OF_DEPARTMENT.getCode());
 	});
     }
 
     @Test
     public void updateProductQuantity_invalidProductId() {
-	Mockito.when(productRepository.findById(Mockito.eq(1))).thenReturn(dummyOptionalProduct());
+	Mockito.when(productRepository.findById(Mockito.eq(1L))).thenReturn(dummyOptionalProduct());
 	assertThrows(BusinessException.class, () -> {
-	    productService.updateProductQuantity(8, 100, RoleEnum.ADMIN.getCode());
+	    productService.updateProductQuantity(8L, 100, RoleEnum.ADMIN.getCode());
 	});
     }
 
     @Test
     public void updateProductQuantity_ValidAdminId() {
-	Mockito.when(productRepository.findById(Mockito.eq(1))).thenReturn(dummyOptionalProduct());
-	productService.updateProductQuantity(1, 100, RoleEnum.ADMIN.getCode());
+	Mockito.when(productRepository.findById(Mockito.eq(1L))).thenReturn(dummyOptionalProduct());
+	productService.updateProductQuantity(1L, 100, RoleEnum.ADMIN.getCode());
 	Mockito.verify(productRepository).save(Mockito.argThat(p -> p.getStockQuantity() == 100)); // Verify that the stock quantity was updated to 100
 
     }
 
     @Test
     public void updateProductQuantity_ValidSuperAdminId() {
-	Mockito.when(productRepository.findById(Mockito.eq(1))).thenReturn(dummyOptionalProduct());
-	productService.updateProductQuantity(1, 100, RoleEnum.SUPER_ADMIN.getCode());
+	Mockito.when(productRepository.findById(Mockito.eq(1L))).thenReturn(dummyOptionalProduct());
+	productService.updateProductQuantity(1L, 100, RoleEnum.SUPER_ADMIN.getCode());
 	Mockito.verify(productRepository).save(Mockito.argThat(p -> p.getStockQuantity() == 100)); // Verify that the stock quantity was updated to 100
     }
 
     @Test
     public void updateProductQuantity_InvalidCustomerId() {
-	Mockito.when(productRepository.findById(Mockito.eq(1))).thenReturn(dummyOptionalProduct());
+	Mockito.when(productRepository.findById(Mockito.eq(1L))).thenReturn(dummyOptionalProduct());
 	assertThrows(BusinessException.class, () -> {
-	    productService.updateProductQuantity(1, 50, RoleEnum.CUSTOMER.getCode());
+	    productService.updateProductQuantity(1L, 50, RoleEnum.CUSTOMER.getCode());
 	});
     }
 
     @Test
     public void updateProductQuantity_InvalidHeadOfDepartmentId() {
-	Mockito.when(productRepository.findById(Mockito.eq(1))).thenReturn(dummyOptionalProduct());
+	Mockito.when(productRepository.findById(Mockito.eq(1L))).thenReturn(dummyOptionalProduct());
 	assertThrows(BusinessException.class, () -> {
-	    productService.updateProductQuantity(1, 50, RoleEnum.HEAD_OF_DEPARTMENT.getCode());
+	    productService.updateProductQuantity(1L, 50, RoleEnum.HEAD_OF_DEPARTMENT.getCode());
 	});
     }
 
     @Test
     public void getAllProducts() {
-	Product product1 = new Product(1, "Product 1", 100.0, "Red", 10, "Description 1", null);
-	Product product2 = new Product(2, "Product 2", 200.0, "Blue", 20, "Description 2", null);
+	Product product1 = new Product(1L, "Product 1", 100.0, "Red", 10, "Description 1", null);
+	Product product2 = new Product(2L, "Product 2", 200.0, "Blue", 20, "Description 2", null);
 
 	List<Product> mockProducts = Arrays.asList(product1, product2);
 
@@ -201,12 +201,12 @@ public class ProductServiceTest {
     }
 
     public Optional<Product> dummyOptionalProduct() {
-	return Optional.of(new Product(1, "laptop", 1200, "silver", 50, "laptop description", null));
+	return Optional.of(new Product(1L, "laptop", 1200, "silver", 50, "laptop description", null));
     }
 
     public Product dummyProduct() {
 	return Product.builder()
-		.id(1)
+		.id(1L)
 		.productName("Laptop")
 		.price(1200.00)
 		.color("Silver")

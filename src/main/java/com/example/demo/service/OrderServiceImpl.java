@@ -13,16 +13,16 @@ import com.example.demo.model.orm.Order;
 import com.example.demo.model.orm.OrderDetails;
 import com.example.demo.model.orm.Product;
 import com.example.demo.model.orm.User;
-import com.example.demo.model.orm.Vw_Order_Details;
+import com.example.demo.model.orm.OrderDetailsData;
 import com.example.demo.repository.OrderRepository;
-import com.example.demo.repository.VWOrderDetailsRepository;
+import com.example.demo.repository.OrderDetailsDataRepository;
 
 @Service
 @Transactional
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
-    private VWOrderDetailsRepository orderDetailsViewRepository;
+    private OrderDetailsDataRepository orderDetailsViewRepository;
 
     @Autowired
     private OrderRepository orderRepository;
@@ -36,12 +36,12 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private UserService userService;
 
-    public List<Vw_Order_Details> getOrderDetailsByOrderNum(String orderNumber) {
+    public List<OrderDetailsData> getOrderDetailsByOrderNum(String orderNumber) {
 	if (orderNumber == null) {
 	    throw new BusinessException("Please include an order number.");
 	}
 
-	List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByOrderNumber(orderNumber);
+	List<OrderDetailsData> orderDetailsList = orderDetailsViewRepository.findByOrderNumber(orderNumber);
 
 	if (orderDetailsList.isEmpty()) {
 	    throw new BusinessException("Order Number not found");
@@ -50,11 +50,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Vw_Order_Details> getOrderDetailsByUserId(Integer userId) throws BusinessException {
+    public List<OrderDetailsData> getOrderDetailsByUserId(Long userId) throws BusinessException {
 	if (userId == null) {
 	    throw new BusinessException("Please include a userId");
 	}
-	List<Vw_Order_Details> orderDetailsList = orderDetailsViewRepository.findByUserId(userId);
+	List<OrderDetailsData> orderDetailsList = orderDetailsViewRepository.findByUserId(userId);
 
 	if (orderDetailsList.isEmpty()) {
 	    throw new BusinessException("No orders found");
@@ -63,7 +63,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order createOrder(int userId, List<OrderDetails> orderDetails) throws BusinessException {
+    public Order createOrder(Long userId, List<OrderDetails> orderDetails) throws BusinessException {
 
 	validateRole(userService.getUserById(userId).get());
 	
@@ -97,7 +97,7 @@ public class OrderServiceImpl implements OrderService {
 		
 	}
 
-	private void validateOrderQuantityAndUpdateProduct(Product returnProduct, OrderDetails orderDetail, int userId) {
+	private void validateOrderQuantityAndUpdateProduct(Product returnProduct, OrderDetails orderDetail, Long userId) {
 	int remainingQuantity = returnProduct.getStockQuantity() - orderDetail.getQuantity();
 	if (remainingQuantity < 0) {
 	    throw new BusinessException("Out of stock");
@@ -106,13 +106,13 @@ public class OrderServiceImpl implements OrderService {
 	productService.updateProductQuantityWithOutAuth(returnProduct.getId(), returnProduct.getStockQuantity());
     }
 
-    private Order createAndSaveOrder(int userId) {
+    private Order createAndSaveOrder(Long userId) {
 	Order order = new Order(userId, new Date(), generateUUID());
 	orderRepository.save(order);
 	return order;
     }
 
-    public void validateOrder(OrderDetails orderDetail, Product product, int userId) {
+    public void validateOrder(OrderDetails orderDetail, Product product, Long userId) {
 	validateOrderDetailes(orderDetail);
 	validateProduct(product);
 	validateOrderQuantityAndUpdateProduct(product, orderDetail, userId);
@@ -164,7 +164,7 @@ public class OrderServiceImpl implements OrderService {
 	return uuidAsString;
     }
 
-    private Product getProductById(Integer productId) {
+    private Product getProductById(Long productId) {
 	if (productId == null) {
 	    throw new BusinessException("product does not exist");
 	}

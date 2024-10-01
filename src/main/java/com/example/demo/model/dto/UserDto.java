@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UserDto {
 
-    private int id;
+    private Long id;
     private String firstName;
     private String lastName;
     private int roleId;
@@ -23,6 +23,6 @@ public class UserDto {
     private String gender;
     private Date registrationDate;
     private Date birthday;
-    private long loginId;
+    private Long loginId;
 
 }

@@ -96,13 +96,13 @@ public class OrderControllerTest {
 	}
 
 	private static void createUsers(UserRepository userRepository) {
-	    testUser = createAndSaveUser(userRepository, "John", "Doe", 4);
-	    testHeadOfDepartment = createAndSaveUser(userRepository, "John", "Doe", 1);
-	    testSuperAdmin = createAndSaveUser(userRepository, "John", "Doe", 2);
-	    testAdmin = createAndSaveUser(userRepository, "John", "Doe", 3);
+	    testUser = createAndSaveUser(userRepository, "John", "Doe", 4L);
+	    testHeadOfDepartment = createAndSaveUser(userRepository, "John", "Doe", 1L);
+	    testSuperAdmin = createAndSaveUser(userRepository, "John", "Doe", 2L);
+	    testAdmin = createAndSaveUser(userRepository, "John", "Doe", 3L);
 	}
 
-	private static User createAndSaveUser(UserRepository userRepository, String firstName, String lastName, int roleId) {
+	private static User createAndSaveUser(UserRepository userRepository, String firstName, String lastName, Long roleId) {
 	    User user = new User(
 	        firstName,              // firstName
 	        lastName,               // lastName
@@ -121,7 +121,7 @@ public class OrderControllerTest {
 	
 	private static void createOrderForTestUser(OrderRepository orderRepository, OrderDetailsRepository orderDetailsRepository) {
 	    // Create a list of product IDs and their corresponding quantities
-	    List<Integer> productIds = Arrays.asList(testProduct1.getId(), testProduct2.getId());
+	    List<Long> productIds = Arrays.asList(testProduct1.getId(), testProduct2.getId());
 	    List<Integer> quantities = Arrays.asList(1, 2);
 
 	    // Create and save the order
@@ -133,7 +133,7 @@ public class OrderControllerTest {
 
 	    // Create and save order details
 	    for (int i = 0; i < productIds.size(); i++) {
-	        orderDetailsRepository.save(new OrderDetails(0,order.getId(), productIds.get(i), quantities.get(i)));
+	        orderDetailsRepository.save(new OrderDetails(0L,order.getId(), productIds.get(i), quantities.get(i)));
 	    }
 	}
 
@@ -167,12 +167,12 @@ public class OrderControllerTest {
 
     @Test
     public void createValidOrderTest() {
-        int userId = testUser.getId();
+    	Long userId = testUser.getId();
         List<OrderDetailsCreationDTO> dtoList = createOrderDetails();
         
         try {
             mockMvc.perform(post("/api/v1/orders/createOrder")
-                    .param("userId", Integer.toString(userId))
+                    .param("userId", Long.toString(userId))
                     .contentType("application/json")
                     .content(objectMapper.writeValueAsString(dtoList)))
                   .andExpect(status().isCreated());
@@ -184,7 +184,7 @@ public class OrderControllerTest {
     }
 
 	private List<OrderDetailsCreationDTO> createOrderDetails() {
-		int[] productIds = {testProduct1.getId(), testProduct2.getId()};
+		Long[] productIds = {testProduct1.getId(), testProduct2.getId()};
         int[] quantity = {2, 3};
         List<OrderDetailsCreationDTO> dtoList = new ArrayList<>();
         dtoList.add(new OrderDetailsCreationDTO(productIds[0], quantity[0]));
@@ -217,15 +217,15 @@ public class OrderControllerTest {
 	}
 	@Test
 	public void createOrderWithInvalidProductIdTest() {
-		int userId = testUser.getId();
-		int[] productIds = {1,2};
+		Long userId = testUser.getId();
+		Long[] productIds = {1L,2L};
 		int[] quantity = {2,3};
 		List<OrderDetailsCreationDTO> dtoList = createInvalidOrderDetail(productIds,quantity);
 		int ordersCount = orderRepository.findAll().size();
 		try {
 			
 			mockMvc.perform(post("/api/v1/orders/createOrder")
-					.param("userId", Integer.toString(userId))
+					.param("userId", Long.toString(userId))
 			        .contentType("application/json")
 			        .content(objectMapper.writeValueAsString(dtoList)))
 			      .andExpect(status().isBadRequest());
@@ -240,7 +240,7 @@ public class OrderControllerTest {
 		
 	}
 
-	private List<OrderDetailsCreationDTO> createInvalidOrderDetail(int[] productIds, int[] quantity) {
+	private List<OrderDetailsCreationDTO> createInvalidOrderDetail(Long[] productIds, int[] quantity) {
 		List<OrderDetailsCreationDTO> dtoList = new ArrayList<>();
 		OrderDetailsCreationDTO order1 = new OrderDetailsCreationDTO(productIds[0],quantity[0]);
 		OrderDetailsCreationDTO order2 = new OrderDetailsCreationDTO(productIds[1],quantity[1]);
@@ -251,15 +251,15 @@ public class OrderControllerTest {
 	
 	@Test
 	public void createOrderWithLargeProductQuantityTest() {
-		int[] productIds = {17,21};
+		Long[] productIds = {17L,21L};
 		int[] quantity = {150,170};
-		int userId = testUser.getId();
+		Long userId = testUser.getId();
 		List<OrderDetailsCreationDTO> dtoList = createInvalidOrderDetail(productIds,quantity);
 		int ordersCount = orderRepository.findAll().size();
 		try {
 			
 			mockMvc.perform(post("/api/v1/orders/createOrder")
-					.param("userId", Integer.toString(userId))
+					.param("userId", Long.toString(userId))
 			        .contentType("application/json")
 			        .content(objectMapper.writeValueAsString(dtoList)))
 			      .andExpect(status().isBadRequest());
@@ -275,15 +275,15 @@ public class OrderControllerTest {
 	
 	@Test
 	public void createOrderWithNegativeOrZeroProductQuantityTest() {
-        int[] productIds = {testProduct1.getId(), testProduct2.getId()};
+		Long[] productIds = {testProduct1.getId(), testProduct2.getId()};
 		int[] quantity = {0,-1};
-		int userId = testUser.getId();
+		Long userId = testUser.getId();
 		List<OrderDetailsCreationDTO> dtoList = createInvalidOrderDetail(productIds,quantity);
 		int ordersCount = orderRepository.findAll().size();
 		try {
 			
 			mockMvc.perform(post("/api/v1/orders/createOrder")
-					.param("userId", Integer.toString(userId))
+					.param("userId", Long.toString(userId))
 			        .contentType("application/json")
 			        .content(objectMapper.writeValueAsString(dtoList)))
 			      .andExpect(status().isBadRequest());
@@ -299,13 +299,13 @@ public class OrderControllerTest {
 	}
 	@Test
 	public void createOrderWithNoOrderDetailsTest() {
-		int userId = testUser.getId();
+		Long userId = testUser.getId();
 		List<OrderDetailsCreationDTO> dtoList = new ArrayList<>();
 		int ordersCount = orderRepository.findAll().size();
 		try {
 			
 			mockMvc.perform(post("/api/v1/orders/createOrder")
-					.param("userId", Integer.toString(userId))
+					.param("userId", Long.toString(userId))
 			        .contentType("application/json")
 			        .content(objectMapper.writeValueAsString(dtoList)))
 			      .andExpect(status().isBadRequest());
@@ -322,13 +322,13 @@ public class OrderControllerTest {
 	
 	@Test
 	public void createOrderWithHeadOfDepartmentTest() {
-		int userId = testHeadOfDepartment.getId();
+		Long userId = testHeadOfDepartment.getId();
         List<OrderDetailsCreationDTO> dtoList = createOrderDetails();
 		int ordersCount = orderRepository.findAll().size();
 		try {
 			
 			mockMvc.perform(post("/api/v1/orders/createOrder")
-					.param("userId", Integer.toString(userId))
+					.param("userId", Long.toString(userId))
 			        .contentType("application/json")
 			        .content(objectMapper.writeValueAsString(dtoList)))
 			      .andExpect(status().isBadRequest());
@@ -345,14 +345,14 @@ public class OrderControllerTest {
 	
 	@Test
 	public void createOrderWithSuperAdminTest() {
-		int userId = testSuperAdmin.getId();
+		Long userId = testSuperAdmin.getId();
         List<OrderDetailsCreationDTO> dtoList = createOrderDetails();
 
 		int ordersCount = orderRepository.findAll().size();
 		try {
 			
 			mockMvc.perform(post("/api/v1/orders/createOrder")
-					.param("userId", Integer.toString(userId))
+					.param("userId", Long.toString(userId))
 			        .contentType("application/json")
 			        .content(objectMapper.writeValueAsString(dtoList)))
 			      .andExpect(status().isBadRequest());
@@ -369,13 +369,13 @@ public class OrderControllerTest {
 	
 	@Test
 	public void createOrderWithAdminTest() {
-		int userId = testAdmin.getId();
+		Long userId = testAdmin.getId();
         List<OrderDetailsCreationDTO> dtoList = createOrderDetails();
 		int ordersCount = orderRepository.findAll().size();
 		try {
 			
 			mockMvc.perform(post("/api/v1/orders/createOrder")
-					.param("userId", Integer.toString(userId))
+					.param("userId", Long.toString(userId))
 			        .contentType("application/json")
 			        .content(objectMapper.writeValueAsString(dtoList)))
 			      .andExpect(status().isBadRequest());
@@ -421,10 +421,10 @@ public class OrderControllerTest {
 	
 	@Test
 	public void getOrderDetailsByValidUserIdTest() {
-		int userId = testUser.getId();
+		Long userId = testUser.getId();
 		try {
 			mockMvc.perform(get("/api/v1/orders/getOrderDetailsByUserId")
-					.param("userId", Integer.toString(userId)))
+					.param("userId", Long.toString(userId)))
 			      .andExpect(status().isOk());
 			
 		} catch (JsonProcessingException e) {

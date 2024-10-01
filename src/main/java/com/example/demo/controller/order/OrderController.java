@@ -18,7 +18,7 @@ import com.example.demo.model.dto.OrderResponseDto;
 import com.example.demo.model.dto.order.OrderDTO;
 import com.example.demo.model.dto.orderDetails.OrderDetailsCreationDTO;
 import com.example.demo.model.orm.Order;
-import com.example.demo.model.orm.Vw_Order_Details;
+import com.example.demo.model.orm.OrderDetailsData;
 import com.example.demo.service.OrderService;
 
 @RestController
@@ -30,19 +30,19 @@ public class OrderController {
 
     @GetMapping("/getOrderDetailsByOrderNum")
     public ResponseEntity<OrderResponseDto> getOrderDetailsByOrderNum(@RequestParam String orderNumber) {
-    	List<Vw_Order_Details> orderDetailsList = orderService.getOrderDetailsByOrderNum(orderNumber);
+    	List<OrderDetailsData> orderDetailsList = orderService.getOrderDetailsByOrderNum(orderNumber);
     	return new ResponseEntity<>(OrderMapper.INSTANCE.mapOrder(orderDetailsList),HttpStatus.OK);
     }
 
     @PostMapping("/createOrder")
-    public ResponseEntity<OrderDTO> createOrder(@RequestParam int userId, @RequestBody List<OrderDetailsCreationDTO> orderDetailsDto) {
+    public ResponseEntity<OrderDTO> createOrder(@RequestParam Long userId, @RequestBody List<OrderDetailsCreationDTO> orderDetailsDto) {
 	Order createdOrder = orderService.createOrder(userId, OrderDetailsMapper.INSTANCE.mapOrderDetailsCreationDtos(orderDetailsDto));
 	return new ResponseEntity<>(OrderMapper.INSTANCE.mapOrder(createdOrder), HttpStatus.CREATED);
     }
 
     @GetMapping("/getOrderDetailsByUserId") 
-    public ResponseEntity<List<OrderResponseDto>> getOrderDetailsByUserId(@RequestParam int userId) {
-    	List<Vw_Order_Details> orderDetailsList = orderService.getOrderDetailsByUserId(userId);
+    public ResponseEntity<List<OrderResponseDto>> getOrderDetailsByUserId(@RequestParam Long userId) {
+    	List<OrderDetailsData> orderDetailsList = orderService.getOrderDetailsByUserId(userId);
 	return new ResponseEntity<>(OrderMapper.INSTANCE.mapOrders(orderDetailsList),HttpStatus.OK);
     }
 

@@ -6,13 +6,13 @@ import lombok.Data;
 
 @Data
 public class ProductUpdateDto {
-	private int id;
+	private Long id;
     private int stockQuantity;
     private double price;
     private String productName;
     private String color;
     private String description;
     private Date creationDate;
-    private int loginId;
+    private Long loginId;
 
 }

@@ -36,7 +36,7 @@ public class UserController {
     }
 
     @GetMapping("getUserById/{id}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable int id) {
+    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
 	Optional<User> user = userService.getUserById(id);
 
 	return user.map(u -> ResponseEntity.ok(UserMapper.INSTANCE.mapUser(u)))
@@ -75,8 +75,8 @@ public class UserController {
 
     @DeleteMapping("/deleteUser")
     public ResponseEntity<Map<String, String>> deleteUser(
-	    @RequestParam int loginId,
-	    @RequestParam int customerId) {
+	    @RequestParam Long loginId,
+	    @RequestParam Long customerId) {
 	Map<String, String> response = new HashMap<>();
 	try {
 	    userService.deleteUser(loginId, customerId);

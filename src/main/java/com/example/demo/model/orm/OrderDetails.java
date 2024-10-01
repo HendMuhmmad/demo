@@ -19,13 +19,13 @@ import lombok.NoArgsConstructor;
 public class OrderDetails {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(name = "ORDER_ID")
-    private Integer orderId;
+    private Long orderId;
 
     @Column(name = "PRODUCT_ID")
-    private Integer product_id;
+    private Long product_id;
 
     @Column(name = "Quantity",
 	    nullable = false)

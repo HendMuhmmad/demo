@@ -18,25 +18,25 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "VW_ORDER_DETAILS")
-public class Vw_Order_Details {
+public class OrderDetailsData {
 
     @Id
-    private int id;
+    private Long id;
 
     @Column(name = "Order_ID")
-    private int orderId;
+    private Long orderId;
 
     @Column(name = "PRODUCT_QUANTITY")
-    private int productQuantity;
+    private Integer productQuantity;
 
     @Column(name = "TOTAL_PRICE")
     private double totalPrice;
 
     @Column(name = "PRODUCT_ID")
-    private int productId;
+    private Long productId;
 
     @Column(name = "USER_ID")
-    private int userId;
+    private Long userId;
 
     @Column(name = "TRANSACTION_DATE")
     @Temporal(TemporalType.DATE)

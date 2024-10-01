@@ -25,15 +25,15 @@ public class OrderDetailsServiceTest {
     @Test
     void createOrderDetails() {
 	OrderDetails orderDetails = new OrderDetails();
-	orderDetails.setOrderId(1);
-	orderDetails.setProduct_id(101);
+	orderDetails.setOrderId(1L);
+	orderDetails.setProduct_id(101L);
 	orderDetails.setQuantity(5);
 	Mockito.when(orderDetailsRepository.save(any(OrderDetails.class))).thenReturn(orderDetails);
 	OrderDetails createdOrderDetails = orderDetailsService.createOrderDetail(orderDetails);
 	assertNotNull(createdOrderDetails);
-	assertEquals(1, (int) createdOrderDetails.getOrderId());
-	assertEquals(101, (int) createdOrderDetails.getProduct_id());
-	assertEquals(5, (int) createdOrderDetails.getQuantity());
+	assertEquals(1L, (long) createdOrderDetails.getOrderId());
+	assertEquals(101L, (long) createdOrderDetails.getProduct_id());
+	assertEquals(5L, (long) createdOrderDetails.getQuantity());
 
     }
 

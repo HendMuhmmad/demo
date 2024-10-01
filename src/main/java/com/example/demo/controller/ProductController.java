@@ -29,7 +29,7 @@ public class ProductController {
 
     @PostMapping("/createProduct")
     public ResponseEntity<String> createProduct(@RequestBody ProductDto productdto) {
-	int productId= productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId());
+    	Long productId= productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId());
      return ResponseEntity.ok("Product created successfully with ID: " + productId);
     }
 
@@ -48,7 +48,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/deleteProduct/{productId}")
-    public ResponseEntity<String> deleteProduct(@PathVariable int productId, @RequestParam int loginId) {
+    public ResponseEntity<String> deleteProduct(@PathVariable Long productId, @RequestParam Long loginId) {
 	productService.deleteProduct(productId, loginId);
     return ResponseEntity.ok("Product deleted successfully");
 

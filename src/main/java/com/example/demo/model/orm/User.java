@@ -29,7 +29,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @Column(name = "First_Name",
 	    nullable = false)
@@ -41,7 +41,7 @@ public class User {
 
     @Column(name = "ROLE_ID",
 	    nullable = false)
-    private int roleId;
+    private Long roleId;
 
     @Column(name = "Password",
 	    nullable = false)
@@ -73,9 +73,9 @@ public class User {
     private Date birthday;
     
     @Transient
-    private int loginId;
+    private Long loginId;
 
-	public User(String firstName, String lastName, int roleId, String password, String email, String address,
+	public User(String firstName, String lastName, Long roleId, String password, String email, String address,
 			String phone, String nationality, String gender, Date registrationDate, Date birthday) {
 		this.firstName = firstName;
 		this.lastName = lastName;

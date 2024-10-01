@@ -4,7 +4,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;
 import com.example.demo.model.dto.CustomerDto;
-import com.example.demo.model.orm.Vw_Order_Details;
+import com.example.demo.model.orm.OrderDetailsData;
 @Mapper
 @Component
 public interface CustomerMapper {
@@ -13,5 +13,5 @@ public interface CustomerMapper {
 	@Mapping(source="customerName", target="name")
 	@Mapping(source="customerAddress", target="address")
 	@Mapping(source="customerPhone", target="phone")
-	public CustomerDto toDto(Vw_Order_Details orderDetails);
+	public CustomerDto toDto(OrderDetailsData orderDetails);
 }

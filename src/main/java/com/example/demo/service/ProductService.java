@@ -6,16 +6,16 @@ import com.example.demo.exception.BusinessException;
 import com.example.demo.model.orm.Product;
 
 public interface ProductService {
-    public Product findbyId(int theId);
+    public Product findbyId(Long theId);
 
-    public int save(Product theProduct, int loginId);
+    public Long save(Product theProduct, Long loginId);
 
-    public void deleteProduct(int productId, int loginId);
+    public void deleteProduct(Long productId, Long loginId);
 
-    public void updateProductQuantity(int productId, int newQuantity, int loginId);
+    public void updateProductQuantity(Long productId, int newQuantity, Long loginId);
 
     public List<Product> getAllProduct();
 
-    public void updateProductQuantityWithOutAuth(int productId, int newQuantity) throws BusinessException;
+    public void updateProductQuantityWithOutAuth(Long productId, int newQuantity) throws BusinessException;
 
 }

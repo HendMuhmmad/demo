@@ -29,10 +29,10 @@ public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @Column(name="User_ID")
-    private int userId;
+    private Long userId;
 
     @Column(name = "Transaction_Date", nullable = false)
     @Temporal(TemporalType.DATE)
@@ -44,13 +44,13 @@ public class Order {
     @Transient
     private double totalPrice;
 
-	public Order(int userId, Date transactionDate, String orderNumber) {
+	public Order(Long userId, Date transactionDate, String orderNumber) {
 		this.userId = userId;
 		this.transactionDate = transactionDate;
 		this.orderNumber = orderNumber;
 	}
 
-	public Order(int id, int userId, Date transactionDate) {
+	public Order(Long id, Long userId, Date transactionDate) {
 		this.id = id;
 		this.userId = userId;
 		this.transactionDate = transactionDate;

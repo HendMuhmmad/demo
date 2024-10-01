@@ -16,13 +16,13 @@ public class ProductServiceImpl implements ProductService {
     public ProductRepository productRepository;
 
     @Override
-    public Product findbyId(int productId) {
+    public Product findbyId(Long productId) {
 	return productRepository.findById(productId)
 		.orElseThrow(() -> new BusinessException("Cannot find product in DB"));
 
     }
 
-    public int save(Product theProduct, int loginId) throws BusinessException {
+    public Long save(Product theProduct, Long loginId) throws BusinessException {
 	if (theProduct.getPrice() == 0 || theProduct.getProductName() == null) {
 	    throw new BusinessException("Product price and name shoud not be null");
 	}
@@ -36,7 +36,7 @@ public class ProductServiceImpl implements ProductService {
 	}
     }
 
-    public void updateProductQuantity(int productId, int newQuantity, int loginId) throws BusinessException {
+    public void updateProductQuantity(Long productId, int newQuantity, Long loginId) throws BusinessException {
 	if (loginId == RoleEnum.SUPER_ADMIN.getCode() || loginId == RoleEnum.ADMIN.getCode()) {
 	    Product product = productRepository.findById(productId).orElse(null);
 	    if (product != null) {
@@ -51,7 +51,7 @@ public class ProductServiceImpl implements ProductService {
 	}
     }
 
-    public void updateProductQuantityWithOutAuth(int productId, int newQuantity) throws BusinessException {
+    public void updateProductQuantityWithOutAuth(Long productId, int newQuantity) throws BusinessException {
 	Product product = productRepository.findById(productId).orElse(null);
 	if (product != null) {
 	    // Update product stock quantity
@@ -63,7 +63,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void deleteProduct(int productId, int loginId) throws BusinessException {
+    public void deleteProduct(Long productId, Long loginId) throws BusinessException {
 	if (!productRepository.findById(productId).isPresent())
 	    throw new BusinessException("Product not found.");
 

@@ -12,8 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -43,7 +42,7 @@ public class UserControllerTest {
         user1.setFirstName("John");
         user1.setLastName("Doe");
         user1.setEmail("john.doe@example.com");
-        user1.setRoleId(2);
+        user1.setRoleId(2L);
         user1.setPassword("securepassword");
         userRepository.save(user1);
         mockMvc.perform(get("/api/users"))
@@ -57,7 +56,7 @@ public class UserControllerTest {
         user.setFirstName("John");
         user.setLastName("Doe");
         user.setEmail("john.doe@example.com");
-        user.setRoleId(2);
+        user.setRoleId(2L);
         user.setPassword("securepassword");
         userRepository.save(user);
 
@@ -81,7 +80,7 @@ public class UserControllerTest {
         user.setFirstName("John");
         user.setLastName("Doe");
         user.setEmail("john.doe@example.com");
-        user.setRoleId(4); 
+        user.setRoleId(4L); 
         user.setPassword("securepassword");
         userRepository.save(user);
 
@@ -90,8 +89,8 @@ public class UserControllerTest {
     	updatedUser.setId(user.getId());
     	updatedUser.setFirstName("Jane");
     	updatedUser.setLastName("Smith");
-    	updatedUser.setLoginId(2);
-    	updatedUser.setRoleId(4);
+    	updatedUser.setLoginId(2L);
+    	updatedUser.setRoleId(4L);
 
         System.out.print("Login Id is " + updatedUser.getLoginId());
         System.out.print(objectMapper.writeValueAsString(updatedUser));
@@ -110,7 +109,7 @@ public class UserControllerTest {
         user.setFirstName("John");
         user.setLastName("Doe");
         user.setEmail("john.doe@example.com");
-        user.setRoleId(4); 
+        user.setRoleId(4L); 
         user.setPassword("securepassword");
         userRepository.save(user);
  
@@ -118,8 +117,8 @@ public class UserControllerTest {
     	updatedUser.setId(user.getId());
     	updatedUser.setFirstName("Jane");
     	updatedUser.setLastName("Smith");
-    	updatedUser.setLoginId(4);
-    	updatedUser.setRoleId(4);
+    	updatedUser.setLoginId(4L);
+    	updatedUser.setRoleId(4L);
 
         System.out.print("Login Id is " + updatedUser.getLoginId());
         System.out.print(objectMapper.writeValueAsString(updatedUser));
@@ -160,7 +159,7 @@ public class UserControllerTest {
         user.setFirstName("John");
         user.setLastName("Doe");
         user.setEmail("john.doe@example.com");
-        user.setRoleId(2);
+        user.setRoleId(2L);
         user.setPassword("securepassword");
         userRepository.save(user);
 
@@ -178,7 +177,7 @@ public class UserControllerTest {
         user.setFirstName("John");
         user.setLastName("Doe");
         user.setEmail("john.doe@example.com");
-        user.setRoleId(1);
+        user.setRoleId(1L);
         user.setPassword("securepassword");
         userRepository.save(user);
 

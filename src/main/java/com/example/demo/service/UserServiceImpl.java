@@ -25,7 +25,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> getUserById(int id) {
+    public Optional<User> getUserById(Long id) {
 	return Optional.of(userRepository.findById(id)
 		.orElseThrow(() -> new BusinessException("Cannot find user in DB")));
 
@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
 	}
     }
 
-    public boolean isOperationAllowed(int creatorRoleId, int roleId) {
+    public boolean isOperationAllowed(Long creatorRoleId, Long roleId) {
 	if (creatorRoleId == RoleEnum.HEAD_OF_DEPARTMENT.getCode() && roleId == RoleEnum.SUPER_ADMIN.getCode())
 	    return true;
 	else if (creatorRoleId == RoleEnum.SUPER_ADMIN.getCode() && roleId == RoleEnum.ADMIN.getCode())
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
 	}
     }
 
-    public void deleteUser(int loginId, int customerId) {
+    public void deleteUser(Long loginId, Long customerId) {
 	User customer = userRepository.findById(customerId)
 		.orElseThrow(() -> new BusinessException("User not found"));
 

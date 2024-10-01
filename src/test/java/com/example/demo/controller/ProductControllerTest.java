@@ -29,7 +29,7 @@ public class ProductControllerTest {
 
     @Test
     public void saveProduct() throws Exception {
-	ProductDto product = new ProductDto(20, 100.0, "Product 1", "Red", "Description 1", 20, 0, null, RoleEnum.ADMIN.getCode());
+	ProductDto product = new ProductDto(20, 100.0, "Product 1", "Red", "Description 1", 20,0L, null, RoleEnum.ADMIN.getCode());
 	mockMvc.perform(post("/api/product/createProduct")
 		.contentType("application/json")
 		.content(objectMapper.writeValueAsString(product)))
@@ -38,7 +38,7 @@ public class ProductControllerTest {
 
     @Test
     public void saveProduct_withoutProductName() throws Exception {
-	ProductDto product = new ProductDto(20, 100.0, null, "Red", "Description 1", 20, 0, null, RoleEnum.ADMIN.getCode());
+	ProductDto product = new ProductDto(20, 100.0, null, "Red", "Description 1", 20, 0L, null, RoleEnum.ADMIN.getCode());
 	mockMvc.perform(post("/api/product/createProduct")
 		.contentType("application/json")
 		.content(objectMapper.writeValueAsString(product)))
@@ -61,7 +61,7 @@ public class ProductControllerTest {
 
     @Test
     public void saveProduct_invalidLoginId() throws Exception {
-	ProductDto product = new ProductDto(20, 100.0, null, "Red", "Description 1", 20, 0, null, RoleEnum.HEAD_OF_DEPARTMENT.getCode());
+	ProductDto product = new ProductDto(20, 100.0, null, "Red", "Description 1", 20, 0L, null, RoleEnum.HEAD_OF_DEPARTMENT.getCode());
 	mockMvc.perform(post("/api/product/createProduct")
 		.contentType("application/json")
 		.content(objectMapper.writeValueAsString(product)))
@@ -70,7 +70,7 @@ public class ProductControllerTest {
 
     @Test
     public void updateProductStockQuantity() throws Exception {
-	ProductUpdateStockQuantityDTO product = new ProductUpdateStockQuantityDTO(42, 20, RoleEnum.ADMIN.getCode());
+	ProductUpdateStockQuantityDTO product = new ProductUpdateStockQuantityDTO(42L, 20, RoleEnum.ADMIN.getCode());
 	mockMvc.perform(put("/api/product/updateProductStockQuantity")
 		.contentType("application/json")
 		.content(objectMapper.writeValueAsString(product)))
@@ -79,7 +79,7 @@ public class ProductControllerTest {
 
     @Test
     public void updateProductStockQuantity_invalidProductId() throws Exception {
-	ProductUpdateStockQuantityDTO product = new ProductUpdateStockQuantityDTO(420, 20, RoleEnum.ADMIN.getCode());
+	ProductUpdateStockQuantityDTO product = new ProductUpdateStockQuantityDTO(420L, 20, RoleEnum.ADMIN.getCode());
 	mockMvc.perform(put("/api/product/updateProductStockQuantity")
 		.contentType("application/json")
 		.content(objectMapper.writeValueAsString(product)))
@@ -88,7 +88,7 @@ public class ProductControllerTest {
 
     @Test
     public void updateProductStockQuantity_invalidLoginId() throws Exception {
-	ProductUpdateStockQuantityDTO product = new ProductUpdateStockQuantityDTO(42, 20, RoleEnum.HEAD_OF_DEPARTMENT.getCode());
+	ProductUpdateStockQuantityDTO product = new ProductUpdateStockQuantityDTO(42L, 20, RoleEnum.HEAD_OF_DEPARTMENT.getCode());
 	mockMvc.perform(put("/api/product/updateProductStockQuantity")
 		.contentType("application/json")
 		.content(objectMapper.writeValueAsString(product)))

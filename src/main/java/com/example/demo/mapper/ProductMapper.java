@@ -11,7 +11,7 @@ import com.example.demo.model.dto.ProductDto;
 import com.example.demo.model.dto.ProductUpdateDto;
 import com.example.demo.model.dto.ProductUpdateStockQuantityDTO;
 import com.example.demo.model.orm.Product;
-import com.example.demo.model.orm.Vw_Order_Details;
+import com.example.demo.model.orm.OrderDetailsData;
 
 @Mapper
 public interface ProductMapper {
@@ -34,9 +34,9 @@ public interface ProductMapper {
 	@Mapping(source="productDescription", target="description")
 	@Mapping(source="totalPrice", target="price")
 	@Mapping(target = "loginId", ignore = true)
-    public ProductDto mapView(Vw_Order_Details orderDetails); 
+    public ProductDto mapView(OrderDetailsData orderDetails); 
 	
-	default List<ProductDto> mapViews(List<Vw_Order_Details> orderDetails)
+	default List<ProductDto> mapViews(List<OrderDetailsData> orderDetails)
 	{
 		return orderDetails.stream()
 							.map(this::mapView)

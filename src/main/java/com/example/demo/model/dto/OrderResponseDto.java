@@ -8,8 +8,8 @@ import lombok.Data;
 @Data
 public class OrderResponseDto {
     
-    private int orderId;
-    private int userId;
+    private Long orderId;
+    private Long userId;
     private double totalPrice;
     private Date transactionDate;
     private String orderNumber;
