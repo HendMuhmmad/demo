@@ -12,7 +12,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -29,27 +28,23 @@ public class UserControllerTest {
 
     @BeforeEach
     public void setup() {
-//    	System.out.print("____________________________________________________________________________________________________________________________________________________________________________________");
-//      userRepository.deleteAll();
+        // Removed userRepository.deleteAll() to preserve test isolation
     }
-    
-    
+
     @Test
     public void testGetAllUsersSuccess() throws Exception {
-    	
         User user1 = new User();
- 
         user1.setFirstName("John");
         user1.setLastName("Doe");
         user1.setEmail("john.doe@example.com");
         user1.setRoleId(2L);
         user1.setPassword("securepassword");
         userRepository.save(user1);
+
         mockMvc.perform(get("/api/users"))
                 .andExpect(status().isOk());
-         
     }
-    
+
     @Test
     public void testGetUserByIdSuccess() throws Exception {
         User user = new User();
@@ -65,72 +60,70 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.firstName").value("John"))
                 .andExpect(jsonPath("$.lastName").value("Doe"));
     }
+
     @Test
     public void testGetUserByIdNotFound() throws Exception {
         mockMvc.perform(get("/api/users/getUserById/{id}", 999))
                 .andExpect(status().isBadRequest());
     }
-    
-    
+
     @Test
     public void testUpdateUserSuccess() throws Exception {
-    	ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
 
         User user = new User();
         user.setFirstName("John");
         user.setLastName("Doe");
         user.setEmail("john.doe@example.com");
-        user.setRoleId(4L); 
+        user.setRoleId(4L);
         user.setPassword("securepassword");
         userRepository.save(user);
 
-    
         User updatedUser = new User();
-    	updatedUser.setId(user.getId());
-    	updatedUser.setFirstName("Jane");
-    	updatedUser.setLastName("Smith");
-    	updatedUser.setLoginId(2L);
-    	updatedUser.setRoleId(4L);
+        updatedUser.setId(user.getId());
+        updatedUser.setFirstName("Jane");
+        updatedUser.setLastName("Smith");
+        updatedUser.setLoginId(2L);
+        updatedUser.setRoleId(4L);
 
-        System.out.print("Login Id is " + updatedUser.getLoginId());
-        System.out.print(objectMapper.writeValueAsString(updatedUser));
         mockMvc.perform(post("/api/users/updateUser", user.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updatedUser)))  
+                .content(objectMapper.writeValueAsString(updatedUser)))
                 .andExpect(status().isOk());
-        	//I Only Check Status Code is that correct?
     }
-        
+
     @Test
     public void testUpdateUnAuthorized() throws Exception {
-    	ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
 
         User user = new User();
         user.setFirstName("John");
         user.setLastName("Doe");
         user.setEmail("john.doe@example.com");
-        user.setRoleId(4L); 
+        user.setRoleId(4L);
         user.setPassword("securepassword");
         userRepository.save(user);
- 
-        User updatedUser = new User();
-    	updatedUser.setId(user.getId());
-    	updatedUser.setFirstName("Jane");
-    	updatedUser.setLastName("Smith");
-    	updatedUser.setLoginId(4L);
-    	updatedUser.setRoleId(4L);
 
-        System.out.print("Login Id is " + updatedUser.getLoginId());
-        System.out.print(objectMapper.writeValueAsString(updatedUser));
+        User customerUser = new User();
+        customerUser.setFirstName("Customer");
+        customerUser.setLastName("User");
+        customerUser.setEmail("customer.user@example.com");
+        customerUser.setRoleId(4L);
+        customerUser.setPassword("anothersecurepassword");
+        userRepository.save(customerUser);
+
+        User updatedUser = new User();
+        updatedUser.setId(user.getId());
+        updatedUser.setFirstName("Jane");
+        updatedUser.setLastName("Smith");
+        updatedUser.setLoginId(customerUser.getId());
+        updatedUser.setRoleId(4L);
+
         mockMvc.perform(post("/api/users/updateUser", user.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updatedUser)))  
+                .content(objectMapper.writeValueAsString(updatedUser)))
                 .andExpect(status().isNotFound());
-
-        	//I Only Check Status Code is that correct?
     }
-    
-
 
 
     @Test
@@ -197,10 +190,4 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.status").value("Error"))
                 .andExpect(jsonPath("$.message").value("User not found"));
     }
-    
-    
-   
-
-
-
 }
