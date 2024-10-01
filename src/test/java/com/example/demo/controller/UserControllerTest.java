@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.model.orm.User;
 import com.example.demo.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -26,35 +26,33 @@ public class UserControllerTest {
     @Autowired
     private UserRepository userRepository;
 
+    private ObjectMapper objectMapper;
+
     @BeforeEach
     public void setup() {
         userRepository.deleteAll();
+        objectMapper = new ObjectMapper();
+    }
+
+    private User createUser(String firstName, String lastName, String email, Long roleId, String password) {
+        User user = new User();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setRoleId(roleId);
+        user.setPassword(password);
+        return userRepository.save(user);
     }
 
     @Test
     public void testGetAllUsersSuccess() throws Exception {
-        User user1 = new User();
-        user1.setFirstName("John");
-        user1.setLastName("Doe");
-        user1.setEmail("john.doe@example.com");
-        user1.setRoleId(2L);
-        user1.setPassword("securepassword");
-        userRepository.save(user1);
-
-        mockMvc.perform(get("/api/users"))
-                .andExpect(status().isOk());
+        createUser("John", "Doe", "john.doe@example.com", 2L, "securepassword");
+        mockMvc.perform(get("/api/users")).andExpect(status().isOk());
     }
 
     @Test
     public void testGetUserByIdSuccess() throws Exception {
-        User user = new User();
-        user.setFirstName("John");
-        user.setLastName("Doe");
-        user.setEmail("john.doe@example.com");
-        user.setRoleId(2L);
-        user.setPassword("securepassword");
-        userRepository.save(user);
-
+        User user = createUser("John", "Doe", "john.doe@example.com", 2L, "securepassword");
         mockMvc.perform(get("/api/users/getUserById/{id}", user.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.firstName").value("John"))
@@ -69,21 +67,14 @@ public class UserControllerTest {
 
     @Test
     public void testUpdateUserSuccess() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        User user = new User();
-        user.setFirstName("John");
-        user.setLastName("Doe");
-        user.setEmail("john.doe@example.com");
-        user.setRoleId(4L);
-        user.setPassword("securepassword");
-        userRepository.save(user);
+        User admin = createUser("Admin", "Doe", "admin.doe@example.com", 2L, "securepassword");
+        User user = createUser("John", "Doe", "john.doe@example.com", 4L, "securepassword");
 
         User updatedUser = new User();
         updatedUser.setId(user.getId());
         updatedUser.setFirstName("Jane");
         updatedUser.setLastName("Smith");
-        updatedUser.setLoginId(2L);
+        updatedUser.setLoginId(admin.getId());
         updatedUser.setRoleId(4L);
 
         mockMvc.perform(post("/api/users/updateUser", user.getId())
@@ -93,24 +84,9 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testUpdateUnAuthorized() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        User user = new User();
-        user.setFirstName("John");
-        user.setLastName("Doe");
-        user.setEmail("john.doe@example.com");
-        user.setRoleId(4L);
-        user.setPassword("securepassword");
-        userRepository.save(user);
-
-        User customerUser = new User();
-        customerUser.setFirstName("Customer");
-        customerUser.setLastName("User");
-        customerUser.setEmail("customer.user@example.com");
-        customerUser.setRoleId(4L);
-        customerUser.setPassword("anothersecurepassword");
-        userRepository.save(customerUser);
+    public void testUpdateUnauthorized() throws Exception {
+        User customerUser = createUser("Customer", "User", "customer.user@example.com", 4L, "anothersecurepassword");
+        User user = createUser("John", "Doe", "john.doe@example.com", 4L, "securepassword");
 
         User updatedUser = new User();
         updatedUser.setId(user.getId());
@@ -125,12 +101,14 @@ public class UserControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-
     @Test
     public void testCreateUserSuccess() throws Exception {
+        User headOfDepartment = createUser("John", "Doe", "john.doe@example.com", 1L, "securepassword");
+        
         mockMvc.perform(post("/api/users/createUser")
                 .contentType("application/json")
-                .content("{\"firstName\":\"John\",\"lastName\":\"Doe\",\"email\":\"john.doe@example.com\",\"loginId\":1,\"roleId\":2,\"password\":\"securepassword\"}"))
+                .content("{\"firstName\":\"John\",\"lastName\":\"Doe\",\"email\":\"john.doe@example.com\",\"loginId\":"
+                        + headOfDepartment.getId() + ",\"roleId\":2,\"password\":\"securepassword\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("Success"))
                 .andExpect(jsonPath("$.message").value("Created Successfully"));
@@ -138,9 +116,12 @@ public class UserControllerTest {
 
     @Test
     public void testCreateUserUnauthorized() throws Exception {
+        User user = createUser("John", "Doe", "john.doe@example.com", 4L, "securepassword");
+
         mockMvc.perform(post("/api/users/createUser")
                 .contentType("application/json")
-                .content("{\"firstName\":\"John\",\"lastName\":\"Doe\",\"email\":\"john.doe@example.com\",\"loginId\":2,\"roleId\":1,\"password\":\"securepassword\"}"))
+                .content("{\"firstName\":\"John\",\"lastName\":\"Doe\",\"email\":\"john.doe@example.com\",\"loginId\":"
+                        + user.getId() + ",\"roleId\":1,\"password\":\"securepassword\"}"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value("Error"))
                 .andExpect(jsonPath("$.message").value("Cannot create this user"));
@@ -148,16 +129,11 @@ public class UserControllerTest {
 
     @Test
     public void testDeleteUserSuccess() throws Exception {
-        User user = new User();
-        user.setFirstName("John");
-        user.setLastName("Doe");
-        user.setEmail("john.doe@example.com");
-        user.setRoleId(2L);
-        user.setPassword("securepassword");
-        userRepository.save(user);
+        User admin = createUser("Admin", "Doe", "admin.doe@example.com", 2L, "securepassword");
+        User user = createUser("John", "Doe", "john.doe@example.com", 4L, "securepassword");
 
         mockMvc.perform(delete("/api/users/deleteUser")
-                .param("loginId", "1")
+                .param("loginId", String.valueOf(admin.getId()))
                 .param("customerId", String.valueOf(user.getId())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("Success"))
@@ -166,16 +142,11 @@ public class UserControllerTest {
 
     @Test
     public void testDeleteUserUnauthorized() throws Exception {
-        User user = new User();
-        user.setFirstName("John");
-        user.setLastName("Doe");
-        user.setEmail("john.doe@example.com");
-        user.setRoleId(1L);
-        user.setPassword("securepassword");
-        userRepository.save(user);
+        User admin = createUser("Admin", "Doe", "admin.doe@example.com", 2L, "securepassword");
+        User user = createUser("John", "Doe", "john.doe@example.com", 1L, "securepassword");
 
         mockMvc.perform(delete("/api/users/deleteUser")
-                .param("loginId", "2")
+                .param("loginId", String.valueOf(admin.getId()))
                 .param("customerId", String.valueOf(user.getId())))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value("Error"))

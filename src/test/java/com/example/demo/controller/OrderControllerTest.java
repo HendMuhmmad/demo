@@ -79,7 +79,7 @@ public class OrderControllerTest {
 
     }
 	
-    @AfterEach
+    @AfterAll
     public void tearDown() {
     	orderDetailsRepository.deleteAllInBatch();
         orderRepository.deleteAllInBatch();
@@ -234,7 +234,7 @@ public class OrderControllerTest {
 	@Test
 	public void createOrderWithInvalidProductIdTest() {
 		Long userId = testUser.getId();
-		Long[] productIds = {1L,2L};
+		Long[] productIds = {-1L,-2L};
 		int[] quantity = {2,3};
 		List<OrderDetailsCreationDTO> dtoList = createInvalidOrderDetail(productIds,quantity);
 		int ordersCount = orderRepository.findAll().size();

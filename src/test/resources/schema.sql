@@ -1,11 +1,9 @@
-
-
-CREATE TABLE users (
+CREATE TABLE user (
     id INT AUTO_INCREMENT PRIMARY KEY,
     First_Name VARCHAR(255) NOT NULL,
     Last_Name VARCHAR(255) NOT NULL,
     ROLE_ID INT NOT NULL,
-    Email VARCHAR(255) UNIQUE NOT NULL,
+    Email VARCHAR(255) NOT NULL,
     Password VARCHAR(255) NOT NULL,
     Address VARCHAR(255),
     Phone VARCHAR(50),
@@ -35,7 +33,7 @@ CREATE TABLE orders (
     User_ID INT NOT NULL,
     Order_Number VARCHAR(255) NOT NULL,
     Transaction_Date DATETIME NOT NULL,
-    FOREIGN KEY (User_ID) REFERENCES users(id)
+    FOREIGN KEY (User_ID) REFERENCES user(id)
 );
 
 -- Create Order Details Table
@@ -70,6 +68,6 @@ FROM
 JOIN 
     order_details od ON o.id = od.ORDER_ID
 JOIN 
-    users u ON o.User_ID = u.id
+    user u ON o.User_ID = u.id
 JOIN 
     product p ON od.PRODUCT_ID = p.id;
