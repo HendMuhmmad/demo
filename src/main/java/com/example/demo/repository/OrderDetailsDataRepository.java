@@ -12,7 +12,7 @@ import com.example.demo.model.orm.OrderDetailsData;
 @Repository
 public interface OrderDetailsDataRepository extends JpaRepository<OrderDetailsData, Long> {
 
-    @Query("SELECT v FROM Vw_Order_Details v WHERE v.orderNumber = :orderNumber")
+    @Query("SELECT v FROM OrderDetailsData v WHERE v.orderNumber = :orderNumber")
     List<OrderDetailsData> findByOrderNumber(@Param("orderNumber") String orderNumber);
 
     List<OrderDetailsData> findByUserId(Long userId);
