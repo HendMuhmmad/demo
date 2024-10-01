@@ -28,7 +28,7 @@ public class UserControllerTest {
 
     @BeforeEach
     public void setup() {
-        // Removed userRepository.deleteAll() to preserve test isolation
+        userRepository.deleteAll();
     }
 
     @Test

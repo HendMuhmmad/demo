@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +48,12 @@ public class OrderControllerTest {
 	
 	@Autowired
 	private OrderRepository orderRepository;
+	@Autowired
+	private OrderDetailsRepository orderDetailsRepository;
+	@Autowired
+	private ProductRepository productRepository;
+	@Autowired
+	private UserRepository userRepository;
 	
 	private static User testUser;
 	private static User testAdmin;
@@ -69,6 +77,14 @@ public class OrderControllerTest {
         
         createOrderForTestUser(orderRepository, orderDetailsRepository);
 
+    }
+	
+    @AfterEach
+    public void tearDown() {
+    	orderDetailsRepository.deleteAllInBatch();
+        orderRepository.deleteAllInBatch();
+        userRepository.deleteAllInBatch();
+        productRepository.deleteAllInBatch();
     }
 
 	private static void createProducts(ProductRepository productRepository) {

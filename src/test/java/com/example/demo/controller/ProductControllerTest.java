@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Date;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +66,12 @@ public class ProductControllerTest {
 		product3 = productRepository
 				.save(new Product(null, "Product 3", 200.0, "Green", 40, "Description 3", new Date()));
 	}
+	
+    @AfterEach
+    public void tearDown() {
+        userRepository.deleteAllInBatch();
+        productRepository.deleteAllInBatch();
+    }
 
 	@Test
 	public void saveProduct() throws Exception {
