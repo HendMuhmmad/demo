@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import com.example.demo.enums.workflow.WFStatusEnum;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.dto.OrderResponseDto;
 import com.example.demo.model.dto.ProductDto;
@@ -386,8 +387,8 @@ public class OrderServiceTest {
 
 	private void mockProduct(Long[] productIds) {
 		// Mock products
-		Product p1 = new Product(productIds[0], "Blouse", 29.99, "Red", 50, "Premium material", null, new Date());
-		Product p2 = new Product(productIds[1], "Dress", 59.99, "Blue", 75, "Premium material", null, new Date());
+		Product p1 = new Product(productIds[0], "Blouse", 29.99, "Red", 50, "Premium material",WFStatusEnum.APPROVED.getCode(), new Date());
+		Product p2 = new Product(productIds[1], "Dress", 59.99, "Blue", 75, "Premium material",WFStatusEnum.APPROVED.getCode(), new Date());
 
 		Mockito.when(productService.findbyId(p1.getId())).thenReturn(p1);
 		Mockito.when(productService.findbyId(p2.getId())).thenReturn(p2);

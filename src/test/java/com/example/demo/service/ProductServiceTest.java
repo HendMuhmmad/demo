@@ -30,24 +30,6 @@ public class ProductServiceTest {
     public UserService userService;
 
     @Test
-    public void saveProduct_ValidAdminId() {
-        User adminUser = createUserWithRoleId(RoleEnum.ADMIN.getCode());
-        Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(dummyProduct());
-        Mockito.when(userService.getUserById(Mockito.any(Long.class))).thenReturn(Optional.of(adminUser));
-        Long savedProductId = productService.save(dummyProduct(), adminUser.getId());
-        assertEquals(1, (long) savedProductId);
-    }
-
-    @Test
-    public void saveProduct_ValidSuperAdminId() {
-        User superAdminUser = createUserWithRoleId(RoleEnum.SUPER_ADMIN.getCode());
-        Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(dummyProduct());
-        Mockito.when(userService.getUserById(Mockito.any(Long.class))).thenReturn(Optional.of(superAdminUser));
-        Long savedProductId = productService.save(dummyProduct(), superAdminUser.getId());
-        assertEquals(1, (long) savedProductId);
-    }
-
-    @Test
     public void saveProduct_InvalidCustomerId() {
         User customer = createUserWithRoleId(RoleEnum.CUSTOMER.getCode());
         Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(dummyProduct());

@@ -8,7 +8,7 @@ import com.example.demo.model.orm.Product;
 public interface ProductService {
     public Product findbyId(Long theId);
 
-    public Long save(Product theProduct, Long loginId);
+    public void save(Product theProduct, Long loginId);
 
     public void deleteProduct(Long productId, Long loginId);
 

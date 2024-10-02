@@ -23,6 +23,11 @@ import com.example.demo.model.orm.Product;
 import com.example.demo.model.orm.User;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.workflow.WFInstanceRepository;
+import com.example.demo.repository.workflow.WFProductRepository;
+import com.example.demo.repository.workflow.WFTaskDetailsRepository;
+import com.example.demo.repository.workflow.WFTaskRepository;
+import com.example.demo.service.WFProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -40,8 +45,24 @@ public class ProductControllerTest {
 
 	@Autowired
 	private ProductRepository productRepository;
+	
+    @Autowired
+    public WFProductService wfProductService;
+    
+    @Autowired
+    public WFProductRepository wfProductRepository;
+    
+    @Autowired 
+    WFTaskDetailsRepository wfTaskDetailsRepository;
+
+    @Autowired
+    WFInstanceRepository wfInstanceRepository;
+    
+    @Autowired 
+    WFTaskRepository wfTaskRepository;
 
 	private Long adminUserId;
+	private Long superAdminUserId;
 	private Long headOfDepartmentUserId;
 	private Product product1;
 	private Product product2;
@@ -52,10 +73,13 @@ public class ProductControllerTest {
 		// Create and save test users
 		User adminUser = new User("Admin", "User", RoleEnum.ADMIN.getCode(), "adminpass", "admin@example.com",
 				"Admin Address", "123456789", "Egyptian", "Male", new Date(), new Date());
+		User superAdminUser = new User("Super", "Admin", RoleEnum.SUPER_ADMIN.getCode(), "superadminpass",
+				"superadmin@example.com", "Super Admin Address", "987654322", "Egyptian", "Male", new Date(), new Date());
 		User headOfDepartmentUser = new User("Head", "Department", RoleEnum.HEAD_OF_DEPARTMENT.getCode(), "hodpass",
 				"hod@example.com", "HOD Address", "987654321", "Egyptian", "Male", new Date(), new Date());
 
 		adminUserId = userRepository.save(adminUser).getId();
+		superAdminUserId = userRepository.save(superAdminUser).getId();
 		headOfDepartmentUserId = userRepository.save(headOfDepartmentUser).getId();
 
 		// Create and save test products
@@ -69,8 +93,11 @@ public class ProductControllerTest {
 	
     @AfterEach
     public void tearDown() {
-        userRepository.deleteAllInBatch();
+    	wfProductRepository.deleteAllInBatch();
+    	wfTaskRepository.deleteAllInBatch();
+    	wfInstanceRepository.deleteAllInBatch();
         productRepository.deleteAllInBatch();
+        userRepository.deleteAllInBatch();
     }
 
 	@Test

@@ -16,7 +16,7 @@ public interface WFTaskRepository extends JpaRepository<WFTask, Long> {
 
     @Query(value = " select count(t.id) from WFTask t "
 	    + " where t.instanceId = :P_INSTANCE_ID "
-	    + " and t.action is NULL ")
+	    + " and t.actionId is NULL ")
     Long countRunningTaskByInstanceId(@Param("P_INSTANCE_ID") Long instanceId);
 
     public void deleteByInstanceId(Long instanceId);

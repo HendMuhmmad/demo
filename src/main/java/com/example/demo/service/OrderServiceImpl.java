@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.enums.workflow.WFStatusEnum;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.orm.Order;
 import com.example.demo.model.orm.OrderDetails;
@@ -103,7 +104,7 @@ public class OrderServiceImpl implements OrderService {
 	    throw new BusinessException("Out of stock");
 	}
 	// returnProduct.setStockQuantity(remainingQuantity);
-	productService.updateProductQuantityWithOutAuth(returnProduct.getId(), returnProduct.getStockQuantity());
+	productService.updateProductQuantityWithOutAuth(returnProduct.getId(),remainingQuantity);
     }
 
     private Order createAndSaveOrder(Long userId) {
@@ -142,7 +143,9 @@ public class OrderServiceImpl implements OrderService {
 
 	if (product.getStockQuantity() == null || product.getStockQuantity() < 0)
 	    throw new BusinessException("out of  Stock");
-
+	if (product.getWfStatus()==WFStatusEnum.REJECTED.getCode() || product.getWfStatus()==WFStatusEnum.UNDERAPPROVAL.getCode()
+				|| product.getWfStatus()==null)
+		throw new BusinessException("Product must be approved");
     }
 
     private void validateRole(User user) {

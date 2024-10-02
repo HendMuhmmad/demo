@@ -18,7 +18,11 @@ import com.example.demo.mapper.ProductMapper;
 import com.example.demo.model.dto.ProductDto;
 import com.example.demo.model.dto.ProductUpdateDto;
 import com.example.demo.model.dto.ProductUpdateStockQuantityDTO;
+import com.example.demo.model.dto.workflow.ApprovalDto;
+import com.example.demo.model.dto.workflow.RejectionDto;
+import com.example.demo.model.orm.workflow.WFTaskDetails;
 import com.example.demo.service.ProductService;
+import com.example.demo.service.WFProductService;
 
 @RestController
 @RequestMapping("/api/product")
@@ -26,11 +30,14 @@ public class ProductController {
 
     @Autowired
     public ProductService productService;
+    
+    @Autowired
+    public WFProductService wfProductService;
 
     @PostMapping("/createProduct")
     public ResponseEntity<String> createProduct(@RequestBody ProductDto productdto) {
-	Long productId = productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId());
-	return ResponseEntity.ok("Product created successfully with ID: " + productId);
+	productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId());
+	return ResponseEntity.ok("Product created successfully with ID: ");
     }
 
     @PutMapping("/updateProductStockQuantity")
@@ -59,21 +66,21 @@ public class ProductController {
 	return ProductMapper.INSTANCE.mapProducts(productService.getAllProduct());
     }
 
-    // @GetMapping("/tasks")
-    // public ResponseEntity<List<ProductWorkflowTask>> getProductWorkflowTasks(@RequestParam Integer userId) {
-    // List<ProductWorkflowTask> tasks = productWorkflowService.getTasksByUserId(userId);
-    // return ResponseEntity.ok(tasks);
-    // }
+     @GetMapping("/tasks")
+     public ResponseEntity<List<WFTaskDetails>> getProductWorkflowTasks(@RequestParam Long assigneeId) {
+     List<WFTaskDetails> tasks = wfProductService.getTasksByAssigneeId(assigneeId);
+     return ResponseEntity.ok(tasks); 
+     }
 
     @PostMapping("/tasks/approve")
-    public ResponseEntity<String> approve(@RequestParam Integer taskId) {
-	// productWorkflowService.approveTask(taskId);
-	return ResponseEntity.ok("{\"message\":\"Approved Successfully\"}");
+    public ResponseEntity<String> approve(@RequestBody ApprovalDto approvalDto) {
+        wfProductService.approveTask(approvalDto.getTaskId(), approvalDto.getLoginId(), approvalDto.getNote());
+        return ResponseEntity.ok("{\"message\":\"Approved Successfully\"}");
     }
 
     @PostMapping("/tasks/reject")
-    public ResponseEntity<String> rejectProductRequest(@RequestParam Integer taskId) {
-	// productWorkflowService.rejectTask(taskId);
-	return ResponseEntity.ok("{\"message\":\"Rejected Successfully\"}");
+    public ResponseEntity<String> rejectProductRequest(@RequestBody RejectionDto rejectionDto) {
+        wfProductService.rejectTask(rejectionDto.getTaskId(), rejectionDto.getLoginId(), rejectionDto.getRejectionReason(), rejectionDto.getNote());
+        return ResponseEntity.ok("{\"message\":\"Rejected Successfully\"}");
     }
 }
