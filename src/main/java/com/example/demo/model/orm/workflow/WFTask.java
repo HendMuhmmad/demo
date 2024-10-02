@@ -4,7 +4,10 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -17,48 +20,51 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "ECO_TASKS")
+@Table(name = "ECO_WF_TASKS")
 public class WFTask {
 
-    public WFTask(long instanceId, long originalId, long assigneeId, String taskUrl, Long assigneeRole, Date assignDate) {
-	this.instanceId = instanceId;
-	this.originalId = originalId;
-	this.assigneeId = assigneeId;
-	this.assigneeRole = assigneeRole;
-	this.assignDate = assignDate;
-    }
+	public WFTask(long instanceId, long originalId, long assigneeId, String taskUrl, String assigneeRole,
+			Date assignDate) {
+		this.instanceId = instanceId;
+		this.originalId = originalId;
+		this.assigneeId = assigneeId;
+		this.assigneeRole = assigneeRole;
+		this.assignDate = assignDate;
+	}
 
-    @Id
-    @Column(name = "ID")
-    private Long id;
+	@Id
+	@Column(name = "ID")
+	@SequenceGenerator(name = "ECO_TASKS_SEQ", sequenceName = "ECO_TASKS_SEQ", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ECO_TASKS_SEQ")
+	private Long id;
 
-    @Column(name = "INSTANCE_ID")
-    private Long instanceId;
+	@Column(name = "INSTANCE_ID")
+	private Long instanceId;
 
-    @Column(name = "ASSIGNEE_ID")
-    private Long assigneeId;
+	@Column(name = "ASSIGNEE_ID")
+	private Long assigneeId;
 
-    @Column(name = "ORIGINAL_ID")
-    private Long originalId;
+	@Column(name = "ORIGINAL_ID")
+	private Long originalId;
 
-    @Column(name = "ASSIGN_DATE")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date assignDate;
+	@Column(name = "ASSIGN_DATE")
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date assignDate;
 
-    @Column(name = "ASSIGNEE_ROLE")
-    private Long assigneeRole;
+	@Column(name = "ASSIGNEE_ROLE")
+	private String assigneeRole;
 
-    @Column(name = "ACTION")
-    private String action;
+	@Column(name = "ACTION")
+	private String action;
 
-    @Column(name = "ACTION_DATE")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date actionDate;
+	@Column(name = "ACTION_DATE")
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date actionDate;
 
-    @Column(name = "NOTES")
-    private String notes;
+	@Column(name = "NOTES")
+	private String notes;
 
-    @Column(name = "REFUSE_REASONS")
-    private String refuseReasons;
+	@Column(name = "REFUSE_REASONS")
+	private String refuseReasons;
 
 }

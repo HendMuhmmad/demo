@@ -13,7 +13,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "ECO_ACTIONS")
+@Table(name = "ECO_WF_ACTIONS")
 public class WFActions {
 
     @Id

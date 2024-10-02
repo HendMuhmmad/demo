@@ -20,7 +20,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "ECO_INSTANCES")
+@Table(name = "ECO_WF_INSTANCES")
 public class WFInstance {
 
     @Id
