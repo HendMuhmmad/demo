@@ -386,8 +386,8 @@ public class OrderServiceTest {
 
 	private void mockProduct(Long[] productIds) {
 		// Mock products
-		Product p1 = new Product(productIds[0], "Blouse", 29.99, "Red", 50, "Premium material", new Date());
-		Product p2 = new Product(productIds[1], "Dress", 59.99, "Blue", 75, "Premium material", new Date());
+		Product p1 = new Product(productIds[0], "Blouse", 29.99, "Red", 50, "Premium material", null, new Date());
+		Product p2 = new Product(productIds[1], "Dress", 59.99, "Blue", 75, "Premium material", null, new Date());
 
 		Mockito.when(productService.findbyId(p1.getId())).thenReturn(p1);
 		Mockito.when(productService.findbyId(p2.getId())).thenReturn(p2);
@@ -396,7 +396,7 @@ public class OrderServiceTest {
 
 	private void mockInvalidProducts(Long[] productIds) {
 		// Mock products
-		Product p2 = new Product(productIds[1], "Dress", 59.99, "Blue", 75, "Premium material", new Date());
+		Product p2 = new Product(productIds[1], "Dress", 59.99, "Blue", 75, "Premium material", null, new Date());
 
 		Mockito.when(productRepository.findById(productIds[0])).thenReturn(Optional.empty());
 		Mockito.when(productRepository.findById(p2.getId())).thenReturn(Optional.of(p2));

@@ -60,11 +60,11 @@ public class ProductControllerTest {
 
 		// Create and save test products
 		product1 = productRepository
-				.save(new Product(null, "Product 1", 100.0, "Red", 20, "Description 1", new Date()));
+				.save(new Product(null, "Product 1", 100.0, "Red", 20, "Description 1", null, new Date()));
 		product2 = productRepository
-				.save(new Product(null, "Product 2", 150.0, "Blue", 30, "Description 2", new Date()));
+				.save(new Product(null, "Product 2", 150.0, "Blue", 30, "Description 2", null, new Date()));
 		product3 = productRepository
-				.save(new Product(null, "Product 3", 200.0, "Green", 40, "Description 3", new Date()));
+				.save(new Product(null, "Product 3", 200.0, "Green", 40, "Description 3", null, new Date()));
 	}
 	
     @AfterEach
