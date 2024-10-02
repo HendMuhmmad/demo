@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -15,10 +16,14 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "Order_Details")
+@Table(name = "ECO_ORDERS_DETAILES")
 public class OrderDetails {
-	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @SequenceGenerator(name = "ECO_ORDER_DETAILS_SEQ",
+	    sequenceName = "ECO_ORDER_DETAILS_SEQ",
+	    allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,
+	    generator = "ECO_ORDER_DETAILS_SEQ")
     private Long id;
 
     @Column(name = "ORDER_ID")

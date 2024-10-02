@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -24,11 +25,14 @@ import lombok.Setter;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "user")
+@Table(name = "ECO_USER")
 public class User {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(name = "ECO_USER_SEQ",
+	    sequenceName = "ECO_USER_SEQ",
+	    allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,
+	    generator = "ECO_USER_SEQ")
     private Long id;
 
     @Column(name = "First_Name",
@@ -71,25 +75,23 @@ public class User {
     @Column(name = "Birthday")
     @Temporal(TemporalType.DATE)
     private Date birthday;
-    
+
     @Transient
     private Long loginId;
 
-	public User(String firstName, String lastName, Long roleId, String password, String email, String address,
-			String phone, String nationality, String gender, Date registrationDate, Date birthday) {
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.roleId = roleId;
-		this.password = password;
-		this.email = email;
-		this.address = address;
-		this.phone = phone;
-		this.nationality = nationality;
-		this.gender = gender;
-		this.registrationDate = registrationDate;
-		this.birthday = birthday;
-	}
-    
-    
+    public User(String firstName, String lastName, Long roleId, String password, String email, String address,
+	    String phone, String nationality, String gender, Date registrationDate, Date birthday) {
+	this.firstName = firstName;
+	this.lastName = lastName;
+	this.roleId = roleId;
+	this.password = password;
+	this.email = email;
+	this.address = address;
+	this.phone = phone;
+	this.nationality = nationality;
+	this.gender = gender;
+	this.registrationDate = registrationDate;
+	this.birthday = birthday;
+    }
 
 }
