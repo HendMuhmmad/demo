@@ -24,7 +24,7 @@ import lombok.Setter;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "user")
+@Table(name = "eco_user")
 public class User {
 
     @Id

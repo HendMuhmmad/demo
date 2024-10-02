@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "VW_ORDER_DETAILS")
+@Table(name = "ECO_VW_ORDER_DETAILS")
 public class OrderDetailsData {
 
     @Id
