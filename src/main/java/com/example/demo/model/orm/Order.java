@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -24,38 +25,42 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "eco_orders")
+@Table(name = "ECO_ORDERS")
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(name = "ECO_ORDERS_SEQ",
+	    sequenceName = "ECO_ORDERS_SEQ",
+	    allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,
+	    generator = "ECO_ORDERS_SEQ")
     private Long id;
 
-    @Column(name="User_ID")
+    @Column(name = "User_ID")
     private Long userId;
 
-    @Column(name = "Transaction_Date", nullable = false)
+    @Column(name = "Transaction_Date",
+	    nullable = false)
     @Temporal(TemporalType.DATE)
     private Date transactionDate;
 
-    @Column(name = "Order_Number", nullable = false)
+    @Column(name = "Order_Number",
+	    nullable = false)
     private String orderNumber;
-    
+
     @Transient
     private double totalPrice;
 
-	public Order(Long userId, Date transactionDate, String orderNumber) {
-		this.userId = userId;
-		this.transactionDate = transactionDate;
-		this.orderNumber = orderNumber;
-	}
+    public Order(Long userId, Date transactionDate, String orderNumber) {
+	this.userId = userId;
+	this.transactionDate = transactionDate;
+	this.orderNumber = orderNumber;
+    }
 
-	public Order(Long id, Long userId, Date transactionDate) {
-		this.id = id;
-		this.userId = userId;
-		this.transactionDate = transactionDate;
-	}
-    
-	
-    
- }
+    public Order(Long id, Long userId, Date transactionDate) {
+	this.id = id;
+	this.userId = userId;
+	this.transactionDate = transactionDate;
+    }
+
+}

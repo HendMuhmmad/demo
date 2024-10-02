@@ -29,28 +29,28 @@ public class ProductController {
 
     @PostMapping("/createProduct")
     public ResponseEntity<String> createProduct(@RequestBody ProductDto productdto) {
-    	Long productId= productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId());
-     return ResponseEntity.ok("Product created successfully with ID: " + productId);
+	Long productId = productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId());
+	return ResponseEntity.ok("Product created successfully with ID: " + productId);
     }
 
     @PutMapping("/updateProductStockQuantity")
     public ResponseEntity<String> updateProductStockQuantity(@RequestBody ProductUpdateStockQuantityDTO productdto) {
-	 productService.updateProductQuantity(productdto.getId(), productdto.getStockQuantity(), productdto.getLoginId());
-     return ResponseEntity.ok("Product stock quantity updated successfully");
+	productService.updateProductQuantity(productdto.getId(), productdto.getStockQuantity(), productdto.getLoginId());
+	return ResponseEntity.ok("Product stock quantity updated successfully");
 
     }
 
     @PutMapping("/updateProduct")
     public ResponseEntity<String> updateProduct(@RequestBody ProductUpdateDto productUpdateDto) {
-	 productService.save(ProductMapper.INSTANCE.mapUpdateProduct(productUpdateDto), productUpdateDto.getLoginId());
-     return ResponseEntity.ok("Product updated successfully");
+	productService.save(ProductMapper.INSTANCE.mapUpdateProduct(productUpdateDto), productUpdateDto.getLoginId());
+	return ResponseEntity.ok("Product updated successfully");
 
     }
 
     @DeleteMapping("/deleteProduct/{productId}")
     public ResponseEntity<String> deleteProduct(@PathVariable Long productId, @RequestParam Long loginId) {
 	productService.deleteProduct(productId, loginId);
-    return ResponseEntity.ok("Product deleted successfully");
+	return ResponseEntity.ok("Product deleted successfully");
 
     }
 
@@ -59,4 +59,21 @@ public class ProductController {
 	return ProductMapper.INSTANCE.mapProducts(productService.getAllProduct());
     }
 
+    // @GetMapping("/tasks")
+    // public ResponseEntity<List<ProductWorkflowTask>> getProductWorkflowTasks(@RequestParam Integer userId) {
+    // List<ProductWorkflowTask> tasks = productWorkflowService.getTasksByUserId(userId);
+    // return ResponseEntity.ok(tasks);
+    // }
+
+    @PostMapping("/tasks/approve")
+    public ResponseEntity<String> approve(@RequestParam Integer taskId) {
+	// productWorkflowService.approveTask(taskId);
+	return ResponseEntity.ok("{\"message\":\"Approved Successfully\"}");
+    }
+
+    @PostMapping("/tasks/reject")
+    public ResponseEntity<String> rejectProductRequest(@RequestParam Integer taskId) {
+	// productWorkflowService.rejectTask(taskId);
+	return ResponseEntity.ok("{\"message\":\"Rejected Successfully\"}");
+    }
 }
