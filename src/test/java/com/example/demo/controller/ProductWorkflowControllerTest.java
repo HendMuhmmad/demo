@@ -81,16 +81,11 @@ public class ProductWorkflowControllerTest {
     @Autowired
     UserRepository userRepository;
 
-    private static User testUser;
-    private static Long testUserId;
 	private static User testAdmin;
 	private static Long testAdminId;
 	private static User testSuperAdmin1;
 	private static Long testSuperAdmin1Id;
 	private static User testSuperAdmin2;
-	private static Long testSuperAdmin2Id;
-	private static User testHeadOfDepartment;
-	private static Long testHeadOfDepartmentId;
     private static Product testProduct1;
     private static Product testProduct2;
     private static Product testProduct3;    
@@ -126,14 +121,10 @@ public class ProductWorkflowControllerTest {
     }
     
 	private static void createUsers(UserRepository userRepository) {
-	    testUser = createAndSaveUser(userRepository, "John", "Doe", 4L);
-	    testUserId = testUser.getId();
-	    testHeadOfDepartment = createAndSaveUser(userRepository, "John", "Doe", 1L);
-	    testHeadOfDepartmentId = testHeadOfDepartment.getId();
+
 	    testSuperAdmin1 = createAndSaveUser(userRepository, "John", "Doe", 2L);
 	    testSuperAdmin2 = createAndSaveUser(userRepository, "John", "Doe", 2L);
 	    testSuperAdmin1Id = testSuperAdmin1.getId();
-	    testSuperAdmin2Id = testSuperAdmin2.getId();
 	    testAdmin = createAndSaveUser(userRepository, "John", "Doe", 3L);
 	    testAdminId = testAdmin.getId();
 

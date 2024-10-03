@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -11,7 +10,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -20,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,9 +25,9 @@ import com.example.demo.enums.workflow.WFAsigneeRoleEnum;
 import com.example.demo.enums.workflow.WFInstanceStatusEnum;
 import com.example.demo.enums.workflow.WFStatusEnum;
 import com.example.demo.model.dto.orderDetails.OrderDetailsCreationDTO;
+import com.example.demo.model.orm.Order;
 import com.example.demo.model.orm.OrderDetails;
 import com.example.demo.model.orm.Product;
-import com.example.demo.model.orm.Order;
 import com.example.demo.model.orm.User;
 import com.example.demo.model.orm.workflow.WFInstance;
 import com.example.demo.model.orm.workflow.WFProduct;
@@ -81,15 +78,10 @@ public class OrderWorkflowControllerTest {
     WFTaskRepository wfTaskRepository;
     
 	private static User testUser;
-    private static Long testUserId;
 	private static User testAdmin;
-	private static Long testAdminId;
 	private static User testSuperAdmin1;
-	private static Long testSuperAdmin1Id;
 	private static User testSuperAdmin2;
-	private static Long testSuperAdmin2Id;
 	private static User testHeadOfDepartment;
-	private static Long testHeadOfDepartmentId;
     private static Product testProduct1;
     private static Product testProduct2;
     private static Product testProduct3;    
@@ -207,15 +199,10 @@ public class OrderWorkflowControllerTest {
 
 	private static void createUsers(UserRepository userRepository) {
 	    testUser = createAndSaveUser(userRepository, "John", "Doe", 4L);
-	    testUserId = testUser.getId();
 	    testHeadOfDepartment = createAndSaveUser(userRepository, "John", "Doe", 1L);
-	    testHeadOfDepartmentId = testHeadOfDepartment.getId();
 	    testSuperAdmin1 = createAndSaveUser(userRepository, "John", "Doe", 2L);
 	    testSuperAdmin2 = createAndSaveUser(userRepository, "John", "Doe", 2L);
-	    testSuperAdmin1Id = testSuperAdmin1.getId();
-	    testSuperAdmin2Id = testSuperAdmin2.getId();
 	    testAdmin = createAndSaveUser(userRepository, "John", "Doe", 3L);
-	    testAdminId = testAdmin.getId();
 
 	}
 	private static User createAndSaveUser(UserRepository userRepository, String firstName, String lastName, Long roleId) {

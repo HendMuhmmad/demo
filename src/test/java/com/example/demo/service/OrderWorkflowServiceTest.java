@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,7 +78,6 @@ public class OrderWorkflowServiceTest {
 	private static User testAdmin;
 	private static User testSuperAdmin1;
 	private static User testSuperAdmin2;
-	private static User testHeadOfDepartment;
     private static Product testProduct1;
     private static Product testProduct2;
     private static Product testProduct3;    
@@ -115,7 +113,6 @@ public class OrderWorkflowServiceTest {
     
 	private static void createUsers(UserRepository userRepository) {
 	    testUser = createAndSaveUser(userRepository, "John", "Doe", 4L);
-	    testHeadOfDepartment = createAndSaveUser(userRepository, "John", "Doe", 1L);
 	    testSuperAdmin1 = createAndSaveUser(userRepository, "John", "Doe", 2L);
 	    testSuperAdmin2 = createAndSaveUser(userRepository, "John", "Doe", 2L);
 	    testAdmin = createAndSaveUser(userRepository, "John", "Doe", 3L);
@@ -243,13 +240,4 @@ public class OrderWorkflowServiceTest {
     	});
     }
     
-
-    private Product dummyProduct() {
-        return Product.builder().id(1L).productName("Laptop").price(1200.00).color("Silver").stockQuantity(50)
-                .description("High-performance laptop").build();
-    }
-
-    private Optional<Product> dummyOptionalProduct() {
-        return Optional.of(dummyProduct());
-    }
 }
