@@ -1,12 +1,17 @@
 package com.example.demo.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.enums.RoleEnum;
+import com.example.demo.enums.workflow.WFProcessesEnum;
+import com.example.demo.enums.workflow.WFStatusEnum;
 import com.example.demo.exception.BusinessException;
+import com.example.demo.model.dto.TaskRequestDto;
 import com.example.demo.model.orm.Product;
 import com.example.demo.repository.ProductRepository;
 
@@ -17,6 +22,9 @@ public class ProductServiceImpl implements ProductService {
 
 	@Autowired
 	public UserService userService;
+	
+	@Autowired
+	public WFProductService wfProductService;
 
 	@Override
 	public Product findbyId(Long productId) {
@@ -84,5 +92,51 @@ public class ProductServiceImpl implements ProductService {
 	public List<Product> getAllProduct() {
 		return productRepository.findAll();
 	}
+
+	@Transactional
+	public String request(Product theProduct, Long loginId) {
+		if (theProduct.getPrice() == 0 || theProduct.getProductName() == null) {
+			throw new BusinessException("Product price and name shoud not be null");
+		}
+	    Long roleId = userService.getUserById(loginId).get().getRoleId();
+	    System.out.println(theProduct);
+	    if (roleId == RoleEnum.SUPER_ADMIN.getCode()) {
+//	    	theProduct.setWfStatus(WFStatusEnum.APPROVED.getCode());
+	    	productRepository.save(theProduct);
+			return "Your product is done successfully"; 
+	    }
+	    else if(roleId == RoleEnum.ADMIN.getCode()) {
+//	    	theProduct.setWfStatus(WFStatusEnum.UNDER_APPROVAL.getCode());
+//	    	productRepository.save(theProduct);
+	    	wfProductService.initWFProduct(theProduct.getId(), loginId, WFProcessesEnum.ADD_PRODUCT.getCode());
+	    	return "Your request is sent successfully";
+	    }
+	    else {
+			throw new BusinessException("You are not authorizted to create a product");
+	    }
+	}
+
+	@Override
+	@Transactional
+	public void respondToRequest(TaskRequestDto taskRequest) {
+		long productId = wfProductService.respondToRequest(taskRequest);
+		Optional<Product> tempProduct = productRepository.findById(productId);
+		if(!tempProduct.isPresent()) {
+			throw new BusinessException("There isn't a product with this id");
+		}
+		Product product = tempProduct.get();
+		if(product.getWfStatus() != 0) {
+			throw new BusinessException("This task is already done");			
+		}
+		if(taskRequest.getIsApproved()) {
+			product.setWfStatus(WFStatusEnum.APPROVED.getCode());
+		}else {
+			product.setWfStatus(WFStatusEnum.REJECTED.getCode());
+		}
+		productRepository.save(product);
+		
+	}
+	
+
 
 }

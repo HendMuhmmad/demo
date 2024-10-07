@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.PrePersist;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -26,7 +27,6 @@ public class WFTask {
 	public WFTask(long instanceId, long originalId, long assigneeId, String taskUrl, String assigneeRole,
 			Date assignDate) {
 		this.instanceId = instanceId;
-		this.originalId = originalId;
 		this.assigneeId = assigneeId;
 		this.assigneeRole = assigneeRole;
 		this.assignDate = assignDate;
@@ -44,8 +44,8 @@ public class WFTask {
 	@Column(name = "ASSIGNEE_ID")
 	private Long assigneeId;
 
-	@Column(name = "ORIGINAL_ID")
-	private Long originalId;
+//	@Column(name = "ORIGINAL_ID")
+//	private Long originalId;
 
 	@Column(name = "ASSIGN_DATE")
 	@Temporal(TemporalType.TIMESTAMP)
@@ -54,8 +54,8 @@ public class WFTask {
 	@Column(name = "ASSIGNEE_ROLE")
 	private String assigneeRole;
 
-	@Column(name = "ACTION")
-	private String action;
+	@Column(name = "ACTION_ID")
+	private Long actionId;
 
 	@Column(name = "ACTION_DATE")
 	@Temporal(TemporalType.TIMESTAMP)
@@ -66,5 +66,10 @@ public class WFTask {
 
 	@Column(name = "REFUSE_REASONS")
 	private String refuseReasons;
+	
+	@PrePersist
+    protected void onCreate() {
+	this.assignDate = new Date(); // Sets the current date
+    }
 
 }

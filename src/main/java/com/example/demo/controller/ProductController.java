@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +19,11 @@ import com.example.demo.mapper.ProductMapper;
 import com.example.demo.model.dto.ProductDto;
 import com.example.demo.model.dto.ProductUpdateDto;
 import com.example.demo.model.dto.ProductUpdateStockQuantityDTO;
+import com.example.demo.model.dto.TaskRequestDto;
+import com.example.demo.model.orm.Product;
+import com.example.demo.model.orm.workflow.WFTaskDetails;
 import com.example.demo.service.ProductService;
+import com.example.demo.service.WFProductService;
 
 @RestController
 @RequestMapping("/api/product")
@@ -26,12 +31,17 @@ public class ProductController {
 
     @Autowired
     public ProductService productService;
+   
 
     @PostMapping("/createProduct")
-    public ResponseEntity<String> createProduct(@RequestBody ProductDto productdto) {
-	Long productId = productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId());
-	return ResponseEntity.ok("Product created successfully with ID: " + productId);
+    public ResponseEntity<String> createProduct(@RequestBody ProductDto productDto) {
+        Long loginId = productDto.getLoginId();
+        System.out.println(productDto);
+        Product product = ProductMapper.INSTANCE.mapCreateProduct(productDto);
+        String msg = productService.request(product, loginId);
+        return ResponseEntity.status(HttpStatus.OK).body(msg);
     }
+
 
     @PutMapping("/updateProductStockQuantity")
     public ResponseEntity<String> updateProductStockQuantity(@RequestBody ProductUpdateStockQuantityDTO productdto) {
@@ -58,22 +68,5 @@ public class ProductController {
     public List<ProductDto> getAllProduct() {
 	return ProductMapper.INSTANCE.mapProducts(productService.getAllProduct());
     }
-
-    // @GetMapping("/tasks")
-    // public ResponseEntity<List<ProductWorkflowTask>> getProductWorkflowTasks(@RequestParam Integer userId) {
-    // List<ProductWorkflowTask> tasks = productWorkflowService.getTasksByUserId(userId);
-    // return ResponseEntity.ok(tasks);
-    // }
-
-    @PostMapping("/tasks/approve")
-    public ResponseEntity<String> approve(@RequestParam Integer taskId) {
-	// productWorkflowService.approveTask(taskId);
-	return ResponseEntity.ok("{\"message\":\"Approved Successfully\"}");
-    }
-
-    @PostMapping("/tasks/reject")
-    public ResponseEntity<String> rejectProductRequest(@RequestParam Integer taskId) {
-	// productWorkflowService.rejectTask(taskId);
-	return ResponseEntity.ok("{\"message\":\"Rejected Successfully\"}");
-    }
+    
 }
