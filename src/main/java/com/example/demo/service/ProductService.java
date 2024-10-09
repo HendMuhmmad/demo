@@ -2,14 +2,15 @@ package com.example.demo.service;
 
 import java.util.List;
 
+import com.example.demo.enums.workflow.WFProcessesEnum;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.orm.Product;
 
 public interface ProductService {
     public Product findbyId(Long theId);
 
-    public void save(Product theProduct, Long loginId);
-
+    public void save(Product theProduct, Long loginId, boolean isNew);
+    
     public void deleteProduct(Long productId, Long loginId);
 
     public void updateProductQuantity(Long productId, int newQuantity, Long loginId);

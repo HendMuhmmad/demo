@@ -15,12 +15,13 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.enums.workflow.WFAsigneeRoleEnum;
+import com.example.demo.enums.workflow.WFAssigneeRoleEnum;
 import com.example.demo.enums.workflow.WFInstanceStatusEnum;
+import com.example.demo.enums.workflow.WFProductStatusEnum;
 import com.example.demo.enums.workflow.WFStatusEnum;
 import com.example.demo.model.dto.ProductDto;
-import com.example.demo.model.dto.workflow.ApprovalDto;
-import com.example.demo.model.dto.workflow.RejectionDto;
+import com.example.demo.model.dto.workflow.ResponseDto;
+import com.example.demo.model.dto.workflow.ResponseDto;
 import com.example.demo.model.orm.Product;
 import com.example.demo.model.orm.User;
 import com.example.demo.model.orm.workflow.WFInstance;
@@ -155,7 +156,6 @@ public class ProductWorkflowControllerTest {
         	    "Red",           // color
         	    100,             // stockQuantity
         	    "Premium Material.", // description
-        	    WFStatusEnum.UNDERAPPROVAL.getCode(),
         	    new Date()
         	);
         testProduct2 = new Product(
@@ -165,7 +165,6 @@ public class ProductWorkflowControllerTest {
         	    "Black",           // color
         	    70,             // stockQuantity
         	    "Premium Material.", // description
-        	    WFStatusEnum.APPROVED.getCode(),
         	    new Date()
         	);     
         testProduct3 = new Product(
@@ -175,7 +174,6 @@ public class ProductWorkflowControllerTest {
         	    "Green",           // color
         	    50,             // stockQuantity
         	    "Premium Material.", // description
-        	    WFStatusEnum.REJECTED.getCode(),
         	    new Date()
         	);
         testProduct1 = productRepository.save(testProduct1);
@@ -200,24 +198,25 @@ public class ProductWorkflowControllerTest {
         wfInstanceRepository.save(instance2);
 
         // Create and save Products
-        Product productA = new Product(4L,"Product A", 10.99, "Red", 100, "Description for Product A", WFStatusEnum.UNDERAPPROVAL.getCode(), new Date());
+        Product productA = new Product(4L,"Product A", 10.99, "Red", 100, "Description for Product A", new Date());
         productA = productRepository.save(productA);
 
-        Product productB = new Product(5L,"Product B", 20.5, "Blue", 50, "Description for Product B", WFStatusEnum.UNDERAPPROVAL.getCode(), new Date());
+        Product productB = new Product(5L,"Product B", 20.5, "Blue", 50, "Description for Product B", new Date());
         productB = productRepository.save(productB);
 
         // Link Products with WF Instances
-        WFProduct wfProduct1 = new WFProduct(productA.getId(), instance1.getId());
+        WFProduct wfProduct1 = new WFProduct(productA, instance1.getId(), WFProductStatusEnum.ADDED.getCode());
         wfProductRepository.save(wfProduct1);
 
-        WFProduct wfProduct2 = new WFProduct(productB.getId(), instance2.getId());
+        WFProduct wfProduct2 = new WFProduct(productB, instance2.getId(), WFProductStatusEnum.ADDED.getCode());
         wfProductRepository.save(wfProduct2);
 
+
         // Create and save WFTasks
-        task1 = new WFTask(instance1.getId(), testSuperAdmin1.getId(), WFAsigneeRoleEnum.SUPERADMIN.getRole(), new Date());
+        task1 = new WFTask(instance1.getId(), testSuperAdmin1.getId(), WFAssigneeRoleEnum.SUPERADMIN.getRole(), new Date());
         task1 = wfTaskRepository.save(task1);
 
-        task2 = new WFTask(instance2.getId(), testSuperAdmin2.getId(), WFAsigneeRoleEnum.SUPERADMIN.getRole(), new Date());
+        task2 = new WFTask(instance2.getId(), testSuperAdmin2.getId(), WFAssigneeRoleEnum.SUPERADMIN.getRole(), new Date());
         task2 = wfTaskRepository.save(task2);
     }
 
@@ -236,36 +235,40 @@ public class ProductWorkflowControllerTest {
 	
 	@Test
 	public void approveProductAsSuperAdmin() throws Exception {
-		ApprovalDto approvalDto = new ApprovalDto();
-		approvalDto.setLoginId(testSuperAdmin1Id);
-		approvalDto.setTaskId(task1.getId());
-		mockMvc.perform(post("/api/product/tasks/approve").contentType("application/json")
-				.content(objectMapper.writeValueAsString(approvalDto))).andExpect(status().isOk());
+		ResponseDto responseDto = new ResponseDto();
+		responseDto.setLoginId(testSuperAdmin1Id);
+		responseDto.setTaskId(task1.getId());
+		responseDto.setResponse("Approve");
+		mockMvc.perform(post("/api/product/tasks/respondToRequest").contentType("application/json")
+				.content(objectMapper.writeValueAsString(responseDto))).andExpect(status().isOk());
 	}
 	@Test
 	public void approveProductAsInvalidAdmin() throws Exception {
-		ApprovalDto approvalDto = new ApprovalDto();
-		approvalDto.setLoginId(testAdminId);
-		approvalDto.setTaskId(task1.getId());
-		mockMvc.perform(post("/api/product/tasks/approve").contentType("application/json")
-				.content(objectMapper.writeValueAsString(approvalDto))).andExpect(status().isBadRequest());
+		ResponseDto responseDto = new ResponseDto();
+		responseDto.setLoginId(testAdminId);
+		responseDto.setTaskId(task1.getId());
+		responseDto.setResponse("Approve");
+		mockMvc.perform(post("/api/product/tasks/respondToRequest").contentType("application/json")
+				.content(objectMapper.writeValueAsString(responseDto))).andExpect(status().isBadRequest());
 	}
 	
 	@Test
 	public void rejectProductAsSuperAdmin() throws Exception {
-		RejectionDto rejectlDto = new RejectionDto();
-		rejectlDto.setLoginId(testSuperAdmin1Id);
-		rejectlDto.setTaskId(task1.getId());
-		mockMvc.perform(post("/api/product/tasks/reject").contentType("application/json")
-				.content(objectMapper.writeValueAsString(rejectlDto))).andExpect(status().isOk());
+		ResponseDto responseDto = new ResponseDto();
+		responseDto.setLoginId(testSuperAdmin1Id);
+		responseDto.setTaskId(task1.getId());
+		responseDto.setResponse("Reject");
+		mockMvc.perform(post("/api/product/tasks/respondToRequest").contentType("application/json")
+				.content(objectMapper.writeValueAsString(responseDto))).andExpect(status().isOk());
 	}
 	@Test
 	public void rejectProductAsInvalidAdmin() throws Exception {
-		ApprovalDto approvalDto = new ApprovalDto();
-		approvalDto.setLoginId(testAdminId);
-		approvalDto.setTaskId(task1.getId());
-		mockMvc.perform(post("/api/product/tasks/reject").contentType("application/json")
-				.content(objectMapper.writeValueAsString(approvalDto))).andExpect(status().isBadRequest());
+		ResponseDto responseDto = new ResponseDto();
+		responseDto.setLoginId(testAdminId);
+		responseDto.setTaskId(task1.getId());
+		responseDto.setResponse("Reject");
+		mockMvc.perform(post("/api/product/tasks/respondToRequest").contentType("application/json")
+				.content(objectMapper.writeValueAsString(responseDto))).andExpect(status().isBadRequest());
 	}
 	
 	}

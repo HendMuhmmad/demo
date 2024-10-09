@@ -21,8 +21,9 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.enums.workflow.WFAsigneeRoleEnum;
+import com.example.demo.enums.workflow.WFAssigneeRoleEnum;
 import com.example.demo.enums.workflow.WFInstanceStatusEnum;
+import com.example.demo.enums.workflow.WFProductStatusEnum;
 import com.example.demo.enums.workflow.WFStatusEnum;
 import com.example.demo.model.dto.orderDetails.OrderDetailsCreationDTO;
 import com.example.demo.model.orm.Order;
@@ -128,24 +129,24 @@ public class OrderWorkflowControllerTest {
         wfInstanceRepository.save(instance2);
 
         // Create and save Products
-        Product productA = new Product(4L,"Product A", 10.99, "Red", 100, "Description for Product A", WFStatusEnum.UNDERAPPROVAL.getCode(), new Date());
+        Product productA = new Product(4L,"Product A", 10.99, "Red", 100, "Description for Product A", new Date());
         productA = productRepository.save(productA);
 
-        Product productB = new Product(5L,"Product B", 20.5, "Blue", 50, "Description for Product B", WFStatusEnum.UNDERAPPROVAL.getCode(), new Date());
+        Product productB = new Product(5L,"Product B", 20.5, "Blue", 50, "Description for Product B", new Date());
         productB = productRepository.save(productB);
 
         // Link Products with WF Instances
-        WFProduct wfProduct1 = new WFProduct(productA.getId(), instance1.getId());
+        WFProduct wfProduct1 = new WFProduct(productA, instance1.getId(), WFProductStatusEnum.ADDED.getCode());
         wfProductRepository.save(wfProduct1);
 
-        WFProduct wfProduct2 = new WFProduct(productB.getId(), instance2.getId());
+        WFProduct wfProduct2 = new WFProduct(productB, instance2.getId(), WFProductStatusEnum.ADDED.getCode());
         wfProductRepository.save(wfProduct2);
 
         // Create and save WFTasks
-        task1 = new WFTask(instance1.getId(), testSuperAdmin1.getId(), WFAsigneeRoleEnum.SUPERADMIN.getRole(), new Date());
+        task1 = new WFTask(instance1.getId(), testSuperAdmin1.getId(), WFAssigneeRoleEnum.SUPERADMIN.getRole(), new Date());
         task1 = wfTaskRepository.save(task1);
 
-        task2 = new WFTask(instance2.getId(), testSuperAdmin2.getId(), WFAsigneeRoleEnum.SUPERADMIN.getRole(), new Date());
+        task2 = new WFTask(instance2.getId(), testSuperAdmin2.getId(), WFAssigneeRoleEnum.SUPERADMIN.getRole(), new Date());
         task2 = wfTaskRepository.save(task2);
     }
 	private static void createProducts(ProductRepository productRepository) {
@@ -157,7 +158,6 @@ public class OrderWorkflowControllerTest {
         	    "Red",           // color
         	    100,             // stockQuantity
         	    "Premium Material.", // description
-        	    WFStatusEnum.UNDERAPPROVAL.getCode(),
         	    new Date()
         	);
         testProduct2 = new Product(
@@ -167,7 +167,6 @@ public class OrderWorkflowControllerTest {
         	    "Black",           // color
         	    70,             // stockQuantity
         	    "Premium Material.", // description
-        	    WFStatusEnum.APPROVED.getCode(),
         	    new Date()
         	);   
         
@@ -178,7 +177,6 @@ public class OrderWorkflowControllerTest {
         	    "Green",           // color
         	    50,             // stockQuantity
         	    "Premium Material.", // description
-        	    WFStatusEnum.REJECTED.getCode(),
         	    new Date()
         	);
         testProduct4 = new Product(
@@ -188,7 +186,6 @@ public class OrderWorkflowControllerTest {
         	    "Teal",           // color
         	    90,             // stockQuantity
         	    "Premium Material.", // description
-        	    WFStatusEnum.APPROVED.getCode(),
         	    new Date()
         	);  
         testProduct1 = productRepository.save(testProduct1);

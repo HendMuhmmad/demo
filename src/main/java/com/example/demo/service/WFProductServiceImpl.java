@@ -9,16 +9,19 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.enums.RoleEnum;
 import com.example.demo.enums.workflow.WFActionEnum;
 import com.example.demo.enums.workflow.WFInstanceStatusEnum;
-import com.example.demo.enums.workflow.WFStatusEnum;
+import com.example.demo.enums.workflow.WFProductStatusEnum;
 import com.example.demo.exception.BusinessException;
+import com.example.demo.mapper.ProductMapper;
 import com.example.demo.model.orm.Product;
 import com.example.demo.model.orm.User;
+import com.example.demo.model.orm.workflow.ProductTransactionHistory;
 import com.example.demo.model.orm.workflow.WFInstance;
 import com.example.demo.model.orm.workflow.WFProduct;
 import com.example.demo.model.orm.workflow.WFTask;
 import com.example.demo.model.orm.workflow.WFTaskDetails;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.workflow.ProductTransactionHistoryRepository;
 import com.example.demo.repository.workflow.WFInstanceRepository;
 import com.example.demo.repository.workflow.WFProductRepository;
 import com.example.demo.repository.workflow.WFTaskDetailsRepository;
@@ -44,25 +47,19 @@ public class WFProductServiceImpl implements WFProductService{
     
     @Autowired
     UserRepository userRepository;
+    
+    @Autowired
+    UserService userService;
+    
+    @Autowired
+    ProductService productService;
+    
+    @Autowired
+    ProductTransactionHistoryRepository productTransactionHistoryRepository;
 
 	@Override
 	public List<WFTaskDetails> getTasksByAssigneeId(Long assigneeId) {
-		return wfTaskDetailsRepository.findByAssigneeIdAndWfStatus(assigneeId,WFStatusEnum.UNDERAPPROVAL.getCode());
-	}
-
-	@Override
-	public void approveTask(Long taskId, Long assigneeId, String note) throws BusinessException {
-	    WFTask task = validateTask(taskId);
-	    WFInstance wfInstance = validateInstance(task.getInstanceId());
-	    WFProduct wfProduct = validateWFProduct(wfInstance.getId());
-	    Product product = validateProduct(wfProduct.getProductId());
-	    validateAssignee(task, assigneeId);
-
-	    // Perform actions
-	    task.setActionId(WFActionEnum.APPROVED.getAction());
-	    task.setNotes(note);
-	    wfInstance.setStatus(WFInstanceStatusEnum.DONE.getCode());
-	    product.setWfStatus(WFStatusEnum.APPROVED.getCode());
+		return wfTaskDetailsRepository.findByAssigneeIdAndAction(assigneeId,null);
 	}
 
 	private WFTask validateTask(Long taskId) throws BusinessException {
@@ -94,10 +91,11 @@ public class WFProductServiceImpl implements WFProductService{
 		if (assigneeId==null) throw new BusinessException("No loginId.");
 		// Verify that the user exists
 		
-	    if (!userRepository.existsById(assigneeId)) {
+		// check using user service TODO
+	    if (!userService.getUserById(assigneeId).isPresent()) {
 	        throw new BusinessException("User not found for assigneeId: " + assigneeId);
 	    }
-	    User assignee = userRepository.findById(assigneeId).orElse(null);
+	    User assignee = userService.getUserById(assigneeId).orElse(null);
 	    if (assignee.getRoleId()!=RoleEnum.SUPER_ADMIN.getCode()) throw new BusinessException("User is not a Super Admin");
 	    // Verify that the assigneeId matches that of the task
 	    if (!task.getAssigneeId().equals(assigneeId)) {
@@ -107,20 +105,82 @@ public class WFProductServiceImpl implements WFProductService{
 
 
 	@Override
-	public void rejectTask(Long taskId, Long assigneeId, String rejectionReason, String note) throws BusinessException {
+	public void respondToTask(Long taskId, Long assigneeId, String response, String note, String rejectionReason) throws BusinessException {
 	    // Validate input parameters and retrieve necessary objects
 	    WFTask task = validateTask(taskId);
 	    WFInstance wfInstance = validateInstance(task.getInstanceId());
 	    WFProduct wfProduct = validateWFProduct(wfInstance.getId());
-	    Product product = validateProduct(wfProduct.getProductId());
+	    if (wfProduct.getStatus()!=WFProductStatusEnum.ADDED.getCode())
+	    	validateProduct(wfProduct.getProductId());
 	    validateAssignee(task, assigneeId);
+	    validateResponse(response);
+	    // Perform actions for approval or rejection
+	    task.setActionId(WFActionEnum.fromString(response)); 
+	    task.setNotes(note);  // Set note
+	    wfInstance.setStatus(WFInstanceStatusEnum.DONE.getCode());  // Set instance status to APPROVED or REJECTED
+	    if (WFActionEnum.fromString(response) == WFActionEnum.REJECTED.getAction())
+	    	task.setRefuseReasons(rejectionReason);
+	    else if (WFActionEnum.fromString(response) == WFActionEnum.APPROVED.getAction()&&wfProduct.getStatus()==WFProductStatusEnum.ADDED.getCode())
+	    	createProduct(wfProduct);
+	    else if (WFActionEnum.fromString(response) == WFActionEnum.APPROVED.getAction()&&wfProduct.getStatus()==WFProductStatusEnum.UPDATED.getCode())
+	    	updateProduct(wfProduct);
+	    else if (WFActionEnum.fromString(response) == WFActionEnum.APPROVED.getAction()&&wfProduct.getStatus()==WFProductStatusEnum.DELETED.getCode())
+	    	deleteProduct(wfProduct);
+		    
+	}
 
-	    // Perform actions for rejection
-	    task.setActionId(WFActionEnum.REJECTED.getAction());  // Assuming there is a REJECTED action
-	    task.setNotes(note);  // Set the notes for the rejection
-	    task.setRefuseReasons(rejectionReason);
-	    wfInstance.setStatus(WFInstanceStatusEnum.DONE.getCode());  // Set instance status to REJECTED
-	    product.setWfStatus(WFStatusEnum.REJECTED.getCode());  // Set product status to REJECTED
+	private void deleteProduct(WFProduct wfProduct) {
+		// get initial product
+		Long productId =wfProduct.getProductId();
+		Product previousProduct = productRepository.findById(productId).orElse(null);
+		if (previousProduct == null) throw new BusinessException("Product does not exist");
+		
+		// map from product to history
+		ProductTransactionHistory history = ProductMapper.INSTANCE.maptoHistory(previousProduct);
+		
+		// status as update
+		history.setStatus(WFProductStatusEnum.DELETED.getCode());
+		
+		// save to history
+		productTransactionHistoryRepository.save(history);
+		
+		// save product
+		Product theProduct = ProductMapper.INSTANCE.mapWfProduct(wfProduct);
+		productRepository.deleteById(theProduct.getId());
+	}
+
+	private void createProduct(WFProduct wfProduct) {
+		// save product
+		Product theProduct = ProductMapper.INSTANCE.mapWfProduct(wfProduct);
+		theProduct.setId(null); // make sure no one tries to overwrite a previous product
+		theProduct = productRepository.save(theProduct);
+	}
+	private void updateProduct(WFProduct wfProduct) throws BusinessException {
+		// get initial product
+		Long productId =wfProduct.getProductId();
+		Product previousProduct = productRepository.findById(productId).orElse(null);
+		if (previousProduct == null) throw new BusinessException("Product does not exist");
+		// map from product to history
+		ProductTransactionHistory history = ProductMapper.INSTANCE.maptoHistory(previousProduct);
+		// status as update
+		history.setStatus(WFProductStatusEnum.UPDATED.getCode());
+		// save to history
+		productTransactionHistoryRepository.save(history);
+		
+		// save product
+		Product theProduct = ProductMapper.INSTANCE.mapWfProduct(wfProduct);
+		theProduct = productRepository.save(theProduct);
+	}
+	private void validateResponse(String response) throws BusinessException{
+		if (response==null) throw new BusinessException("Select a response");
+		if (!(response.equalsIgnoreCase("approve")||!response.equalsIgnoreCase("approved")||!response.equalsIgnoreCase("reject")||!response.equalsIgnoreCase("rejected")))
+				throw new BusinessException("Select a valid response");
+	}
+
+	@Override
+	public WFTaskDetails getTaskByTaskId(Long taskId) throws BusinessException {
+		return wfTaskDetailsRepository.findByTaskId(taskId).orElseThrow(() -> new BusinessException("Task Id does not exist"));
+		
 	}
 
 

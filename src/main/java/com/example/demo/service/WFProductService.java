@@ -9,8 +9,8 @@ public interface WFProductService {
 
 	public List<WFTaskDetails> getTasksByAssigneeId(Long assigneeId);
 	
-	public void approveTask(Long taskId, Long assigneeId, String note) throws BusinessException;
-
-	public void rejectTask(Long taskId, Long assigneeId, String rejectionReason, String note) throws BusinessException;
+	public WFTaskDetails getTaskByTaskId(Long taskId) throws BusinessException;
+	
+	public void respondToTask(Long taskId, Long assigneeId, String response, String note, String rejectionReason) throws BusinessException;
 	
 }

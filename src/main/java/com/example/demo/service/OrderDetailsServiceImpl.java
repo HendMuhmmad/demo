@@ -15,12 +15,6 @@ public class OrderDetailsServiceImpl implements OrderDetailsService {
     private OrderDetailsRepository orderDetailsRepository;
 
     @Override
-    public List<OrderDetails> getAllOrderDetails(int userId, int orderId) {
-	// TODO Auto-generated method stub
-	return null;
-    }
-
-    @Override
     public OrderDetails createOrderDetail(OrderDetails orderDetails) {
 	return orderDetailsRepository.save(orderDetails);
     }

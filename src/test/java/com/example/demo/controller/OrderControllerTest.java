@@ -97,7 +97,6 @@ public class OrderControllerTest {
         	    "Red",           // color
         	    100,             // stockQuantity
         	    "Premium Material.", // description
-        	    WFStatusEnum.APPROVED.getCode(),
         	    new Date()
         	);
         testProduct2 = new Product(
@@ -107,7 +106,6 @@ public class OrderControllerTest {
         	    "Black",           // color
         	    70,             // stockQuantity
         	    "Premium Material.", // description
-        	    WFStatusEnum.APPROVED.getCode(),
         	    new Date()
         	);        
         testProduct1 = productRepository.save(testProduct1);

@@ -10,8 +10,10 @@ import org.mapstruct.factory.Mappers;
 import com.example.demo.model.dto.ProductDto;
 import com.example.demo.model.dto.ProductUpdateDto;
 import com.example.demo.model.dto.ProductUpdateStockQuantityDTO;
-import com.example.demo.model.orm.Product;
 import com.example.demo.model.orm.OrderDetailsData;
+import com.example.demo.model.orm.Product;
+import com.example.demo.model.orm.workflow.ProductTransactionHistory;
+import com.example.demo.model.orm.workflow.WFProduct;
 
 @Mapper
 public interface ProductMapper {
@@ -35,6 +37,13 @@ public interface ProductMapper {
 	@Mapping(source="totalPrice", target="price")
 	@Mapping(target = "loginId", ignore = true)
     public ProductDto mapView(OrderDetailsData orderDetails); 
+
+	@Mapping(source="productId", target="id")
+    public Product mapWfProduct(WFProduct wfProduct); 
+	
+	@Mapping(source="id", target="productId")
+	@Mapping(ignore = true, target = "id")
+	public ProductTransactionHistory maptoHistory(Product product);
 	
 	default List<ProductDto> mapViews(List<OrderDetailsData> orderDetails)
 	{

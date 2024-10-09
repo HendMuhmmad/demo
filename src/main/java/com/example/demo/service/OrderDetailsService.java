@@ -6,7 +6,5 @@ import com.example.demo.model.orm.OrderDetails;
 
 public interface OrderDetailsService {
 
-    List<OrderDetails> getAllOrderDetails(int userId, int orderId);
-
     OrderDetails createOrderDetail(OrderDetails orderDetails);
 }

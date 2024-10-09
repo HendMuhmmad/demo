@@ -137,15 +137,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     public void validateProduct(Product product) {
-
 	if (product == null || product.getId() == null)
 	    throw new BusinessException("product does not exist");
 
 	if (product.getStockQuantity() == null || product.getStockQuantity() < 0)
 	    throw new BusinessException("out of  Stock");
-	if (product.getWfStatus()==WFStatusEnum.REJECTED.getCode() || product.getWfStatus()==WFStatusEnum.UNDERAPPROVAL.getCode()
-				|| product.getWfStatus()==null)
-		throw new BusinessException("Product must be approved");
     }
 
     private void validateRole(User user) {

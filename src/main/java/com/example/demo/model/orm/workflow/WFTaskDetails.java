@@ -60,6 +60,6 @@ public class WFTaskDetails {
     @Column(name = "DESCRIPTION")
     private String description;
 
-    @Column(name = "WF_STATUS")
-    private Long wfStatus;
+    @Column(name = "STATUS")
+    private Long status;
 }

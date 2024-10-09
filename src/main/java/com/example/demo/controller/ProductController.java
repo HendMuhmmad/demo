@@ -18,8 +18,7 @@ import com.example.demo.mapper.ProductMapper;
 import com.example.demo.model.dto.ProductDto;
 import com.example.demo.model.dto.ProductUpdateDto;
 import com.example.demo.model.dto.ProductUpdateStockQuantityDTO;
-import com.example.demo.model.dto.workflow.ApprovalDto;
-import com.example.demo.model.dto.workflow.RejectionDto;
+import com.example.demo.model.dto.workflow.ResponseDto;
 import com.example.demo.model.orm.workflow.WFTaskDetails;
 import com.example.demo.service.ProductService;
 import com.example.demo.service.WFProductService;
@@ -36,8 +35,8 @@ public class ProductController {
 
     @PostMapping("/createProduct")
     public ResponseEntity<String> createProduct(@RequestBody ProductDto productdto) {
-	productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId());
-	return ResponseEntity.ok("Product created successfully with ID: ");
+	productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId(),true);
+	return ResponseEntity.ok("Product created successfully ");
     }
 
     @PutMapping("/updateProductStockQuantity")
@@ -49,7 +48,7 @@ public class ProductController {
 
     @PutMapping("/updateProduct")
     public ResponseEntity<String> updateProduct(@RequestBody ProductUpdateDto productUpdateDto) {
-	productService.save(ProductMapper.INSTANCE.mapUpdateProduct(productUpdateDto), productUpdateDto.getLoginId());
+	productService.save(ProductMapper.INSTANCE.mapUpdateProduct(productUpdateDto), productUpdateDto.getLoginId(),false);
 	return ResponseEntity.ok("Product updated successfully");
 
     }
@@ -64,23 +63,5 @@ public class ProductController {
     @GetMapping("/getAllProduct")
     public List<ProductDto> getAllProduct() {
 	return ProductMapper.INSTANCE.mapProducts(productService.getAllProduct());
-    }
-
-     @GetMapping("/tasks")
-     public ResponseEntity<List<WFTaskDetails>> getProductWorkflowTasks(@RequestParam Long assigneeId) {
-     List<WFTaskDetails> tasks = wfProductService.getTasksByAssigneeId(assigneeId);
-     return ResponseEntity.ok(tasks); 
-     }
-
-    @PostMapping("/tasks/approve")
-    public ResponseEntity<String> approve(@RequestBody ApprovalDto approvalDto) {
-        wfProductService.approveTask(approvalDto.getTaskId(), approvalDto.getLoginId(), approvalDto.getNote());
-        return ResponseEntity.ok("{\"message\":\"Approved Successfully\"}");
-    }
-
-    @PostMapping("/tasks/reject")
-    public ResponseEntity<String> rejectProductRequest(@RequestBody RejectionDto rejectionDto) {
-        wfProductService.rejectTask(rejectionDto.getTaskId(), rejectionDto.getLoginId(), rejectionDto.getRejectionReason(), rejectionDto.getNote());
-        return ResponseEntity.ok("{\"message\":\"Rejected Successfully\"}");
     }
 }

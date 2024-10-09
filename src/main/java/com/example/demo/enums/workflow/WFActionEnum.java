@@ -14,4 +14,10 @@ public enum WFActionEnum {
     public Long getAction() {
         return action;
     }
+    public static Long fromString(String Action) {
+    	if (Action.equalsIgnoreCase("approve")||Action.equalsIgnoreCase("approved")) return APPROVED.getAction();
+    	if (Action.equalsIgnoreCase("reject")||Action.equalsIgnoreCase("rejected")) return REJECTED.getAction();
+        
+    	throw new IllegalArgumentException("Unknown action: " + Action);
+    }
 }

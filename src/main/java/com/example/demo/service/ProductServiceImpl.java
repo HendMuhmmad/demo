@@ -4,14 +4,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.enums.RoleEnum;
-import com.example.demo.enums.workflow.WFAsigneeRoleEnum;
+import com.example.demo.enums.workflow.WFAssigneeRoleEnum;
 import com.example.demo.enums.workflow.WFInstanceStatusEnum;
 import com.example.demo.enums.workflow.WFProcessesEnum;
-import com.example.demo.enums.workflow.WFStatusEnum;
+import com.example.demo.enums.workflow.WFProductStatusEnum;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.orm.Product;
 import com.example.demo.model.orm.User;
@@ -43,7 +46,7 @@ public class ProductServiceImpl implements ProductService {
     
     @Autowired
     private WFProductRepository wfProductRepository;
-    
+
 	@Override
 	public Product findbyId(Long productId) {
 		return productRepository.findById(productId)
@@ -51,7 +54,7 @@ public class ProductServiceImpl implements ProductService {
 
 	}
 
-	public void save(Product theProduct, Long loginId) throws BusinessException {
+	public void save(Product theProduct, Long loginId, boolean isNew) throws BusinessException {
 		Long roleId = userService.getUserById(loginId).get().getRoleId();
 		if (theProduct.getPrice() == 0 || theProduct.getProductName() == null) {
 			throw new BusinessException("Product price and name shoud not be null");
@@ -59,7 +62,7 @@ public class ProductServiceImpl implements ProductService {
 		if (roleId == RoleEnum.SUPER_ADMIN.getCode() ) {
 			saveAsSuperAdmin(theProduct,loginId);
 		} else if (roleId == RoleEnum.ADMIN.getCode()) {
-			saveAsAdmin(theProduct,loginId);
+			saveAsAdmin(theProduct,loginId, isNew);
 		}
 		else {
 			// Return an error response indicating unauthorized access
@@ -68,40 +71,36 @@ public class ProductServiceImpl implements ProductService {
 	}
 	
 	public void saveAsSuperAdmin(Product theProduct, Long loginId) throws BusinessException{
-		theProduct.setWfStatus(1L); // approved 
 		productRepository.save(theProduct);
 	}
 	
-	public void saveAsAdmin(Product theProduct, Long loginId) throws BusinessException{
+	public void saveAsAdmin(Product theProduct, Long loginId, boolean isNew) throws BusinessException{
 		// create process instance
-		WFInstance wfInstance = createWFInstance(WFProcessesEnum.ADD_PRODUCT.getCode(),loginId);
+		WFInstance wfInstance;
+		if (isNew)
+		{
+			wfInstance = createWFInstance(WFProcessesEnum.ADD_PRODUCT.getCode(), loginId);
+			createWFProduct(theProduct,wfInstance.getId(),WFProductStatusEnum.ADDED);	
+		} else {
+			wfInstance = createWFInstance(WFProcessesEnum.UPDATE_PRODUCT.getCode(), loginId);
+			createWFProduct(theProduct,wfInstance.getId(),WFProductStatusEnum.UPDATED);	
+		}
 		// pick random superadmin
 		Long assigneeId = findRandomSuperAdminId();
 		// create process instance task
-		createWFTask(wfInstance.getId(), assigneeId, WFAsigneeRoleEnum.SUPERADMIN.getRole());;
-		// create product with wf_status 0
-		theProduct.setWfStatus(WFStatusEnum.UNDERAPPROVAL.getCode()); // underapproval 
-		// save product
-		theProduct = productRepository.save(theProduct);
+		createWFTask(wfInstance.getId(), assigneeId, WFAssigneeRoleEnum.SUPERADMIN.getRole());;
 		// create wfProduct
-		createWFProduct(theProduct.getId(),wfInstance.getId());
-		
 	}
 	
 
 	public void updateProductQuantity(Long productId, int newQuantity, Long loginId) throws BusinessException {
-		Long roleId = userService.getUserById(loginId).get().getRoleId();
-		if (roleId == RoleEnum.SUPER_ADMIN.getCode() || roleId == RoleEnum.ADMIN.getCode()) {
-			Product product = productRepository.findById(productId).orElse(null);
-			if (product != null) {
-				// Update product stock quantity
-				product.setStockQuantity(newQuantity);
-				productRepository.save(product);
-			} else {
-				throw new BusinessException("Product not found.");
-			}
+		Product product = productRepository.findById(productId).orElse(null);
+		if (product != null) {
+			// Update product stock quantity
+			Product updatedProduct = clone(product,newQuantity);
+			save(updatedProduct,loginId,false);
 		} else {
-			throw new BusinessException("Product addition failed - Unauthorized");
+			throw new BusinessException("No product found");
 		}
 	}
 
@@ -119,22 +118,40 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public void deleteProduct(Long productId, Long loginId) throws BusinessException {
 		Long roleId = userService.getUserById(loginId).get().getRoleId();
-		if (!productRepository.findById(productId).isPresent())
+		Product theProduct = productRepository.findById(productId).orElse(null);
+		if (theProduct==null)
 			throw new BusinessException("Product not found.");
 
-		if (roleId == RoleEnum.SUPER_ADMIN.getCode() || roleId == RoleEnum.ADMIN.getCode()) {
-			productRepository.deleteById(productId);
+		if (roleId == RoleEnum.SUPER_ADMIN.getCode()) {
+			deleteAsSuperAdmin(productId);
+		} else if (roleId == RoleEnum.ADMIN.getCode()) {
+			deleteAsAdmin(theProduct,loginId);
 		} else {
 			throw new BusinessException("Product addition failed - Unauthorized");
 		}
 	}
 
+	private void deleteAsAdmin(Product theProduct, Long loginId) {
+		// create process instance
+		WFInstance wfInstance = createWFInstance(WFProcessesEnum.DELETE_PRODUCT.getCode(), loginId);
+		// pick random superadmin
+		Long assigneeId = findRandomSuperAdminId();
+		// create process instance task
+		createWFTask(wfInstance.getId(), assigneeId, WFAssigneeRoleEnum.SUPERADMIN.getRole());;
+		// create wfProduct
+		createWFProduct(theProduct,wfInstance.getId(),WFProductStatusEnum.DELETED);		
+	}
+
+	private void deleteAsSuperAdmin(Long productId) {
+		productRepository.deleteById(productId);
+	}
+
 	@Override
 	public List<Product> getAllProduct() {
-		return productRepository.findByWfStatus(1L);
+		return productRepository.findAll();
 	}
 	
-    private WFInstance createWFInstance(Long processId, Long requesterId) {
+    public WFInstance createWFInstance(Long processId, Long requesterId) {
         WFInstance wfInstance = new WFInstance();
         wfInstance.setProcessId(processId);
         wfInstance.setRequesterId(requesterId);
@@ -144,13 +161,13 @@ public class ProductServiceImpl implements ProductService {
         return wfInstanceRepository.save(wfInstance); // Save the instance
     }
     
-    private WFTask createWFTask(Long instanceId, Long assigneeId, String assigneeRole) {
+    public WFTask createWFTask(Long instanceId, Long assigneeId, String assigneeRole) {
         WFTask wfTask = new WFTask(instanceId, assigneeId, assigneeRole, new Date());
         return wfTaskRepository.save(wfTask); // Save the task
     }
     
-    private WFProduct createWFProduct(Long productId,Long instanceId) {
-		WFProduct wfProduct = new WFProduct(productId,instanceId);
+    public WFProduct createWFProduct(Product product,Long instanceId, WFProductStatusEnum status) {
+		WFProduct wfProduct = new WFProduct(product,instanceId,status.getCode());
         return wfProductRepository.save(wfProduct); // Save the task
     }
     
@@ -168,5 +185,18 @@ public class ProductServiceImpl implements ProductService {
     public List<WFTask> getTasksByInstanceId(Long instanceId) {
         return wfTaskRepository.findByInstanceIdOrderByIdAsc(instanceId); // Fetch tasks by instance ID
     }
+    
+    public Product clone(Product product, Integer newQuantity) {
+        Product clonedProduct = new Product();
+        clonedProduct.setId(product.getId()); 
+        clonedProduct.setProductName(product.getProductName());
+        clonedProduct.setPrice(product.getPrice());
+        clonedProduct.setColor(product.getColor());
+        clonedProduct.setStockQuantity(newQuantity);
+        clonedProduct.setDescription(product.getDescription());
+        clonedProduct.setCreationDate(product.getCreationDate()); // Keep the original date; optional
+        return clonedProduct;
+    }
+
 
 }

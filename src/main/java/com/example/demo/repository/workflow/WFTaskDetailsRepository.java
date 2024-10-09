@@ -9,6 +9,6 @@ import com.example.demo.model.orm.workflow.WFTaskDetails;
 
 public interface WFTaskDetailsRepository extends JpaRepository<WFTaskDetails, Long> {
     Optional<WFTaskDetails> findByTaskId(Long taskId);
-    List<WFTaskDetails> findByAssigneeIdAndWfStatus(Long assigneeId, Long statusId);
+    List<WFTaskDetails> findByAssigneeIdAndAction(Long assigneeId, String Action);
 
 }

@@ -1,11 +1,11 @@
 package com.example.demo.enums.workflow;
 
-public enum WFAsigneeRoleEnum {
+public enum WFAssigneeRoleEnum {
     SUPERADMIN("Super Admin");
 
     private final String role;
 
-    private WFAsigneeRoleEnum(String role) {
+    private WFAssigneeRoleEnum(String role) {
         this.role = role;
     }
 
