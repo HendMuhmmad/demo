@@ -59,21 +59,9 @@ public class ProductController {
 	return ProductMapper.INSTANCE.mapProducts(productService.getAllProduct());
     }
 
-    // @GetMapping("/tasks")
-    // public ResponseEntity<List<ProductWorkflowTask>> getProductWorkflowTasks(@RequestParam Integer userId) {
-    // List<ProductWorkflowTask> tasks = productWorkflowService.getTasksByUserId(userId);
-    // return ResponseEntity.ok(tasks);
+    // @PostMapping("/send")
+    // public void sendProduct(@RequestBody ProductDto productDto) {
+    // this.productService.init(ProductMapper.INSTANCE.mapCreateProduct(productDto), productDto.getLoginId());
     // }
 
-    @PostMapping("/tasks/approve")
-    public ResponseEntity<String> approve(@RequestParam Integer taskId) {
-	// productWorkflowService.approveTask(taskId);
-	return ResponseEntity.ok("{\"message\":\"Approved Successfully\"}");
-    }
-
-    @PostMapping("/tasks/reject")
-    public ResponseEntity<String> rejectProductRequest(@RequestParam Integer taskId) {
-	// productWorkflowService.rejectTask(taskId);
-	return ResponseEntity.ok("{\"message\":\"Rejected Successfully\"}");
-    }
 }

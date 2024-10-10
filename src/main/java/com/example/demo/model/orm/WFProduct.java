@@ -1,11 +1,19 @@
 package com.example.demo.model.orm;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+
 import lombok.Data;
-import javax.persistence.*;
 
 @Entity
 @Table(name = "ECO_WF_PRODUCT")
 @Data
-public class WFProduct{
+public class WFProduct {
 
     @Id
     @Column(name = "ID")
@@ -21,4 +29,25 @@ public class WFProduct{
 
     @Column(name = "WF_INSTANCE_ID")
     private Long wfInstanceId;
+
+    @Column(name = "Product_Name",
+	    nullable = false)
+    private String productName;
+
+    @Column(name = "Price",
+	    nullable = false)
+    private Double price;
+
+    @Column(name = "Color")
+    private String color;
+
+    @Column(name = "Stock_Quantity")
+    private Integer stockQuantity;
+
+    @Column(name = "Description")
+    private String description;
+
+    @Column(name = "STATUS")
+    private Long status;
+
 }

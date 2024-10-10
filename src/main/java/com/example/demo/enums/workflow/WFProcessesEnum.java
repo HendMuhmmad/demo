@@ -5,7 +5,7 @@ public enum WFProcessesEnum {
     UPDATE_PRODUCT(2),
     DELETE_PRODUCT(3);
 
-    private long code;
+    private Long code;
 
     private WFProcessesEnum(long code) {
 	this.code = code;

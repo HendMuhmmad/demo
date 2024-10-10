@@ -1,3 +1,4 @@
+
 package com.example.demo.model.orm;
 
 import java.util.Date;
@@ -23,19 +24,23 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
-@Table(name = "ECO_PRODUCT")
-public class Product {
+@Table(name = "ECO_PRODUCT_TRNS_HISTORY")
+public class ProductTranHistory {
 
     @Id
-    @SequenceGenerator(name = "ECO_PRODUCT_SEQ",
-	    sequenceName = "ECO_PRODUCT_SEQ",
+    @SequenceGenerator(name = "ECO_PRODUCT_TRNS_HISTORY_SEQ",
+	    sequenceName = "ECO_PRODUCT_TRNS_HISTORY_SEQ",
 	    allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE,
-	    generator = "ECO_PRODUCT_SEQ")
+	    generator = "ECO_PRODUCT_TRNS_HISTORY_SEQ")
     private Long id;
     @Column(name = "Product_Name",
 	    nullable = false)
     private String productName;
+
+    @Column(name = "Product_ID",
+	    nullable = false)
+    private Long productId;
 
     @Column(name = "Price",
 	    nullable = false)
@@ -53,6 +58,9 @@ public class Product {
     @Column(name = "Creation_Date")
     @Temporal(TemporalType.DATE)
     private Date creationDate;
+
+    @Column(name = "STATUS")
+    private Integer status;
 
     @PrePersist
     protected void onCreate() {
