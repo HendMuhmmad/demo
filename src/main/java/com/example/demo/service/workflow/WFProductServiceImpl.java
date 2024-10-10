@@ -106,6 +106,7 @@ public class WFProductServiceImpl implements WFProductService{
 	    // Perform actions for approval or rejection
 	    task.setActionId(WFActionEnum.fromString(response)); 
 	    task.setNotes(note);  // Set note
+	    task.setActionDate(new Date());
 	    wfInstance.setStatus(WFInstanceStatusEnum.DONE.getCode());  // Set instance status to APPROVED or REJECTED
 	    if (WFActionEnum.fromString(response) == WFActionEnum.REJECTED.getAction())
 	    	task.setRefuseReasons(rejectionReason);
