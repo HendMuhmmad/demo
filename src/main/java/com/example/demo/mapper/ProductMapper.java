@@ -26,6 +26,10 @@ public interface ProductMapper {
 
 	@Mapping(source="id", target="productId")
     public WFProduct mapProductDto(ProductDto productdto);
+	
+	@Mapping(source="productId", target="id")
+    public Product mapWFProduct(WFProduct product);
+
 
     public List<ProductDto> mapProducts(List<Product> products);
     

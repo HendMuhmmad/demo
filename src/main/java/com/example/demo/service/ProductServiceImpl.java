@@ -10,6 +10,7 @@ import com.example.demo.enums.ProductStatusEnum;
 import com.example.demo.enums.RoleEnum;
 import com.example.demo.enums.workflow.WFProcessesEnum;
 import com.example.demo.exception.BusinessException;
+import com.example.demo.mapper.ProductMapper;
 import com.example.demo.model.orm.Product;
 import com.example.demo.model.orm.ProductTransactionHistory;
 import com.example.demo.model.orm.workflow.product.WFProduct;
@@ -51,7 +52,6 @@ public class ProductServiceImpl implements ProductService {
 	public void deleteProduct(Long productId, Long loginId) throws BusinessException {
 		validateAuthRoles(loginId);
 		validateProductExists(productId);
-
 		WFProduct wfProduct = new WFProduct();
 		wfProduct.setProductId(productId);
 		productWorkFlowService.initProductWorkFlow(WFProcessesEnum.DELETE_PRODUCT.getCode(), wfProduct, loginId);
@@ -64,7 +64,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public void doApproveEffect(WFProduct wfProduct) {
-		Product product = constructProduct(wfProduct);
+		Product product = ProductMapper.INSTANCE.mapWFProduct(wfProduct);
 		if (wfProduct.getStatus() == ProductStatusEnum.ADD.getCode()) {
 			product.setCreationDate(new Date());
 			productRepository.save(product);
@@ -105,17 +105,6 @@ public class ProductServiceImpl implements ProductService {
 				oldProduct.getProductName(), oldProduct.getPrice(), oldProduct.getColor(),
 				oldProduct.getStockQuantity(), oldProduct.getDescription(), status, new Date());
 		productTransactionHistoryRepository.save(transactionHistory);
-	}
-
-	private Product constructProduct(WFProduct wfProduct) {
-		Product product = new Product();
-		product.setId(wfProduct.getProductId());
-		product.setColor(wfProduct.getColor());
-		product.setDescription(wfProduct.getDescription());
-		product.setPrice(wfProduct.getPrice());
-		product.setProductName(wfProduct.getProductName());
-		product.setStockQuantity(wfProduct.getStockQuantity());
-		return product;
 	}
 
 	private void validateProductMandatoryFields(WFProduct wfProduct) {

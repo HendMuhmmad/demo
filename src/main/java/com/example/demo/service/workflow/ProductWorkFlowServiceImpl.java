@@ -139,6 +139,7 @@ public class ProductWorkFlowServiceImpl implements ProductWorkFlowService {
 	}
 
 	private void updateWFProduct(Long processId, WFProduct wfProduct, Long wfInstanceId) {
+		checkRunningWorkFlowRequests(wfProduct, wfInstanceId);
 		wfProduct.setWfInstanceId(wfInstanceId);
 		setProductStatusBasedOnProcess(wfProduct, processId);
 		wfProductRepository.save(wfProduct);
@@ -194,6 +195,12 @@ public class ProductWorkFlowServiceImpl implements ProductWorkFlowService {
 
 	private void validateRefuseNotes(String refuseNotes) {
 		validateNotNullOrEmpty(refuseNotes, "Refuse Notes");
+	}
+
+	private void checkRunningWorkFlowRequests(WFProduct wfProduct, Long wfInstanceId) {
+		if (!wfProductRepository.checkRunningWorkFlowRequests(wfProduct.getId(), wfInstanceId).isEmpty()) {
+			throw new BusinessException("Product is already attached to another workflow instance");
+		}
 	}
 
 	private WFTask getTaskById(Long taskId) {
