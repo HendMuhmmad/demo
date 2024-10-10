@@ -8,10 +8,10 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import com.example.demo.model.dto.ProductDto;
-import com.example.demo.model.dto.ProductUpdateDto;
 import com.example.demo.model.dto.ProductUpdateStockQuantityDTO;
-import com.example.demo.model.orm.Product;
 import com.example.demo.model.orm.OrderDetailsData;
+import com.example.demo.model.orm.Product;
+import com.example.demo.model.orm.workflow.product.WFProduct;
 
 @Mapper
 public interface ProductMapper {
@@ -21,12 +21,11 @@ public interface ProductMapper {
     public ProductUpdateStockQuantityDTO mapUpdateProduct(Product product);
 
     public Product mapUpdateProduct(ProductUpdateStockQuantityDTO productdto);
-
-    public Product mapUpdateProduct(ProductUpdateDto productdto);
     
-    public ProductDto mapCreateProduct(Product product);
+    public ProductDto mapProduct(Product product);
 
-    public Product mapCreateProduct(ProductDto productdto);
+	@Mapping(source="id", target="productId")
+    public WFProduct mapProductDto(ProductDto productdto);
 
     public List<ProductDto> mapProducts(List<Product> products);
     

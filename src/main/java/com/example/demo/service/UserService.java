@@ -15,4 +15,8 @@ public interface UserService {
     public User updateUser(User user);
 
     public void deleteUser(Long loginId, Long customerId);
+
+	public List<User> getUserByRoleId(Long roleId);
+
+	public User findById(Long userId);
 }

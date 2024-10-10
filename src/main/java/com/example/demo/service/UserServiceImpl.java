@@ -113,4 +113,14 @@ public class UserServiceImpl implements UserService {
 
 		userRepository.delete(customer);
 	}
+
+	@Override
+	public List<User> getUserByRoleId(Long roleId) {
+		return userRepository.findByRoleId(roleId);
+	}
+
+	@Override
+	public User findById(Long userId) {
+		return  userRepository.findById(userId).orElseThrow(()-> new BusinessException("User not found."));
+	}
 }

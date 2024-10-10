@@ -11,11 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.orm.Order;
 import com.example.demo.model.orm.OrderDetails;
+import com.example.demo.model.orm.OrderDetailsData;
 import com.example.demo.model.orm.Product;
 import com.example.demo.model.orm.User;
-import com.example.demo.model.orm.OrderDetailsData;
-import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.OrderDetailsDataRepository;
+import com.example.demo.repository.OrderRepository;
 
 @Service
 @Transactional
@@ -103,8 +103,9 @@ public class OrderServiceImpl implements OrderService {
 	    throw new BusinessException("Out of stock");
 	}
 	// returnProduct.setStockQuantity(remainingQuantity);
-	productService.updateProductQuantityWithOutAuth(returnProduct.getId(), returnProduct.getStockQuantity());
+	productService.updateProductQuantityWithoutAuth(returnProduct.getId(), returnProduct.getStockQuantity());
     }
+	
 
     private Order createAndSaveOrder(Long userId) {
 	Order order = new Order(userId, new Date(), generateUUID());
@@ -168,6 +169,6 @@ public class OrderServiceImpl implements OrderService {
 	if (productId == null) {
 	    throw new BusinessException("product does not exist");
 	}
-	return productService.findbyId(productId);
+	return productService.findById(productId);
     }
 }

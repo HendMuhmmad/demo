@@ -52,8 +52,7 @@ public class User {
     private String password;
 
     @Column(name = "Email",
-	    nullable = false,
-	    unique = true)
+	    nullable = false)
     private String email;
 
     @Column(name = "Address")

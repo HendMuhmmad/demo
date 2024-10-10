@@ -4,18 +4,20 @@ import java.util.List;
 
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.orm.Product;
+import com.example.demo.model.orm.workflow.product.WFProduct;
 
 public interface ProductService {
-    public Product findbyId(Long theId);
+    public Product findById(Long productId);
 
-    public Long save(Product theProduct, Long loginId);
+    public void save(WFProduct wfProduct, Long loginId);
 
     public void deleteProduct(Long productId, Long loginId);
 
-    public void updateProductQuantity(Long productId, int newQuantity, Long loginId);
+    public List<Product> getAllProducts();
 
-    public List<Product> getAllProduct();
+	public void doApproveEffect(WFProduct wfProduct);
+	
+    public void updateProductQuantityWithoutAuth(Long productId, int newQuantity) throws BusinessException;
 
-    public void updateProductQuantityWithOutAuth(Long productId, int newQuantity) throws BusinessException;
 
 }

@@ -40,7 +40,7 @@ public class Product {
 
     @Column(name = "Price",
 	    nullable = false)
-    private double price;
+    private Double price;
 
     @Column(name = "Color")
     private String color;
@@ -50,9 +50,6 @@ public class Product {
 
     @Column(name = "Description")
     private String description;
-    
-    @Column(name = "WF_STATUS")
-    private Long wfStatus;
 
     @Column(name = "Creation_Date")
     @Temporal(TemporalType.DATE)

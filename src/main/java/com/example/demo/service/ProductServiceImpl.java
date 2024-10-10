@@ -1,88 +1,143 @@
 package com.example.demo.service;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.enums.ProductStatusEnum;
 import com.example.demo.enums.RoleEnum;
+import com.example.demo.enums.workflow.WFProcessesEnum;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.orm.Product;
+import com.example.demo.model.orm.ProductTransactionHistory;
+import com.example.demo.model.orm.workflow.product.WFProduct;
 import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.ProductTransactionHistoryRepository;
+import com.example.demo.service.workflow.ProductWorkFlowService;
 
 @Service
 public class ProductServiceImpl implements ProductService {
-	@Autowired
-	public ProductRepository productRepository;
 
 	@Autowired
-	public UserService userService;
+	private ProductRepository productRepository;
+
+	@Autowired
+	private UserService userService;
+
+	@Autowired
+	private ProductWorkFlowService productWorkFlowService;
+
+	@Autowired
+	private ProductTransactionHistoryRepository productTransactionHistoryRepository;
 
 	@Override
-	public Product findbyId(Long productId) {
+	public Product findById(Long productId) {
 		return productRepository.findById(productId)
 				.orElseThrow(() -> new BusinessException("Cannot find product in DB"));
-
 	}
 
-	public Long save(Product theProduct, Long loginId) throws BusinessException {
-		Long roleId = userService.getUserById(loginId).get().getRoleId();
-		if (theProduct.getPrice() == 0 || theProduct.getProductName() == null) {
-			throw new BusinessException("Product price and name shoud not be null");
-		}
-		if (roleId == RoleEnum.SUPER_ADMIN.getCode() || roleId == RoleEnum.ADMIN.getCode()) {
-			Product product = productRepository.save(theProduct);
-			// Return a success response with the product ID
-			return product.getId();
-		} else {
-			// Return an error response indicating unauthorized access
-			throw new BusinessException("Product addition failed - Unauthorized");
-		}
-	}
-
-	public void updateProductQuantity(Long productId, int newQuantity, Long loginId) throws BusinessException {
-		Long roleId = userService.getUserById(loginId).get().getRoleId();
-		if (roleId == RoleEnum.SUPER_ADMIN.getCode() || roleId == RoleEnum.ADMIN.getCode()) {
-			Product product = productRepository.findById(productId).orElse(null);
-			if (product != null) {
-				// Update product stock quantity
-				product.setStockQuantity(newQuantity);
-				productRepository.save(product);
-			} else {
-				throw new BusinessException("Product not found.");
-			}
-		} else {
-			throw new BusinessException("Product addition failed - Unauthorized");
-		}
-	}
-
-	public void updateProductQuantityWithOutAuth(Long productId, int newQuantity) throws BusinessException {
-		Product product = productRepository.findById(productId).orElse(null);
-		if (product != null) {
-			// Update product stock quantity
-			product.setStockQuantity(newQuantity);
-			productRepository.save(product);
-		} else {
-			throw new BusinessException("Product not found.");
-		}
+	@Override
+	public void save(WFProduct wfProduct, Long loginId) throws BusinessException {
+		validateAuthRoles(loginId);
+		validateProductMandatoryFields(wfProduct);
+		Long processId = (wfProduct.getProductId() == null) ? WFProcessesEnum.ADD_PRODUCT.getCode()
+				: validateAndGetUpdateProcessId(wfProduct);
+		productWorkFlowService.initProductWorkFlow(processId, wfProduct, loginId);
 	}
 
 	@Override
 	public void deleteProduct(Long productId, Long loginId) throws BusinessException {
-		Long roleId = userService.getUserById(loginId).get().getRoleId();
-		if (!productRepository.findById(productId).isPresent())
-			throw new BusinessException("Product not found.");
+		validateAuthRoles(loginId);
+		validateProductExists(productId);
 
-		if (roleId == RoleEnum.SUPER_ADMIN.getCode() || roleId == RoleEnum.ADMIN.getCode()) {
-			productRepository.deleteById(productId);
-		} else {
-			throw new BusinessException("Product addition failed - Unauthorized");
+		WFProduct wfProduct = new WFProduct();
+		wfProduct.setProductId(productId);
+		productWorkFlowService.initProductWorkFlow(WFProcessesEnum.DELETE_PRODUCT.getCode(), wfProduct, loginId);
+	}
+
+	@Override
+	public List<Product> getAllProducts() {
+		return productRepository.findAll();
+	}
+
+	@Override
+	public void doApproveEffect(WFProduct wfProduct) {
+		Product product = constructProduct(wfProduct);
+		if (wfProduct.getStatus() == ProductStatusEnum.ADD.getCode()) {
+			product.setCreationDate(new Date());
+			productRepository.save(product);
+		} else if (wfProduct.getStatus() == ProductStatusEnum.UPDATE.getCode()) {
+			updateExistingProduct(wfProduct, product);
+		} else if (wfProduct.getStatus() == ProductStatusEnum.DELETE.getCode()) {
+			deleteExistingProduct(wfProduct);
 		}
 	}
 
 	@Override
-	public List<Product> getAllProduct() {
-		return productRepository.findAll();
+	public void updateProductQuantityWithoutAuth(Long productId, int newQuantity) throws BusinessException {
+		Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new BusinessException("Product not found."));
+		product.setStockQuantity(newQuantity);
+		productRepository.save(product);
 	}
 
+	private void updateExistingProduct(WFProduct wfProduct, Product product) {
+		Product oldProduct = getExistingProduct(wfProduct.getProductId());
+		product.setCreationDate(oldProduct.getCreationDate());
+		createProductTransactionHistory(oldProduct, wfProduct.getStatus());
+		productRepository.save(product);
+	}
+
+	private void deleteExistingProduct(WFProduct wfProduct) {
+		Product oldProduct = getExistingProduct(wfProduct.getProductId());
+		createProductTransactionHistory(oldProduct, wfProduct.getStatus());
+		productRepository.delete(oldProduct);
+	}
+
+	private Product getExistingProduct(Long productId) {
+		return productRepository.findById(productId).orElseThrow(() -> new BusinessException("Product not found."));
+	}
+
+	private void createProductTransactionHistory(Product oldProduct, Integer status) {
+		ProductTransactionHistory transactionHistory = new ProductTransactionHistory(null, oldProduct.getId(),
+				oldProduct.getProductName(), oldProduct.getPrice(), oldProduct.getColor(),
+				oldProduct.getStockQuantity(), oldProduct.getDescription(), status, new Date());
+		productTransactionHistoryRepository.save(transactionHistory);
+	}
+
+	private Product constructProduct(WFProduct wfProduct) {
+		Product product = new Product();
+		product.setId(wfProduct.getProductId());
+		product.setColor(wfProduct.getColor());
+		product.setDescription(wfProduct.getDescription());
+		product.setPrice(wfProduct.getPrice());
+		product.setProductName(wfProduct.getProductName());
+		product.setStockQuantity(wfProduct.getStockQuantity());
+		return product;
+	}
+
+	private void validateProductMandatoryFields(WFProduct wfProduct) {
+		if (wfProduct.getPrice() == null || wfProduct.getPrice() == 0 || wfProduct.getProductName() == null
+				|| wfProduct.getProductName().isEmpty()) {
+			throw new BusinessException("Product price and name should not be null or empty");
+		}
+	}
+
+	private void validateAuthRoles(Long loginId) {
+		Long roleId = userService.getUserById(loginId).get().getRoleId();
+		if (roleId != RoleEnum.SUPER_ADMIN.getCode() && roleId != RoleEnum.ADMIN.getCode()) {
+			throw new BusinessException("Product addition failed - Unauthorized");
+		}
+	}
+
+	private void validateProductExists(Long productId) {
+		productRepository.findById(productId).orElseThrow(() -> new BusinessException("Product not found."));
+	}
+
+	private Long validateAndGetUpdateProcessId(WFProduct wfProduct) {
+		validateProductExists(wfProduct.getProductId());
+		return WFProcessesEnum.UPDATE_PRODUCT.getCode();
+	}
 }

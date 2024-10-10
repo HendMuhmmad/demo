@@ -1,17 +1,17 @@
 package com.example.demo.enums.workflow;
 
 public enum WFProcessesEnum {
-    ADD_PRODUCT(1),
-    UPDATE_PRODUCT(2),
-    DELETE_PRODUCT(3);
+    ADD_PRODUCT(1L),
+    UPDATE_PRODUCT(2L),
+    DELETE_PRODUCT(3L);
 
-    private long code;
+    private Long code;
 
-    private WFProcessesEnum(long code) {
+    private WFProcessesEnum(Long code) {
 	this.code = code;
     }
 
-    public long getCode() {
+    public Long getCode() {
 	return code;
     }
 }

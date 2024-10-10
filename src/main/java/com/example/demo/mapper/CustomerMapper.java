@@ -3,6 +3,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;
+
 import com.example.demo.model.dto.CustomerDto;
 import com.example.demo.model.orm.OrderDetailsData;
 @Mapper
