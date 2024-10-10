@@ -37,11 +37,12 @@ import com.example.demo.repository.OrderDetailsRepository;
 import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.UserRepository;
-import com.example.demo.repository.workflow.ProductTransactionHistoryRepository;
-import com.example.demo.repository.workflow.WFInstanceRepository;
 import com.example.demo.repository.workflow.WFProductRepository;
-import com.example.demo.repository.workflow.WFTaskDetailsRepository;
-import com.example.demo.repository.workflow.WFTaskRepository;
+import com.example.demo.service.workflow.ProductTransactionHistoryService;
+import com.example.demo.service.workflow.WFInstanceService;
+import com.example.demo.service.workflow.WFProductServiceImpl;
+import com.example.demo.service.workflow.WFTaskDetailsService;
+import com.example.demo.service.workflow.WFTaskService;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
@@ -69,19 +70,19 @@ public class ProductWorkflowServiceUnitTest {
     public WFProductRepository wfProductRepository;
     
     @MockBean 
-    WFTaskDetailsRepository wfTaskDetailsRepository;
+    WFTaskDetailsService wfTaskDetailsService;
 
     @MockBean
-    WFInstanceRepository wfInstanceRepository;
+    WFInstanceService wfInstanceService;
     
     @MockBean 
-    WFTaskRepository wfTaskRepository;
+    WFTaskService wfTaskService;
     
     @MockBean
     UserRepository userRepository;
     
     @MockBean
-    ProductTransactionHistoryRepository productTransactionHistoryRepository;
+    ProductTransactionHistoryService productTransactionHistoryService;
     
     @Captor
     ArgumentCaptor<Product> productCaptor;
@@ -151,7 +152,7 @@ public class ProductWorkflowServiceUnitTest {
     	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
         // mock wf objects
     	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdmin1Id, updatedProduct,taskId);
-    	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyUpdateHistory(productTransactionHistoryId, product, updatedColor, updatedPrice, updatedStockQuantity));
+    	when(productTransactionHistoryService.save(any())).thenReturn(dummyUpdateHistory(productTransactionHistoryId, product, updatedColor, updatedPrice, updatedStockQuantity));
     	
         // act
         wfProductService.respondToTask(taskId, superAdmin1Id, "approve", "note", null);
@@ -164,7 +165,7 @@ public class ProductWorkflowServiceUnitTest {
         assertEquals(updatedCapturedProduct.getStockQuantity().intValue(),updatedStockQuantity.intValue());        
         
         // verify history
-        verify(productTransactionHistoryRepository,times(1)).save(productTransactionHistoryCaptor.capture());
+        verify(productTransactionHistoryService,times(1)).save(productTransactionHistoryCaptor.capture());
         ProductTransactionHistory history = productTransactionHistoryCaptor.getValue();
         assertEquals(history.getColor(), product.getColor());
         assertEquals(history.getStockQuantity(), product.getStockQuantity());
@@ -177,7 +178,7 @@ public class ProductWorkflowServiceUnitTest {
     	mockProductsForUpdate();
     	// mock wf objects
     	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdmin1Id, updatedProduct,taskId);
-    	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyUpdateHistory(productTransactionHistoryId, product, updatedColor, updatedPrice, updatedStockQuantity));
+    	when(productTransactionHistoryService.save(any())).thenReturn(dummyUpdateHistory(productTransactionHistoryId, product, updatedColor, updatedPrice, updatedStockQuantity));
     	
     	// mock 2 super admin
     	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
@@ -284,7 +285,7 @@ public class ProductWorkflowServiceUnitTest {
     	mockProductsForUpdate();
     	// mock wf objects
     	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdmin1Id, updatedProduct,taskId);
-    	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyUpdateHistory(productTransactionHistoryId, product, updatedColor, updatedPrice, updatedStockQuantity));
+    	when(productTransactionHistoryService.save(any())).thenReturn(dummyUpdateHistory(productTransactionHistoryId, product, updatedColor, updatedPrice, updatedStockQuantity));
     	
     	// mock 2 super admins
     	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
@@ -305,7 +306,7 @@ public class ProductWorkflowServiceUnitTest {
     	mockProductsForDelete();
     	// mock wf objects
     	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
-    	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyDeleteHistory(productTransactionHistoryId, product));
+    	when(productTransactionHistoryService.save(any())).thenReturn(dummyDeleteHistory(productTransactionHistoryId, product));
     	
     	// mock admin and super admin
     	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
@@ -319,7 +320,7 @@ public class ProductWorkflowServiceUnitTest {
         assertEquals(capturedId, productId);
         
         // verify history
-        verify(productTransactionHistoryRepository,times(1)).save(productTransactionHistoryCaptor.capture());
+        verify(productTransactionHistoryService,times(1)).save(productTransactionHistoryCaptor.capture());
         ProductTransactionHistory history = productTransactionHistoryCaptor.getValue();
         assertEquals(history.getColor(), product.getColor());
         assertEquals(history.getStockQuantity(), product.getStockQuantity());
@@ -332,7 +333,7 @@ public class ProductWorkflowServiceUnitTest {
     	mockProductsForDelete();
     	// mock wf objects
     	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
-    	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyDeleteHistory(productTransactionHistoryId, product));
+    	when(productTransactionHistoryService.save(any())).thenReturn(dummyDeleteHistory(productTransactionHistoryId, product));
     	
     	// mock admin and super admin
     	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
@@ -351,7 +352,7 @@ public class ProductWorkflowServiceUnitTest {
     	mockProductsForDelete();
     	// mock wf objects
     	mockGetWFObjectsForDelete(customerId, instanceId, wfProductId, superAdmin1Id, product,taskId);
-    	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyDeleteHistory(productTransactionHistoryId, product));
+    	when(productTransactionHistoryService.save(any())).thenReturn(dummyDeleteHistory(productTransactionHistoryId, product));
     	
     	// mock super admin and customer
     	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
@@ -369,7 +370,7 @@ public class ProductWorkflowServiceUnitTest {
     	mockProductsForDelete();
     	// mock wf objects
     	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
-    	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyUpdateHistory(productTransactionHistoryId, product, updatedColor, updatedPrice, updatedStockQuantity));
+    	when(productTransactionHistoryService.save(any())).thenReturn(dummyUpdateHistory(productTransactionHistoryId, product, updatedColor, updatedPrice, updatedStockQuantity));
     	
     	// mock admin and super admin
     	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
@@ -442,7 +443,7 @@ public class ProductWorkflowServiceUnitTest {
     	mockProductsForDelete();
     	// mock wf objects
     	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
-    	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyUpdateHistory(productTransactionHistoryId, product, updatedColor, updatedPrice, updatedStockQuantity));
+    	when(productTransactionHistoryService.save(any())).thenReturn(dummyUpdateHistory(productTransactionHistoryId, product, updatedColor, updatedPrice, updatedStockQuantity));
     	
     	// mock admin and super admin
     	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
@@ -461,26 +462,26 @@ public class ProductWorkflowServiceUnitTest {
 	 */
     
 	public void mockSaveWFObjectsForUpdate(Long adminId, Long instanceId, Long wfProductId, Long superAdminId, Product product) {
-		when(wfInstanceRepository.save(any())).thenReturn(dummyUpdateInstance(adminId, instanceId));
+		when(wfInstanceService.save(any())).thenReturn(dummyUpdateInstance(adminId, instanceId));
         when(wfProductRepository.save(any())).thenReturn(dummyUpdateWfProduct(product, instanceId, wfProductId));
-        when(wfTaskRepository.save(any())).thenReturn(dummyWfTask(instanceId, superAdminId));
+        when(wfTaskService.save(any())).thenReturn(dummyWfTask(instanceId, superAdminId));
 	}
 	
 	public void mockSaveWFObjectsForDelete(Long adminId, Long instanceId, Long wfProductId, Long superAdminId, Product product) {
-		when(wfInstanceRepository.save(any())).thenReturn(dummyDeleteInstance(adminId, instanceId));
+		when(wfInstanceService.save(any())).thenReturn(dummyDeleteInstance(adminId, instanceId));
         when(wfProductRepository.save(any())).thenReturn(dummyDeleteWfProduct(product, instanceId, wfProductId));
-        when(wfTaskRepository.save(any())).thenReturn(dummyWfTask(instanceId, superAdminId));
+        when(wfTaskService.save(any())).thenReturn(dummyWfTask(instanceId, superAdminId));
 	}
 
 	public void mockGetWFObjectsForUpdate(Long adminId, Long instanceId, Long wfProductId, Long superAdminId, Product updatedProduct, Long taskId) {
-		when(wfInstanceRepository.findById(any())).thenReturn(Optional.of(dummyUpdateInstance(adminId, instanceId)));
+		when(wfInstanceService.findById(any())).thenReturn(dummyUpdateInstance(adminId, instanceId));
         when(wfProductRepository.findByWfInstanceId(any())).thenReturn(Optional.of(dummyUpdateWfProduct(updatedProduct, instanceId, wfProductId)));
-        when(wfTaskRepository.findById(any())).thenReturn(Optional.of(dummyWfTask(instanceId, superAdminId)));
+        when(wfTaskService.findById(any())).thenReturn(dummyWfTask(instanceId, superAdminId));
 	}
 	public void mockGetWFObjectsForDelete(Long adminId, Long instanceId, Long wfProductId, Long superAdminId, Product product, Long taskId) {
-		when(wfInstanceRepository.findById(any())).thenReturn(Optional.of(dummyDeleteInstance(adminId, instanceId)));
+		when(wfInstanceService.findById(any())).thenReturn(dummyDeleteInstance(adminId, instanceId));
         when(wfProductRepository.findByWfInstanceId(any())).thenReturn(Optional.of(dummyDeleteWfProduct(product, instanceId, wfProductId)));
-        when(wfTaskRepository.findById(any())).thenReturn(Optional.of(dummyWfTask(instanceId, superAdminId)));
+        when(wfTaskService.findById(any())).thenReturn(dummyWfTask(instanceId, superAdminId));
 	}
 	
 

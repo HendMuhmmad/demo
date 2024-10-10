@@ -39,6 +39,8 @@ import com.example.demo.repository.workflow.WFInstanceRepository;
 import com.example.demo.repository.workflow.WFProductRepository;
 import com.example.demo.repository.workflow.WFTaskDetailsRepository;
 import com.example.demo.repository.workflow.WFTaskRepository;
+import com.example.demo.service.workflow.WFProductServiceImpl;
+import com.example.demo.service.workflow.WFTaskDetailsService;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
@@ -68,6 +70,9 @@ public class ProductServiceUnitTest {
     @MockBean 
     WFTaskDetailsRepository wfTaskDetailsRepository;
 
+    @MockBean 
+    WFTaskDetailsService wfTaskDetailsService;
+    
     @MockBean
     WFInstanceRepository wfInstanceRepository;
     
@@ -220,7 +225,7 @@ public class ProductServiceUnitTest {
     	// mock admin and superadmin
     	mockUser(adminId,RoleEnum.ADMIN);
     	mockSuperAdmins(superAdminId);
-    	when(wfProductService.hasOtherRunningTasks(productId)).thenReturn(true);
+    	when(wfTaskDetailsService.hasOtherRunningTasks(productId)).thenReturn(true);
         // Act
         assertThrows(BusinessException.class,()-> productService.save(updatedProduct,adminId));
     }
@@ -284,7 +289,7 @@ public class ProductServiceUnitTest {
     	// mock users including superadmin
     	mockUser(adminId,RoleEnum.ADMIN);
     	mockSuperAdmins(superAdminId);
-    	when(wfProductService.hasOtherRunningTasks(productId)).thenReturn(true);
+    	when(wfTaskDetailsService.hasOtherRunningTasks(productId)).thenReturn(true);
 
     	// Act
         assertThrows(BusinessException.class,()->productService.updateProductQuantity(product.getId(), updatedStockQuantity, adminId));
@@ -371,7 +376,7 @@ public class ProductServiceUnitTest {
     	// mock admin and super admin
     	mockUser(adminId,RoleEnum.ADMIN);
     	mockSuperAdmins(superAdminId);
-    	when(wfProductService.hasOtherRunningTasks(productId)).thenReturn(true);
+    	when(wfTaskDetailsService.hasOtherRunningTasks(productId)).thenReturn(true);
         // act
         assertThrows(BusinessException.class,()->productService.deleteProduct(product.getId(),adminId));
 

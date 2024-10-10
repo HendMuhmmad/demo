@@ -11,8 +11,9 @@ import com.example.demo.enums.workflow.WFProcessesEnum;
 import com.example.demo.enums.workflow.WFProductStatusEnum;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.orm.Product;
-import com.example.demo.model.orm.workflow.WFProduct;
 import com.example.demo.repository.ProductRepository;
+import com.example.demo.service.workflow.WFProductService;
+import com.example.demo.service.workflow.WFTaskDetailsService;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -25,6 +26,9 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private WFProductService wfProductService;
 
+    @Autowired
+    private WFTaskDetailsService wfTaskDetailsService;
+    
 	@Override
 	public Product findById(Long productId) {
 		return productRepository.findById(productId)
@@ -126,7 +130,7 @@ public class ProductServiceImpl implements ProductService {
 	
 	private Product validateProductAndCheckTasks(Long productId) throws BusinessException {
 	    Product product = validateProduct(productId);
-	    if (wfProductService.hasOtherRunningTasks(productId)) {
+	    if (wfTaskDetailsService.hasOtherRunningTasks(productId)) {
 	        throw new BusinessException("This product has other pending requests");
 	    }
 	    return product;

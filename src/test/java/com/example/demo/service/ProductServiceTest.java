@@ -33,6 +33,7 @@ import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.workflow.WFInstanceRepository;
 import com.example.demo.repository.workflow.WFProductRepository;
 import com.example.demo.repository.workflow.WFTaskRepository;
+import com.example.demo.service.workflow.WFProductServiceImpl;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)

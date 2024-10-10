@@ -37,7 +37,7 @@ import com.example.demo.repository.workflow.WFTaskDetailsRepository;
 import com.example.demo.repository.workflow.WFTaskRepository;
 import com.example.demo.service.ProductService;
 import com.example.demo.service.UserService;
-import com.example.demo.service.WFProductService;
+import com.example.demo.service.workflow.WFProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)

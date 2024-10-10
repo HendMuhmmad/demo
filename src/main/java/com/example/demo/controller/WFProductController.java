@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.model.dto.workflow.ResponseDto;
 import com.example.demo.model.orm.workflow.WFTaskDetails;
 import com.example.demo.service.ProductService;
-import com.example.demo.service.WFProductService;
+import com.example.demo.service.workflow.WFProductService;
 
 @RestController
 @RequestMapping("/api/product/tasks")

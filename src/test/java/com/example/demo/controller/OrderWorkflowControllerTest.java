@@ -41,7 +41,7 @@ import com.example.demo.repository.workflow.WFInstanceRepository;
 import com.example.demo.repository.workflow.WFProductRepository;
 import com.example.demo.repository.workflow.WFTaskDetailsRepository;
 import com.example.demo.repository.workflow.WFTaskRepository;
-import com.example.demo.service.WFProductService;
+import com.example.demo.service.workflow.WFProductService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

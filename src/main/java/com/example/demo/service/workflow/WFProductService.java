@@ -1,4 +1,4 @@
-package com.example.demo.service;
+package com.example.demo.service.workflow;
 
 import java.util.List;
 
@@ -29,8 +29,6 @@ public interface WFProductService {
 	public void initWorkflowObjects(Product theProduct, Long loginId, WFProcessesEnum process,
 			WFProductStatusEnum status, WFAssigneeRoleEnum superadmin, Long assigneeId);
 
-	WFInstance createWFInstance(WFProductStatusEnum process, Long requesterId);
-	
-	public boolean hasOtherRunningTasks(Long productId);
-	
+	WFInstance createWFInstance(WFProcessesEnum process, Long requesterId);
+
 }
