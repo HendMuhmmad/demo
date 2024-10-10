@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.model.dto.workflow.WFTaskActionDto;
 import com.example.demo.model.dto.workflow.WFTaskDto;
 import com.example.demo.model.orm.workflow.product.WFProduct;
-import com.example.demo.service.workflow.ProductWorkFlowService;
+import com.example.demo.service.workflow.product.ProductWorkFlowService;
 
 
 @RestController

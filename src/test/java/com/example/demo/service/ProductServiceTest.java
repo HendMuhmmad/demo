@@ -25,7 +25,7 @@ import com.example.demo.model.orm.workflow.product.WFProduct;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.ProductTransactionHistoryRepository;
 import com.example.demo.repository.workflow.product.WFProductRepository;
-import com.example.demo.service.workflow.ProductWorkFlowService;
+import com.example.demo.service.workflow.product.ProductWorkFlowService;
 
 @SpringBootTest
 public class ProductServiceTest {

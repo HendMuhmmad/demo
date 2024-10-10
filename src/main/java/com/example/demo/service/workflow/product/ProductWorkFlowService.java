@@ -1,4 +1,4 @@
-package com.example.demo.service.workflow;
+package com.example.demo.service.workflow.product;
 
 import java.util.List;
 

@@ -16,7 +16,7 @@ import com.example.demo.model.orm.ProductTransactionHistory;
 import com.example.demo.model.orm.workflow.product.WFProduct;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.ProductTransactionHistoryRepository;
-import com.example.demo.service.workflow.ProductWorkFlowService;
+import com.example.demo.service.workflow.product.ProductWorkFlowService;
 
 @Service
 public class ProductServiceImpl implements ProductService {

@@ -39,6 +39,7 @@ import com.example.demo.repository.workflow.WFInstanceRepository;
 import com.example.demo.repository.workflow.WFTaskRepository;
 import com.example.demo.repository.workflow.product.WFProductRepository;
 import com.example.demo.service.ProductService;
+import com.example.demo.service.workflow.product.ProductWorkFlowService;
 
 @SpringBootTest
 public class ProductWorkFlowServiceTest {
