@@ -95,14 +95,14 @@ public class ProductWorkFlowServiceTest {
 
 	@Test
 	void testDoTaskActionApproved() {
-		setupMockWorkflow(TASK_ID_1, SUPER_ADMIN_ID,INSTANCE_ID);
+		setupMockWorkflow(TASK_ID_1, SUPER_ADMIN_ID,INSTANCE_ID,WFProcessesEnum.ADD_PRODUCT.getCode(),null);
 		productWorkFlowService.doTaskAction(WFActionEnum.APPROVE.getCode(), TASK_ID_1, "Notes", null, SUPER_ADMIN_ID);
 		verifyTaskActionFlow(WFActionEnum.APPROVE.getCode(), WFInstanceStatusEnum.DONE.getCode(), true);
 	}
 
 	@Test
 	void testDoTaskActionRejected() {
-		setupMockWorkflow(TASK_ID_1, SUPER_ADMIN_ID, INSTANCE_ID);
+		setupMockWorkflow(TASK_ID_1, SUPER_ADMIN_ID, INSTANCE_ID,WFProcessesEnum.ADD_PRODUCT.getCode(),null);
 		productWorkFlowService.doTaskAction(WFActionEnum.REJECT.getCode(), TASK_ID_1, null, "Refuse Reasons", SUPER_ADMIN_ID);
 		verifyTaskActionFlow(WFActionEnum.REJECT.getCode(), WFInstanceStatusEnum.DONE.getCode(), false);
 	}
@@ -119,7 +119,7 @@ public class ProductWorkFlowServiceTest {
 
 	@Test
 	void testGetWFTaskById() {
-		Long wfInstanceId = setupMockWorkflow(TASK_ID_1, SUPER_ADMIN_ID, INSTANCE_ID);
+		Long wfInstanceId = setupMockWorkflow(TASK_ID_1, SUPER_ADMIN_ID, INSTANCE_ID,WFProcessesEnum.ADD_PRODUCT.getCode(),null);
 		WFTaskDto<WFProduct> result = productWorkFlowService.getProductWorkFlowTaskById(TASK_ID_1);
 		verifyTaskRetrieval(TASK_ID_1, wfInstanceId, result);
 	}
@@ -140,6 +140,17 @@ public class ProductWorkFlowServiceTest {
             productWorkFlowService.initProductWorkFlow(WFProcessesEnum.ADD_PRODUCT.getCode(), new WFProduct(),ADMIN_ID);
         });
         assertEquals("No Super Admins were found", exception.getMessage());
+    }
+	
+	@Test
+    void testInitProductWorkFlowWithCurrentluRunningRequests() {
+		mockSuperAdmin(SUPER_ADMIN_ID);
+		when(wfInstanceRepository.save(any(WFInstance.class))).thenReturn(createWFInstance(INSTANCE_ID, WFProcessesEnum.UPDATE_PRODUCT.getCode(), ADMIN_ID, WFInstanceStatusEnum.RUNNING.getCode()));
+		when(wfProductRepository.checkRunningWorkFlowRequests(PRODUCT_ID, INSTANCE_ID)).thenReturn(List.of(createWFProduct(INSTANCE_ID, PRODUCT_ID, ProductStatusEnum.UPDATE.getCode())));
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            productWorkFlowService.initProductWorkFlow(WFProcessesEnum.UPDATE_PRODUCT.getCode(),createWFProduct(null, PRODUCT_ID, null),ADMIN_ID);
+        });
+        assertEquals("Product is already attached to another workflow instance", exception.getMessage());
     }
 
 	@Test
@@ -163,7 +174,7 @@ public class ProductWorkFlowServiceTest {
 	
 	@Test
 	void testDoTaskActionNotOwner() {
-	    setupMockWorkflow(TASK_ID_1, ADMIN_ID, INSTANCE_ID);
+	    setupMockWorkflow(TASK_ID_1, ADMIN_ID, INSTANCE_ID,WFProcessesEnum.ADD_PRODUCT.getCode(),null);
 	    BusinessException exception = assertThrows(BusinessException.class, () -> {
 	        productWorkFlowService.doTaskAction(WFActionEnum.APPROVE.getCode(), TASK_ID_1, "Notes", null, SUPER_ADMIN_ID);
 	    });
@@ -172,7 +183,7 @@ public class ProductWorkFlowServiceTest {
 
 	@Test
 	void testDoTaskActionWorkflowNotRunning() {
-	    setupMockWorkflow(TASK_ID_1, SUPER_ADMIN_ID, INSTANCE_ID);
+	    setupMockWorkflow(TASK_ID_1, SUPER_ADMIN_ID, INSTANCE_ID,WFProcessesEnum.ADD_PRODUCT.getCode(),null);
 	    when(wfInstanceRepository.findById(INSTANCE_ID)).thenReturn(Optional.of(createWFInstance(INSTANCE_ID, WFProcessesEnum.ADD_PRODUCT.getCode(), ADMIN_ID, WFInstanceStatusEnum.DONE.getCode())));
 	    BusinessException exception = assertThrows(BusinessException.class, () -> {
 	        productWorkFlowService.doTaskAction(WFActionEnum.APPROVE.getCode(), TASK_ID_1, "Notes", null, SUPER_ADMIN_ID);
@@ -190,7 +201,7 @@ public class ProductWorkFlowServiceTest {
 	}
 
 	private void doTaskRejectActionWithError(String refuseNotes) {
-		setupMockWorkflow(TASK_ID_1, SUPER_ADMIN_ID, INSTANCE_ID);
+		setupMockWorkflow(TASK_ID_1, SUPER_ADMIN_ID, INSTANCE_ID,WFProcessesEnum.ADD_PRODUCT.getCode(),null);
 		BusinessException exception = assertThrows(BusinessException.class, () -> {
 			productWorkFlowService.doTaskAction(WFActionEnum.REJECT.getCode(), TASK_ID_1, null, refuseNotes, SUPER_ADMIN_ID);
 		});
@@ -198,10 +209,10 @@ public class ProductWorkFlowServiceTest {
 		verify(productRepository, never()).save(any(Product.class));
 	}
 
-	private Long setupMockWorkflow(Long taskId, Long assigneeId, Long instanceId) {
+	private Long setupMockWorkflow(Long taskId, Long assigneeId, Long instanceId,Long processId, Long productId) {
 		WFTask wfTask = createWFTask(taskId, assigneeId, instanceId);
-		WFInstance wfInstance = createWFInstance(instanceId, WFProcessesEnum.ADD_PRODUCT.getCode(), ADMIN_ID, WFInstanceStatusEnum.RUNNING.getCode());
-		WFProduct wfProduct = createWFProduct(wfInstance.getId(), null, null);
+		WFInstance wfInstance = createWFInstance(instanceId, processId, ADMIN_ID, WFInstanceStatusEnum.RUNNING.getCode());
+		WFProduct wfProduct = createWFProduct(wfInstance.getId(), productId, null);
 		mockRepositoryCallsForWorkflow(taskId, wfTask, wfInstance, wfProduct);
 		return wfInstance.getId();
 	}

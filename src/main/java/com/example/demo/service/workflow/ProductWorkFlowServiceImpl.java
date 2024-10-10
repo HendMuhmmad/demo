@@ -198,7 +198,7 @@ public class ProductWorkFlowServiceImpl implements ProductWorkFlowService {
 	}
 
 	private void checkRunningWorkFlowRequests(WFProduct wfProduct, Long wfInstanceId) {
-		if (!wfProductRepository.checkRunningWorkFlowRequests(wfProduct.getId(), wfInstanceId).isEmpty()) {
+		if (!wfProductRepository.checkRunningWorkFlowRequests(wfProduct.getProductId(), wfInstanceId).isEmpty()) {
 			throw new BusinessException("Product is already attached to another workflow instance");
 		}
 	}
