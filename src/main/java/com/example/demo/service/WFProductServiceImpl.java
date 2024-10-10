@@ -218,6 +218,11 @@ public class WFProductServiceImpl implements WFProductService{
     public List<WFTask> getTasksByInstanceId(Long instanceId) {
         return wfTaskRepository.findByInstanceIdOrderByIdAsc(instanceId); // Fetch tasks by instance ID
     }
+
+	@Override
+	public boolean hasOtherRunningTasks(Long productId) {
+		return wfTaskDetailsRepository.countByProductIdAndInstanceStatus(productId, WFInstanceStatusEnum.RUNNING.getCode())>0;
+	}
     
 
 

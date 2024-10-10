@@ -214,6 +214,17 @@ public class ProductServiceUnitTest {
        
     }
     
+    @Test
+    public void productUpdateTwiceAsValidAdmin() {
+    	mockProductsForUpdate();
+    	// mock admin and superadmin
+    	mockUser(adminId,RoleEnum.ADMIN);
+    	mockSuperAdmins(superAdminId);
+    	when(wfProductService.hasOtherRunningTasks(productId)).thenReturn(true);
+        // Act
+        assertThrows(BusinessException.class,()-> productService.save(updatedProduct,adminId));
+    }
+ 
     /*
      * 
      * Update Product Quantity Tests
@@ -265,6 +276,23 @@ public class ProductServiceUnitTest {
         assertThrows(BusinessException.class,()->productService.updateProductQuantity(product.getId(), updatedStockQuantity, customerId));
        
     }
+    
+    @Test
+    public void productUpdateQuantityTwiceAsValidAdmin() {
+    	// mock products
+    	mockProductForQuantityUpdate();
+    	// mock users including superadmin
+    	mockUser(adminId,RoleEnum.ADMIN);
+    	mockSuperAdmins(superAdminId);
+    	when(wfProductService.hasOtherRunningTasks(productId)).thenReturn(true);
+
+    	// Act
+        assertThrows(BusinessException.class,()->productService.updateProductQuantity(product.getId(), updatedStockQuantity, adminId));
+
+        // argument capture
+        verify(productRepository,times(0)).save(any());
+    }
+
     
     /*
      * 
@@ -335,7 +363,20 @@ public class ProductServiceUnitTest {
         assertThrows(BusinessException.class,()->productService.deleteProduct(product.getId(),customerId));
     }
     
-   
+
+    @Test
+    public void productDeleteTwiceAsAdmin() {
+    	// mock products
+    	mockProductForDelete();
+    	// mock admin and super admin
+    	mockUser(adminId,RoleEnum.ADMIN);
+    	mockSuperAdmins(superAdminId);
+    	when(wfProductService.hasOtherRunningTasks(productId)).thenReturn(true);
+        // act
+        assertThrows(BusinessException.class,()->productService.deleteProduct(product.getId(),adminId));
+
+    }
+    
     
     /*
 	 * 

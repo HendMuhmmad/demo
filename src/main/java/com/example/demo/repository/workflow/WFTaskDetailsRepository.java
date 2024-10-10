@@ -10,5 +10,6 @@ import com.example.demo.model.orm.workflow.WFTaskDetails;
 public interface WFTaskDetailsRepository extends JpaRepository<WFTaskDetails, Long> {
     Optional<WFTaskDetails> findByTaskId(Long taskId);
     List<WFTaskDetails> findByAssigneeIdAndAction(Long assigneeId, String Action);
-
+    long countByProductIdAndInstanceStatus(Long productId, int instanceStatus);
+    
 }

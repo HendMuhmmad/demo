@@ -31,4 +31,6 @@ public interface WFProductService {
 
 	WFInstance createWFInstance(WFProductStatusEnum process, Long requesterId);
 	
+	public boolean hasOtherRunningTasks(Long productId);
+	
 }

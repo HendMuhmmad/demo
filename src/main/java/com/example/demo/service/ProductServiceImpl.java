@@ -55,8 +55,8 @@ public class ProductServiceImpl implements ProductService {
 	    // Create process instance
 	    Long assigneeId = userService.findRandomSuperAdminId();
 	    boolean isNew = theProduct.getId() == null;
-	    // validate product in case of update
-	    if (!isNew) validateProduct(theProduct.getId());
+	    // Validate product and check for running tasks if not new
+	    if (!isNew) validateProductAndCheckTasks(theProduct.getId());
 	    // Determine workflow process and status based on product state
 	    WFProcessesEnum process = isNew ? WFProcessesEnum.ADD_PRODUCT : WFProcessesEnum.UPDATE_PRODUCT;
 	    WFProductStatusEnum status = isNew ? WFProductStatusEnum.ADDED : WFProductStatusEnum.UPDATED;
@@ -91,26 +91,24 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public void deleteProduct(Long productId, Long loginId) throws BusinessException {
 		Long roleId = userService.getUserById(loginId).get().getRoleId();
-		Product theProduct = productRepository.findById(productId).orElse(null);
-		if (theProduct==null)
-			throw new BusinessException("Product not found.");
-
 		if (roleId == RoleEnum.SUPER_ADMIN.getCode()) {
 			deleteAsSuperAdmin(productId);
 		} else if (roleId == RoleEnum.ADMIN.getCode()) {
-			deleteAsAdmin(theProduct,loginId);
+			deleteAsAdmin(productId,loginId);
 		} else {
 			throw new BusinessException("Product addition failed - Unauthorized");
 		}
 	}
 
-	private void deleteAsAdmin(Product theProduct, Long loginId) {
+	private void deleteAsAdmin(Long productId, Long loginId) {
 		Long assigneeId = userService.findRandomSuperAdminId();
-		wfProductService.initWorkflowObjects(theProduct,loginId,WFProcessesEnum.DELETE_PRODUCT,WFProductStatusEnum.DELETED,WFAssigneeRoleEnum.SUPERADMIN,assigneeId);
+		Product product = validateProductAndCheckTasks(productId);
+		wfProductService.initWorkflowObjects(product,loginId,WFProcessesEnum.DELETE_PRODUCT,WFProductStatusEnum.DELETED,WFAssigneeRoleEnum.SUPERADMIN,assigneeId);
 	}
 
 
 	private void deleteAsSuperAdmin(Long productId) {
+		validateProduct(productId);
 		productRepository.deleteById(productId);
 	}
 
@@ -125,7 +123,14 @@ public class ProductServiceImpl implements ProductService {
 		if (previousProduct == null) throw new BusinessException("Product does not exist");
 		return previousProduct;
 	}
-
+	
+	private Product validateProductAndCheckTasks(Long productId) throws BusinessException {
+	    Product product = validateProduct(productId);
+	    if (wfProductService.hasOtherRunningTasks(productId)) {
+	        throw new BusinessException("This product has other pending requests");
+	    }
+	    return product;
+	}
 
     
     public Product clone(Product product, Integer newQuantity) {
@@ -136,7 +141,7 @@ public class ProductServiceImpl implements ProductService {
         clonedProduct.setColor(product.getColor());
         clonedProduct.setStockQuantity(newQuantity);
         clonedProduct.setDescription(product.getDescription());
-        clonedProduct.setCreationDate(product.getCreationDate()); // Keep the original date; optional
+        clonedProduct.setCreationDate(product.getCreationDate()); 
         return clonedProduct;
     }
 

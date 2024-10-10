@@ -32,6 +32,9 @@ public class WFTaskDetails {
 
     @Column(name = "ASSIGN_DATE")
     private java.util.Date assignDate;
+    
+    @Column(name="INSTANCE_STATUS")
+    private int instanceStatus;
 
     @Column(name = "ACTION")
     private String action;
@@ -47,6 +50,9 @@ public class WFTaskDetails {
 
     @Column(name = "PRODUCT_NAME")
     private String productName;
+
+    @Column(name = "PRODUCT_ID")
+    private Long productId;
 
     @Column(name = "PRICE")
     private Double price;
