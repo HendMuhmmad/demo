@@ -2,8 +2,6 @@ package com.example.demo.controller;
 
 import java.util.List;
 
-import javax.websocket.server.PathParam;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,8 +20,6 @@ import com.example.demo.service.WFProductService;
 @RequestMapping("/api/product/tasks")
 public class WFProductController {
 
-    @Autowired
-    public ProductService productService;
     
     @Autowired
     public WFProductService wfProductService;

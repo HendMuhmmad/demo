@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.enums.RoleEnum;
 import com.example.demo.enums.workflow.WFActionEnum;
+import com.example.demo.enums.workflow.WFAssigneeRoleEnum;
 import com.example.demo.enums.workflow.WFInstanceStatusEnum;
+import com.example.demo.enums.workflow.WFProcessesEnum;
 import com.example.demo.enums.workflow.WFProductStatusEnum;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.mapper.ProductMapper;
@@ -20,7 +23,6 @@ import com.example.demo.model.orm.workflow.WFProduct;
 import com.example.demo.model.orm.workflow.WFTask;
 import com.example.demo.model.orm.workflow.WFTaskDetails;
 import com.example.demo.repository.ProductRepository;
-import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.workflow.ProductTransactionHistoryRepository;
 import com.example.demo.repository.workflow.WFInstanceRepository;
 import com.example.demo.repository.workflow.WFProductRepository;
@@ -34,20 +36,15 @@ public class WFProductServiceImpl implements WFProductService{
 	WFTaskDetailsRepository wfTaskDetailsRepository;
     
     @Autowired
-    public WFProductRepository wfProductRepository;
-    
-    @Autowired
-    private ProductRepository productRepository;
-
+    WFProductRepository wfProductRepository;
+     
     @Autowired
     WFInstanceRepository wfInstanceRepository;
     
     @Autowired 
     WFTaskRepository wfTaskRepository;
     
-    @Autowired
-    UserRepository userRepository;
-    
+
     @Autowired
     UserService userService;
     
@@ -82,24 +79,18 @@ public class WFProductServiceImpl implements WFProductService{
 	        .orElseThrow(() -> new BusinessException("WFProduct not found for WFInstanceId: " + instanceId));
 	}
 
-	private Product validateProduct(Long productId) throws BusinessException {
-	    return productRepository.findById(productId)
-	        .orElseThrow(() -> new BusinessException("Product not found for productId: " + productId));
-	}
 
-	private void validateAssignee(WFTask task, Long assigneeId) throws BusinessException {
-		if (assigneeId==null) throw new BusinessException("No loginId.");
+	private void validateAssignee(WFTask task, Long loginId) throws BusinessException {
+		if (loginId==null) throw new BusinessException("No loginId.");
 		// Verify that the user exists
-		
-		// check using user service TODO
-	    if (!userService.getUserById(assigneeId).isPresent()) {
-	        throw new BusinessException("User not found for assigneeId: " + assigneeId);
+		User user = userService.getUserById(loginId).orElse(null);
+	    if (user == null) {
+	        throw new BusinessException("User not found for loginId: " + loginId);
 	    }
-	    User assignee = userService.getUserById(assigneeId).orElse(null);
-	    if (assignee.getRoleId()!=RoleEnum.SUPER_ADMIN.getCode()) throw new BusinessException("User is not a Super Admin");
+	    if (user.getRoleId()!=RoleEnum.SUPER_ADMIN.getCode()) throw new BusinessException("User is not a Super Admin");
 	    // Verify that the assigneeId matches that of the task
-	    if (!task.getAssigneeId().equals(assigneeId)) {
-	        throw new BusinessException("Assignee ID does not match the task's assignee ID.");
+	    if (!task.getAssigneeId().equals(loginId)) {
+	        throw new BusinessException("Login ID does not match the task's assignee ID.");
 	    }
 	}
 
@@ -110,8 +101,6 @@ public class WFProductServiceImpl implements WFProductService{
 	    WFTask task = validateTask(taskId);
 	    WFInstance wfInstance = validateInstance(task.getInstanceId());
 	    WFProduct wfProduct = validateWFProduct(wfInstance.getId());
-	    if (wfProduct.getStatus()!=WFProductStatusEnum.ADDED.getCode())
-	    	validateProduct(wfProduct.getProductId());
 	    validateAssignee(task, assigneeId);
 	    validateResponse(response);
 	    // Perform actions for approval or rejection
@@ -120,56 +109,67 @@ public class WFProductServiceImpl implements WFProductService{
 	    wfInstance.setStatus(WFInstanceStatusEnum.DONE.getCode());  // Set instance status to APPROVED or REJECTED
 	    if (WFActionEnum.fromString(response) == WFActionEnum.REJECTED.getAction())
 	    	task.setRefuseReasons(rejectionReason);
-	    else if (WFActionEnum.fromString(response) == WFActionEnum.APPROVED.getAction()&&wfProduct.getStatus()==WFProductStatusEnum.ADDED.getCode())
-	    	createProduct(wfProduct);
-	    else if (WFActionEnum.fromString(response) == WFActionEnum.APPROVED.getAction()&&wfProduct.getStatus()==WFProductStatusEnum.UPDATED.getCode())
-	    	updateProduct(wfProduct);
-	    else if (WFActionEnum.fromString(response) == WFActionEnum.APPROVED.getAction()&&wfProduct.getStatus()==WFProductStatusEnum.DELETED.getCode())
-	    	deleteProduct(wfProduct);
-		    
+	    else if (WFActionEnum.APPROVED.getAction().equals(task.getActionId())) {
+	        handleApproval(wfProduct, assigneeId);
+	    }
 	}
 
-	private void deleteProduct(WFProduct wfProduct) {
+	private void handleApproval(WFProduct wfProduct, Long loginId) {
+		 switch (WFProductStatusEnum.fromCode(wfProduct.getStatus())) {
+	        case ADDED:
+	            createProduct(wfProduct,loginId);
+	            break;
+	        case UPDATED:
+	            updateProduct(wfProduct,loginId);
+	            break;
+	        case DELETED:
+	            deleteProduct(wfProduct,loginId);
+	            break;
+	        default:
+	            throw new BusinessException("Invalid product status for approval");
+	    }
+		
+	}
+
+	private void deleteProduct(WFProduct wfProduct, Long loginId) {
+		Product previousProduct = validateProduct(wfProduct);
+		WFProductStatusEnum wfProductStatusEnum = WFProductStatusEnum.DELETED;
+		addToHistory(previousProduct, wfProductStatusEnum);
+		// delete product
+		productService.deleteProduct(previousProduct.getId(), loginId);
+	}
+
+	private Product validateProduct(WFProduct wfProduct) {
 		// get initial product
 		Long productId =wfProduct.getProductId();
-		Product previousProduct = productRepository.findById(productId).orElse(null);
+		Product previousProduct = productService.findById(productId);
 		if (previousProduct == null) throw new BusinessException("Product does not exist");
-		
-		// map from product to history
-		ProductTransactionHistory history = ProductMapper.INSTANCE.maptoHistory(previousProduct);
-		
-		// status as update
-		history.setStatus(WFProductStatusEnum.DELETED.getCode());
-		
-		// save to history
-		productTransactionHistoryRepository.save(history);
-		
-		// save product
-		Product theProduct = ProductMapper.INSTANCE.mapWfProduct(wfProduct);
-		productRepository.deleteById(theProduct.getId());
+		return previousProduct;
 	}
 
-	private void createProduct(WFProduct wfProduct) {
+	private void createProduct(WFProduct wfProduct, Long loginId) {
 		// save product
 		Product theProduct = ProductMapper.INSTANCE.mapWfProduct(wfProduct);
 		theProduct.setId(null); // make sure no one tries to overwrite a previous product
-		theProduct = productRepository.save(theProduct);
+		productService.save(theProduct, loginId);
 	}
-	private void updateProduct(WFProduct wfProduct) throws BusinessException {
-		// get initial product
-		Long productId =wfProduct.getProductId();
-		Product previousProduct = productRepository.findById(productId).orElse(null);
-		if (previousProduct == null) throw new BusinessException("Product does not exist");
+	private void updateProduct(WFProduct wfProduct, Long loginId) throws BusinessException {
+		Product previousProduct = validateProduct(wfProduct);
 		// map from product to history
-		ProductTransactionHistory history = ProductMapper.INSTANCE.maptoHistory(previousProduct);
-		// status as update
-		history.setStatus(WFProductStatusEnum.UPDATED.getCode());
-		// save to history
-		productTransactionHistoryRepository.save(history);
-		
+		WFProductStatusEnum wfProductStatusEnum = WFProductStatusEnum.UPDATED;
+		addToHistory(previousProduct, wfProductStatusEnum);
 		// save product
 		Product theProduct = ProductMapper.INSTANCE.mapWfProduct(wfProduct);
-		theProduct = productRepository.save(theProduct);
+		productService.save(theProduct, loginId);
+	}
+
+	private void addToHistory(Product previousProduct, WFProductStatusEnum wfProductStatusEnum) {
+		// map from product to history
+		ProductTransactionHistory history = ProductMapper.INSTANCE.maptoHistory(previousProduct);
+		// update status
+		history.setStatus(wfProductStatusEnum.getCode());
+		// save to history
+		productTransactionHistoryRepository.save(history);
 	}
 	private void validateResponse(String response) throws BusinessException{
 		if (response==null) throw new BusinessException("Select a response");
@@ -182,6 +182,43 @@ public class WFProductServiceImpl implements WFProductService{
 		return wfTaskDetailsRepository.findByTaskId(taskId).orElseThrow(() -> new BusinessException("Task Id does not exist"));
 		
 	}
+	@Override
+	public void initWorkflowObjects(Product product, Long loginId, WFProcessesEnum process, 
+			WFProductStatusEnum wfProductStatus,  WFAssigneeRoleEnum assigneeRole, 
+			Long assigneeId) {
+		// create process instance
+		WFInstance wfInstance = createWFInstance(wfProductStatus, loginId);
+		// create process instance task
+		createWFTask(wfInstance.getId(), assigneeId, assigneeRole);
+		// create wfProduct
+		createWFProduct(product,wfInstance.getId(),wfProductStatus);			
+	}
+
+	@Override
+    public WFInstance createWFInstance(WFProductStatusEnum process, Long requesterId) {
+        WFInstance wfInstance = new WFInstance();
+        wfInstance.setProcessId(process.getCode());
+        wfInstance.setRequesterId(requesterId);
+        wfInstance.setRequestDate(new Date()); 
+        wfInstance.setStatus(WFInstanceStatusEnum.RUNNING.getCode());
+
+        return wfInstanceRepository.save(wfInstance); // Save the instance
+    }
+    @Override
+    public WFTask createWFTask(Long instanceId, Long assigneeId, WFAssigneeRoleEnum assigneeRole) {
+        WFTask wfTask = new WFTask(instanceId, assigneeId, assigneeRole.getRole(), new Date());
+        return wfTaskRepository.save(wfTask); // Save the task
+    }
+    @Override
+    public WFProduct createWFProduct(Product product,Long instanceId, WFProductStatusEnum status) {
+		WFProduct wfProduct = new WFProduct(product,instanceId,status.getCode());
+        return wfProductRepository.save(wfProduct); // Save the task
+    }
+    @Override
+    public List<WFTask> getTasksByInstanceId(Long instanceId) {
+        return wfTaskRepository.findByInstanceIdOrderByIdAsc(instanceId); // Fetch tasks by instance ID
+    }
+    
 
 
 }

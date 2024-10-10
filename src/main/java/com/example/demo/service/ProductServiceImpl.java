@@ -1,31 +1,18 @@
 package com.example.demo.service;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Random;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.enums.RoleEnum;
 import com.example.demo.enums.workflow.WFAssigneeRoleEnum;
-import com.example.demo.enums.workflow.WFInstanceStatusEnum;
 import com.example.demo.enums.workflow.WFProcessesEnum;
 import com.example.demo.enums.workflow.WFProductStatusEnum;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.orm.Product;
-import com.example.demo.model.orm.User;
-import com.example.demo.model.orm.workflow.WFInstance;
 import com.example.demo.model.orm.workflow.WFProduct;
-import com.example.demo.model.orm.workflow.WFTask;
 import com.example.demo.repository.ProductRepository;
-import com.example.demo.repository.UserRepository;
-import com.example.demo.repository.workflow.WFInstanceRepository;
-import com.example.demo.repository.workflow.WFProductRepository;
-import com.example.demo.repository.workflow.WFTaskRepository;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -35,26 +22,17 @@ public class ProductServiceImpl implements ProductService {
 	@Autowired
 	public UserService userService;
 	
-	@Autowired
-	public UserRepository userRepository;
-
-	@Autowired
-    private WFInstanceRepository wfInstanceRepository;
-	
     @Autowired
-    private WFTaskRepository wfTaskRepository;
-    
-    @Autowired
-    private WFProductRepository wfProductRepository;
+    private WFProductService wfProductService;
 
 	@Override
-	public Product findbyId(Long productId) {
+	public Product findById(Long productId) {
 		return productRepository.findById(productId)
 				.orElseThrow(() -> new BusinessException("Cannot find product in DB"));
 
 	}
 
-	public void save(Product theProduct, Long loginId, boolean isNew) throws BusinessException {
+	public void save(Product theProduct, Long loginId) throws BusinessException {
 		Long roleId = userService.getUserById(loginId).get().getRoleId();
 		if (theProduct.getPrice() == 0 || theProduct.getProductName() == null) {
 			throw new BusinessException("Product price and name shoud not be null");
@@ -62,10 +40,9 @@ public class ProductServiceImpl implements ProductService {
 		if (roleId == RoleEnum.SUPER_ADMIN.getCode() ) {
 			saveAsSuperAdmin(theProduct,loginId);
 		} else if (roleId == RoleEnum.ADMIN.getCode()) {
-			saveAsAdmin(theProduct,loginId, isNew);
+			saveAsAdmin(theProduct,loginId);
 		}
 		else {
-			// Return an error response indicating unauthorized access
 			throw new BusinessException("Product addition failed - Unauthorized");
 		}
 	}
@@ -74,31 +51,27 @@ public class ProductServiceImpl implements ProductService {
 		productRepository.save(theProduct);
 	}
 	
-	public void saveAsAdmin(Product theProduct, Long loginId, boolean isNew) throws BusinessException{
-		// create process instance
-		WFInstance wfInstance;
-		if (isNew)
-		{
-			wfInstance = createWFInstance(WFProcessesEnum.ADD_PRODUCT.getCode(), loginId);
-			createWFProduct(theProduct,wfInstance.getId(),WFProductStatusEnum.ADDED);	
-		} else {
-			wfInstance = createWFInstance(WFProcessesEnum.UPDATE_PRODUCT.getCode(), loginId);
-			createWFProduct(theProduct,wfInstance.getId(),WFProductStatusEnum.UPDATED);	
-		}
-		// pick random superadmin
-		Long assigneeId = findRandomSuperAdminId();
-		// create process instance task
-		createWFTask(wfInstance.getId(), assigneeId, WFAssigneeRoleEnum.SUPERADMIN.getRole());;
-		// create wfProduct
+	public void saveAsAdmin(Product theProduct, Long loginId) throws BusinessException {
+	    // Create process instance
+	    Long assigneeId = userService.findRandomSuperAdminId();
+	    boolean isNew = theProduct.getId() == null;
+	    // validate product in case of update
+	    if (!isNew) validateProduct(theProduct.getId());
+	    // Determine workflow process and status based on product state
+	    WFProcessesEnum process = isNew ? WFProcessesEnum.ADD_PRODUCT : WFProcessesEnum.UPDATE_PRODUCT;
+	    WFProductStatusEnum status = isNew ? WFProductStatusEnum.ADDED : WFProductStatusEnum.UPDATED;
+
+	    // Initialize workflow objects
+	    wfProductService.initWorkflowObjects(theProduct, loginId, process, status, WFAssigneeRoleEnum.SUPERADMIN, assigneeId);
 	}
-	
+
 
 	public void updateProductQuantity(Long productId, int newQuantity, Long loginId) throws BusinessException {
 		Product product = productRepository.findById(productId).orElse(null);
 		if (product != null) {
 			// Update product stock quantity
 			Product updatedProduct = clone(product,newQuantity);
-			save(updatedProduct,loginId,false);
+			save(updatedProduct,loginId);
 		} else {
 			throw new BusinessException("No product found");
 		}
@@ -132,15 +105,10 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	private void deleteAsAdmin(Product theProduct, Long loginId) {
-		// create process instance
-		WFInstance wfInstance = createWFInstance(WFProcessesEnum.DELETE_PRODUCT.getCode(), loginId);
-		// pick random superadmin
-		Long assigneeId = findRandomSuperAdminId();
-		// create process instance task
-		createWFTask(wfInstance.getId(), assigneeId, WFAssigneeRoleEnum.SUPERADMIN.getRole());;
-		// create wfProduct
-		createWFProduct(theProduct,wfInstance.getId(),WFProductStatusEnum.DELETED);		
+		Long assigneeId = userService.findRandomSuperAdminId();
+		wfProductService.initWorkflowObjects(theProduct,loginId,WFProcessesEnum.DELETE_PRODUCT,WFProductStatusEnum.DELETED,WFAssigneeRoleEnum.SUPERADMIN,assigneeId);
 	}
+
 
 	private void deleteAsSuperAdmin(Long productId) {
 		productRepository.deleteById(productId);
@@ -151,40 +119,14 @@ public class ProductServiceImpl implements ProductService {
 		return productRepository.findAll();
 	}
 	
-    public WFInstance createWFInstance(Long processId, Long requesterId) {
-        WFInstance wfInstance = new WFInstance();
-        wfInstance.setProcessId(processId);
-        wfInstance.setRequesterId(requesterId);
-        wfInstance.setRequestDate(new Date()); 
-        wfInstance.setStatus(WFInstanceStatusEnum.RUNNING.getCode());
+	private Product validateProduct(Long productId) {
+		// get initial product
+		Product previousProduct = findById(productId);
+		if (previousProduct == null) throw new BusinessException("Product does not exist");
+		return previousProduct;
+	}
 
-        return wfInstanceRepository.save(wfInstance); // Save the instance
-    }
-    
-    public WFTask createWFTask(Long instanceId, Long assigneeId, String assigneeRole) {
-        WFTask wfTask = new WFTask(instanceId, assigneeId, assigneeRole, new Date());
-        return wfTaskRepository.save(wfTask); // Save the task
-    }
-    
-    public WFProduct createWFProduct(Product product,Long instanceId, WFProductStatusEnum status) {
-		WFProduct wfProduct = new WFProduct(product,instanceId,status.getCode());
-        return wfProductRepository.save(wfProduct); // Save the task
-    }
-    
-    public Long findRandomSuperAdminId() throws BusinessException {
-		List<User> superAdmins = userRepository.findByRoleId(RoleEnum.SUPER_ADMIN.getCode());
-        if (superAdmins.isEmpty()) 
-        	throw new BusinessException("No SuperAdmin found");
-        Random random = new Random();
-        int randomIndex = random.nextInt(superAdmins.size());
-        return superAdmins.get(randomIndex).getId();
-    }
-    private WFInstance getWFInstance(Long id) {
-        return wfInstanceRepository.findById(id).orElse(null); // Fetch the instance by ID
-    }
-    public List<WFTask> getTasksByInstanceId(Long instanceId) {
-        return wfTaskRepository.findByInstanceIdOrderByIdAsc(instanceId); // Fetch tasks by instance ID
-    }
+
     
     public Product clone(Product product, Integer newQuantity) {
         Product clonedProduct = new Product();

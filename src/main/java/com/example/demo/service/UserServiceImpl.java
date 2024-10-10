@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -113,4 +114,13 @@ public class UserServiceImpl implements UserService {
 
 		userRepository.delete(customer);
 	}
+	@Override
+    public Long findRandomSuperAdminId() throws BusinessException {
+		List<User> superAdmins = userRepository.findByRoleId(RoleEnum.SUPER_ADMIN.getCode());
+        if (superAdmins.isEmpty()) 
+        	throw new BusinessException("No SuperAdmin found");
+        Random random = new Random();
+        int randomIndex = random.nextInt(superAdmins.size());
+        return superAdmins.get(randomIndex).getId();
+    }
 }

@@ -18,10 +18,7 @@ import com.example.demo.mapper.ProductMapper;
 import com.example.demo.model.dto.ProductDto;
 import com.example.demo.model.dto.ProductUpdateDto;
 import com.example.demo.model.dto.ProductUpdateStockQuantityDTO;
-import com.example.demo.model.dto.workflow.ResponseDto;
-import com.example.demo.model.orm.workflow.WFTaskDetails;
 import com.example.demo.service.ProductService;
-import com.example.demo.service.WFProductService;
 
 @RestController
 @RequestMapping("/api/product")
@@ -30,12 +27,10 @@ public class ProductController {
     @Autowired
     public ProductService productService;
     
-    @Autowired
-    public WFProductService wfProductService;
 
     @PostMapping("/createProduct")
     public ResponseEntity<String> createProduct(@RequestBody ProductDto productdto) {
-	productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId(),true);
+	productService.save(ProductMapper.INSTANCE.mapCreateProduct(productdto), productdto.getLoginId());
 	return ResponseEntity.ok("Product created successfully ");
     }
 
@@ -48,7 +43,7 @@ public class ProductController {
 
     @PutMapping("/updateProduct")
     public ResponseEntity<String> updateProduct(@RequestBody ProductUpdateDto productUpdateDto) {
-	productService.save(ProductMapper.INSTANCE.mapUpdateProduct(productUpdateDto), productUpdateDto.getLoginId(),false);
+	productService.save(ProductMapper.INSTANCE.mapUpdateProduct(productUpdateDto), productUpdateDto.getLoginId());
 	return ResponseEntity.ok("Product updated successfully");
 
     }

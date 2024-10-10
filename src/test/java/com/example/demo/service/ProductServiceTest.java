@@ -70,7 +70,7 @@ public class ProductServiceTest {
         Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(dummyProduct());
         Mockito.when(userService.getUserById(Mockito.any(Long.class))).thenReturn(Optional.of(customer));
         assertThrows(BusinessException.class, () -> {
-            productService.save(dummyProduct(), customer.getId(),true);
+            productService.save(dummyProduct(), customer.getId());
         });
     }
 
@@ -80,31 +80,31 @@ public class ProductServiceTest {
         Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(dummyProduct());
         Mockito.when(userService.getUserById(Mockito.any(Long.class))).thenReturn(Optional.of(headOfDepartment));
         assertThrows(BusinessException.class, () -> {
-            productService.save(dummyProduct(), headOfDepartment.getId(),true);
+            productService.save(dummyProduct(), headOfDepartment.getId());
         });
     }
 
     @Test
     public void saveProduct_withProductPriceIsNull() {
-        Product product = Product.builder().id(1L).productName("Laptop").color("Silver").stockQuantity(50)
+        Product product = Product.builder().productName("Laptop").color("Silver").stockQuantity(50)
                 .description("High-performance laptop").build();
         User adminUser = createUserWithRoleId(RoleEnum.ADMIN.getCode());
         Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(product);
         Mockito.when(userService.getUserById(Mockito.any(Long.class))).thenReturn(Optional.of(adminUser));
         assertThrows(BusinessException.class, () -> {
-            productService.save(product, adminUser.getId(),true);
+            productService.save(product, adminUser.getId());
         });
     }
 
     @Test
     public void saveProduct_withProductNameIsNull() {
-        Product product = Product.builder().id(1L).price(1200.00).color("Silver").stockQuantity(50)
+        Product product = Product.builder().price(1200.00).color("Silver").stockQuantity(50)
                 .description("High-performance laptop").build();
         User adminUser = createUserWithRoleId(RoleEnum.ADMIN.getCode());
         Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(product);
         Mockito.when(userService.getUserById(Mockito.any(Long.class))).thenReturn(Optional.of(adminUser));
         assertThrows(BusinessException.class, () -> {
-            productService.save(product, adminUser.getId(),true);
+            productService.save(product, adminUser.getId());
         });
     }
 
@@ -114,7 +114,7 @@ public class ProductServiceTest {
         Mockito.when(productRepository.save(Mockito.any(Product.class))).thenReturn(dummyProduct());
         Mockito.when(userService.getUserById(Mockito.any(Long.class))).thenReturn(Optional.of(roleZeroUser));
         assertThrows(BusinessException.class, () -> {
-            productService.save(dummyProduct(), roleZeroUser.getId(),true);
+            productService.save(dummyProduct(), roleZeroUser.getId());
         });
     }
 
@@ -236,7 +236,7 @@ public class ProductServiceTest {
     }
 
     private Product dummyProduct() {
-        return Product.builder().id(1L).productName("Laptop").price(1200.00).color("Silver").stockQuantity(50)
+        return Product.builder().productName("Laptop").price(1200.00).color("Silver").stockQuantity(50)
                 .description("High-performance laptop").build();
     }
 

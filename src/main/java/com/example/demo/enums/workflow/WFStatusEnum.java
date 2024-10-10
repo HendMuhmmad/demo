@@ -13,12 +13,6 @@ public enum WFStatusEnum {
 	private WFStatusEnum(Long code) {
 		this.code = code;
 	}
-    public static Long fromString(String Action) {
-    	if (Action.equalsIgnoreCase("approve")||Action.equalsIgnoreCase("approved")) return APPROVED.getCode();
-    	if (Action.equalsIgnoreCase("reject")||Action.equalsIgnoreCase("rejected")) return REJECTED.getCode();
-    	if (Action.equalsIgnoreCase("underapproval")) return UNDERAPPROVAL.getCode();
-    	throw new IllegalArgumentException("Unknown action: " + Action);
-    }
 	
 	
 }

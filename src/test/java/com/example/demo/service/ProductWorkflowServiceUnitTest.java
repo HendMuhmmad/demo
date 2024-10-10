@@ -3,17 +3,15 @@ package com.example.demo.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -49,7 +47,7 @@ import com.example.demo.repository.workflow.WFTaskRepository;
 @ExtendWith(MockitoExtension.class)
 public class ProductWorkflowServiceUnitTest {
  
-    @InjectMocks
+    @MockBean
     public ProductServiceImpl productService;
 
     @InjectMocks
@@ -92,359 +90,53 @@ public class ProductWorkflowServiceUnitTest {
     ArgumentCaptor<Long> longCaptor;
     
     @Captor
+    ArgumentCaptor<WFProductStatusEnum> wfProductStatusEnumCaptor;
+    
+    @Captor
     ArgumentCaptor<Boolean> booleanCaptor;
     
     @Captor
     ArgumentCaptor<ProductTransactionHistory> productTransactionHistoryCaptor;
 
     @Captor
-    ArgumentCaptor<WFProductStatusEnum> wfProductStatusEnumCaptor;
-    
-    @Captor
     ArgumentCaptor<String> stringCaptor;
     
-    /*
-     * 
-     * Update Product Tests
-     * 
-     */
+    @Captor
+    ArgumentCaptor<WFAssigneeRoleEnum> wfAssigneeRoleEnumcaptor;
     
-    @Test
-    public void productUpdateAsValidSuperAdmin() {
-    	Long superAdminId = 1L;
-    	
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
-    	// mock products
-    	Product product = dummyProduct();
-    	when(productRepository.save(product)).thenReturn(product);
-    	
-    	// mock admin and super admin
-    	User superAdmin = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdminId)).thenReturn(Optional.of(superAdmin));
-        
-        // act
-        productService.save(product,superAdminId,false);
-        
-        // arguments capture
-        verify(productService).saveAsSuperAdmin(productCaptor.capture(),longCaptor.capture());
-        verify(productRepository,times(1)).save(any());
-        
-        // assertions
-        assertEquals(productCaptor.getValue(),product);
-        assertEquals(longCaptor.getValue(),Long.valueOf(1L));
-    }
+	Long superAdmin1Id;
+	Long superAdmin2Id;
+	Long adminId;
+	Long customerId;
+	// Updated product variables
+	String updatedColor;
+	Double updatedPrice;
+	Integer updatedStockQuantity;
+	Product product;
+	Product updatedProduct;
+	Long instanceId;
+	Long wfProductId;
+	Long taskId; 
+	Long productId;
+	Long productTransactionHistoryId;
     
-    @Test
-    public void productUpdateAsValidAdmin() {
-    	// id variables
-    	Long adminId = 2L;
-    	Long instanceId = 2L;
-    	Long wfProductId = 1L;
-    	Long superAdminId = 2L;
+    @BeforeEach
+    public void init() {
+    	superAdmin1Id = 1L;
+    	superAdmin2Id = 4L;
+    	adminId = 2L;
+    	customerId = 3L;
     	
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
-    	// mock products
-    	Product product = dummyProduct();
-    	when(productRepository.save(product)).thenReturn(product);
-    	
-    	// mock users including superadmin
-    	User admin = new User("John", "Doe", RoleEnum.ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-    	User superAdmin = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-    	superAdmin.setId(superAdminId);
-        when(userService.getUserById(adminId)).thenReturn(Optional.of(admin));
-        when(userRepository.findByRoleId(RoleEnum.SUPER_ADMIN.getCode())).thenReturn(Arrays.asList(superAdmin));
-        
-        // mock wf objects
-        mockSaveWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdminId, product);
-        // Act
-        productService.save(product,adminId,false);
-        
-        // argument capture
-        verify(productService).saveAsAdmin(productCaptor.capture(),longCaptor.capture(),booleanCaptor.capture());
-        verify(productRepository,times(0)).save(any());
-        verify(productService,times(1)).createWFInstance(longCaptor.capture(), longCaptor.capture());
-    	verify(productService,times(1)).createWFProduct(productCaptor.capture(), longCaptor.capture(),wfProductStatusEnumCaptor.capture());
-    	verify(productService,times(1)).createWFTask(longCaptor.capture(), longCaptor.capture(), stringCaptor.capture());
-        
-    	// Captured arguments for createWFInstance
-    	Long capturedProcessId = longCaptor.getAllValues().get(0); 
-    	Long capturedRequesterId = longCaptor.getAllValues().get(1);
-
-    	// Captured arguments for createWFProduct
-    	Product capturedProduct = productCaptor.getValue(); 
-    	Long capturedInstanceIdForProduct = longCaptor.getAllValues().get(2); 
-    	WFProductStatusEnum capturedWFProductStatus = wfProductStatusEnumCaptor.getValue(); 
-
-    	// Captured arguments for createWFTask
-    	Long capturedInstanceIdForTask = longCaptor.getAllValues().get(3); 
-    	Long capturedAssigneeId = longCaptor.getAllValues().get(4);
-    	String capturedAssigneeRole = stringCaptor.getValue(); 
-    	assertEquals(capturedProcessId.longValue(),WFProcessesEnum.UPDATE_PRODUCT.getCode());
-    	assertEquals(capturedRequesterId,adminId);
-    	assertEquals(capturedProduct,product);
-    	assertEquals(capturedInstanceIdForProduct,instanceId);
-    	assertEquals(capturedWFProductStatus,WFProductStatusEnum.UPDATED);
-    	assertEquals(capturedInstanceIdForTask,instanceId);
-    	assertEquals(capturedAssigneeId,superAdminId);
-    	assertEquals(capturedAssigneeRole,WFAssigneeRoleEnum.SUPERADMIN.getRole());
-    	
-        // assertions
-        assertEquals(productCaptor.getValue(),product);
-        assertEquals(longCaptor.getValue(),Long.valueOf(adminId));
-        assertEquals(booleanCaptor.getValue(),false);
-    }
-    
-    @Test
-    public void productUpdateAsInvalidCustomer() {
-    	// id variables
-    	Long customerId = 2L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long superAdminId = 2L;
-    	
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
-    	// mock products
-    	Product product = dummyProduct();
-    	when(productRepository.save(product)).thenReturn(product);
-    	
-    	// mock users including superadmin
-    	User customer = new User("John", "Doe", RoleEnum.CUSTOMER.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-
-        when(userService.getUserById(customerId)).thenReturn(Optional.of(customer));        
-        // mock wf objects
-        mockSaveWFObjectsForUpdate(customerId, instanceId, wfProductId, superAdminId, product);
-        // Act
-        assertThrows(BusinessException.class,()-> productService.save(product,customerId,false));
-       
-    }
-    
-    @Test
-    public void productUpdateQuantityAsValidSuperAdmin() {
-    	Long superAdminId = 1L;
-    	Integer updatedQuantity = 100;
-
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
-    	// mock products
-    	Product product = dummyProduct();
-    	Product updatedProduct = dummyProduct();
-    	updatedProduct.setStockQuantity(updatedQuantity);
-    	when(productRepository.save(product)).thenReturn(product);
-    	when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
-
-    	// mock admin and super admin
-    	User superAdmin = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdminId)).thenReturn(Optional.of(superAdmin));
-        
-        // act
-        productService.updateProductQuantity(product.getId(), updatedQuantity, superAdminId);
-        
-        // arguments capture
-        verify(productService).saveAsSuperAdmin(productCaptor.capture(),longCaptor.capture());
-        verify(productRepository,times(1)).save(any());
-        
-        // assertions
-        assertEquals(productCaptor.getValue(),updatedProduct);
-        assertEquals(longCaptor.getValue(),Long.valueOf(1L));
-    }
-    
-    @Test
-    public void productUpdateQuantityAsValidAdmin() {
-    	// id variables
-    	Long adminId = 2L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long superAdminId = 2L;
-    	Integer updatedQuantity = 100;
-    	
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
-    	// mock products
-    	Product product = dummyProduct();
-    	Product updatedProduct = dummyProduct();
-    	updatedProduct.setStockQuantity(updatedQuantity);
-    	when(productRepository.save(product)).thenReturn(product);
-    	when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
-    	// mock users including superadmin
-    	User admin = new User("John", "Doe", RoleEnum.ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-    	User superAdmin = new User("John", "Doe", RoleEnum.ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-    	superAdmin.setId(superAdminId);
-        
-    	when(userService.getUserById(adminId)).thenReturn(Optional.of(admin));
-        
-    	when(userRepository.findByRoleId(RoleEnum.SUPER_ADMIN.getCode())).thenReturn(Arrays.asList(superAdmin));
-        
-        // mock wf objects
-        mockSaveWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdminId, product);
-        
-        // Act
-        productService.updateProductQuantity(product.getId(), updatedQuantity, adminId);
-        
-        // argument capture
-        verify(productService).saveAsAdmin(productCaptor.capture(),longCaptor.capture(),booleanCaptor.capture());
-        verify(productRepository,times(0)).save(any());
-        
-        // assertions
-        assertEquals(productCaptor.getValue(),updatedProduct);
-        assertEquals(longCaptor.getValue(),Long.valueOf(adminId));
-        assertEquals(booleanCaptor.getValue(),false);
-    }
-    
-    @Test
-    public void productUpdateQuantityAsInvalidCustomer() {
-    	// id variables
-    	Long customerId = 2L;
-    	Integer updatedQuantity = 100;
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
-    	// mock products
-    	Product product = dummyProduct();
-    	when(productRepository.save(product)).thenReturn(product);
-    	
-    	// mock users including superadmin
-    	User customer = new User("John", "Doe", RoleEnum.CUSTOMER.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(customerId)).thenReturn(Optional.of(customer));
-        // Act
-        assertThrows(BusinessException.class,()->productService.updateProductQuantity(product.getId(), updatedQuantity, customerId));
-       
-    }
-    
-    /*
-     * 
-     * Delete Product Tests
-     * 
-     */
-    
-    @Test
-    public void productDeleteAsSuperAdmin() {    	
-    	Long superAdminId = 1L;
-    	
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
-    	// mock products
-    	Product product = dummyProduct();
-    	doNothing().when(productRepository).deleteById(any());
-    	when(productRepository.findById(any())).thenReturn(Optional.of(product));
-    	// mock admin and super admin
-    	User superAdmin = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdminId)).thenReturn(Optional.of(superAdmin));
-        
-        // act
-        productService.deleteProduct(product.getId(),superAdminId);
-        
-        // arguments capture
-        verify(productRepository,times(1)).deleteById(any());
-        
-    }
-    
-    @Test
-    public void productDeleteAsAdmin() {
-    	// mock products
-    	Long adminId = 1L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long superAdminId = 2L;
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
-    	// mock products
-    	Product product = dummyProduct();
-    	when(productRepository.findById(any())).thenReturn(Optional.of(product));
-    	// mock admin and super admin
-    	User admin = new User("John", "Doe", RoleEnum.ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        User superAdmin = new User("John", "Doe", RoleEnum.ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-    	superAdmin.setId(superAdminId);
-    	when(userService.getUserById(adminId)).thenReturn(Optional.of(admin));
-        when(userRepository.findByRoleId(RoleEnum.SUPER_ADMIN.getCode())).thenReturn(Arrays.asList(superAdmin));
-    	
-        // mock wf objects
-        mockSaveWFObjectsForDelete(adminId, instanceId, wfProductId, superAdminId, product);
-        
-        // act
-        productService.deleteProduct(product.getId(),adminId);
-        
-
-    	// verify delete doesn't happen via repository
-        verify(productRepository,times(0)).deleteById(any());
-    	verify(productService,times(1)).createWFInstance(longCaptor.capture(), longCaptor.capture());
-    	verify(productService,times(1)).createWFProduct(productCaptor.capture(), longCaptor.capture(),wfProductStatusEnumCaptor.capture());
-    	verify(productService,times(1)).createWFTask(longCaptor.capture(), longCaptor.capture(), stringCaptor.capture());
-        
-    	// Captured arguments for createWFInstance
-    	Long capturedProcessId = longCaptor.getAllValues().get(0); 
-    	Long capturedRequesterId = longCaptor.getAllValues().get(1);
-
-    	// Captured arguments for createWFProduct
-    	Product capturedProduct = productCaptor.getValue(); 
-    	Long capturedInstanceIdForProduct = longCaptor.getAllValues().get(2); 
-    	WFProductStatusEnum capturedWFProductStatus = wfProductStatusEnumCaptor.getValue(); 
-
-    	// Captured arguments for createWFTask
-    	Long capturedInstanceIdForTask = longCaptor.getAllValues().get(3); 
-    	Long capturedAssigneeId = longCaptor.getAllValues().get(4);
-    	String capturedAssigneeRole = stringCaptor.getValue(); 
-    	assertEquals(capturedProcessId.longValue(),WFProcessesEnum.DELETE_PRODUCT.getCode());
-    	assertEquals(capturedRequesterId,adminId);
-    	assertEquals(capturedProduct,product);
-    	assertEquals(capturedInstanceIdForProduct,instanceId);
-    	assertEquals(capturedWFProductStatus,WFProductStatusEnum.DELETED);
-    	assertEquals(capturedInstanceIdForTask,instanceId);
-    	assertEquals(capturedAssigneeId,superAdminId);
-    	assertEquals(capturedAssigneeRole,WFAssigneeRoleEnum.SUPERADMIN.getRole());
-    }
-    
-    @Test
-    public void productDeleteAsInvalidCustomer() {
-    	// mock users
-    	
-    	// mock products
-    	Long customerId = 1L;
-    	
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
-    	// mock products
-    	Product product = dummyProduct();
-    	when(productRepository.findById(any())).thenReturn(Optional.of(product));
-    	// mock admin and super admin
-    	User customer = new User("John", "Doe", RoleEnum.CUSTOMER.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(customerId)).thenReturn(Optional.of(customer));        
-        // act
-        assertThrows(BusinessException.class,()->productService.deleteProduct(product.getId(),customerId));
+    	// Updated product variables
+    	updatedColor = "Cyan";
+    	updatedPrice = 320.0;
+    	updatedStockQuantity = 33;
+    	// wf ids
+    	instanceId = 1L;
+    	wfProductId = 1L;
+    	taskId = 1L; 
+    	productId = 1L;
+    	productTransactionHistoryId = 1L;
     }
     
     /*
@@ -455,42 +147,17 @@ public class ProductWorkflowServiceUnitTest {
     
     @Test
     public void approveUpdateAsValidSuperAdmin() {
-    	Long superAdminId = 1L;
-    	Long adminId = 2L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
-    	Long productId = 1L;
-    	Long productTransactionHistoryId = 1L;
-    	Product product = dummyProduct();
-    	
-    	// Updated product variables
-    	String updatedColor = "Cyan";
-    	Double updatedPrice = product.getPrice() + 20;
-    	Integer updatedStockQuantity = product.getStockQuantity() + 30;
-    	Product updatedProduct = Product.builder().id(productId).productName("Laptop").price(updatedPrice).color(updatedColor).stockQuantity(updatedStockQuantity)
-                .description("High-performance laptop").build();
-    	
-    	// mock product
-    	product.setId(productId);
-    	when(productRepository.save(updatedProduct)).thenReturn(updatedProduct);
-    	when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-
-    	// mock wf objects
-    	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdminId, updatedProduct,taskId);
+    	mockProductsForUpdate();
+    	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
+        // mock wf objects
+    	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdmin1Id, updatedProduct,taskId);
     	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyUpdateHistory(productTransactionHistoryId, product, updatedColor, updatedPrice, updatedStockQuantity));
     	
-    	// mock admin and super admin
-    	User superAdmin = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdminId)).thenReturn(Optional.of(superAdmin));
-        
         // act
-        wfProductService.respondToTask(taskId, superAdminId, "approve", "note", null);
+        wfProductService.respondToTask(taskId, superAdmin1Id, "approve", "note", null);
         
         // arguments capture
-        verify(productRepository,times(1)).save(productCaptor.capture());
+        verify(productService,times(1)).save(productCaptor.capture(),any());
         Product updatedCapturedProduct = productCaptor.getValue();
         assertEquals(updatedCapturedProduct.getColor(),updatedColor);
         assertEquals(updatedCapturedProduct.getPrice(),updatedPrice.doubleValue());
@@ -503,73 +170,31 @@ public class ProductWorkflowServiceUnitTest {
         assertEquals(history.getStockQuantity(), product.getStockQuantity());
         assertEquals(history.getPrice().doubleValue(), product.getPrice());
     }
+
     
     @Test
     public void approveUpdateAsIncorrectSuperAdmin() {
-    	Long superAdmin1Id = 1L;
-    	Long superAdmin2Id = 2L;
-    	Long adminId = 2L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
-    	Long productId = 1L;
-    	Long productTransactionHistoryId = 1L;
-    	Product product = dummyProduct();
-    	
-    	// Updated product variables
-    	String updatedColor = "Cyan";
-    	Double updatedPrice = product.getPrice() + 20;
-    	Integer updatedStockQuantity = product.getStockQuantity() + 30;
-    	Product updatedProduct = Product.builder().id(productId).productName("Laptop").price(updatedPrice).color(updatedColor).stockQuantity(updatedStockQuantity)
-                .description("High-performance laptop").build();
-    	
-    	// mock product
-    	product.setId(productId);
-    	when(productRepository.save(updatedProduct)).thenReturn(updatedProduct);
-    	when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-
+    	mockProductsForUpdate();
     	// mock wf objects
     	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdmin1Id, updatedProduct,taskId);
     	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyUpdateHistory(productTransactionHistoryId, product, updatedColor, updatedPrice, updatedStockQuantity));
     	
-    	// mock admin and super admin
-    	User superAdmin1 = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-    	User superAdmin2 = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdmin1Id)).thenReturn(Optional.of(superAdmin1));
-        when(userService.getUserById(superAdmin2Id)).thenReturn(Optional.of(superAdmin2));
-        
+    	// mock 2 super admin
+    	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
+    	mockUser(superAdmin2Id,RoleEnum.SUPER_ADMIN);
+
         // act
         assertThrows(BusinessException.class,()->wfProductService.respondToTask(taskId, superAdmin2Id, "approve", "note", null));
     }
 
     @Test
     public void approveUpdateAsInvalidAdmin() {
-    	Long superAdminId = 1L;
-    	Long adminId = 2L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
-
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
     	// mock products
-    	Product product = dummyProduct();
-    	when(productRepository.save(product)).thenReturn(product);
-    	when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
-
+    	mockProductsForUpdate();
     	// mock wf objects
-    	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdminId, product,taskId);
-    	// mock admin and super admin
-    	User admin = new User("John", "Doe", RoleEnum.ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(adminId)).thenReturn(Optional.of(admin));
-        
+    	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
+    	// mock users
+    	mockUser(adminId,RoleEnum.ADMIN);
         // act
         assertThrows(BusinessException.class,() -> wfProductService.respondToTask(taskId, adminId, "approve", "note", null));
         
@@ -580,33 +205,14 @@ public class ProductWorkflowServiceUnitTest {
     
     @Test
     public void approveUpdateAsInvalidCustomer() {
-    	Long superAdminId = 1L;
-    	Long customerId = 2L;
-    	Long adminId = 3L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
-
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
     	// mock products
-    	Product product = dummyProduct();
-    	when(productRepository.save(product)).thenReturn(product);
-    	when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
-
+    	mockProductsForUpdate();
       	// mock admin and super admin
-    	User superAdmin = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-    	User customer = new User("John", "Doe", RoleEnum.CUSTOMER.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdminId)).thenReturn(Optional.of(superAdmin));
-        when(userService.getUserById(customerId)).thenReturn(Optional.of(customer));
+    	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
+    	mockUser(customerId,RoleEnum.CUSTOMER);
     	
         // mock wf objects
-    	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdminId, product,taskId);
+    	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
 
         // act
         assertThrows(BusinessException.class,() -> wfProductService.respondToTask(taskId, customerId, "approve", "note", null));
@@ -624,30 +230,16 @@ public class ProductWorkflowServiceUnitTest {
     
     @Test
     public void rejectUpdateAsValidSuperAdmin() {
-    	Long superAdminId = 1L;
-    	Long adminId = 2L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
 
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
     	// mock products
-    	Product product = dummyProduct();
-    	when(productRepository.save(product)).thenReturn(product);
-    	when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
+    	mockProductsForUpdate();
 
     	// mock wf objects
-    	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdminId, product,taskId);
-    	// mock admin and super admin
-    	User superAdmin = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdminId)).thenReturn(Optional.of(superAdmin));
+    	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
+    	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
         
         // act
-        wfProductService.respondToTask(taskId, superAdminId, "reject", "note", "not good enough");
+        wfProductService.respondToTask(taskId, superAdmin1Id, "reject", "note", "not good enough");
         
         // arguments capture
         verify(productRepository,times(0)).save(any());
@@ -655,27 +247,13 @@ public class ProductWorkflowServiceUnitTest {
     
     @Test
     public void rejectUpdateAsInvalidAdmin() {
-    	Long superAdminId = 1L;
-    	Long adminId = 2L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
-
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
     	// mock products
-    	Product product = dummyProduct();
-    	when(productRepository.save(product)).thenReturn(product);
-    	when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
+    	mockProductsForUpdate();
 
     	// mock wf objects
-    	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdminId, product,taskId);
+    	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
     	// mock admin and super admin
-    	User admin = new User("John", "Doe", RoleEnum.ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(adminId)).thenReturn(Optional.of(admin));
+    	mockUser(adminId,RoleEnum.ADMIN);
         
         // act
         assertThrows(BusinessException.class,() -> wfProductService.respondToTask(taskId, adminId, "reject", "note", "rejection note"));
@@ -686,33 +264,13 @@ public class ProductWorkflowServiceUnitTest {
     
     @Test
     public void rejectUpdateAsInvalidCustomer() {
-    	Long superAdminId = 1L;
-    	Long customerId = 2L;
-    	Long adminId = 3L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
-
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
-    	// mock products
-    	Product product = dummyProduct();
-    	when(productRepository.save(product)).thenReturn(product);
-    	when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
-
+    	mockProductsForUpdate();
       	// mock admin and super admin
-    	User superAdmin = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-    	User customer = new User("John", "Doe", RoleEnum.CUSTOMER.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdminId)).thenReturn(Optional.of(superAdmin));
-        when(userService.getUserById(customerId)).thenReturn(Optional.of(customer));
+    	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
+    	mockUser(customerId,RoleEnum.CUSTOMER);
     	
         // mock wf objects
-    	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdminId, product,taskId);
+    	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
 
         // act
         assertThrows(BusinessException.class,() -> wfProductService.respondToTask(taskId, customerId, "reject", "note", "not suitable"));
@@ -723,41 +281,14 @@ public class ProductWorkflowServiceUnitTest {
     
     @Test
     public void rejectUpdateAsIncorrectSuperAdmin() {
-    	Long superAdmin1Id = 1L;
-    	Long superAdmin2Id = 2L;
-    	Long adminId = 2L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
-    	Long productId = 1L;
-    	Long productTransactionHistoryId = 1L;
-    	Product product = dummyProduct();
-    	
-    	// Updated product variables
-    	String updatedColor = "Cyan";
-    	Double updatedPrice = product.getPrice() + 20;
-    	Integer updatedStockQuantity = product.getStockQuantity() + 30;
-    	Product updatedProduct = Product.builder().id(productId).productName("Laptop").price(updatedPrice).color(updatedColor).stockQuantity(updatedStockQuantity)
-                .description("High-performance laptop").build();
-    	
-    	// mock product
-    	product.setId(productId);
-    	when(productRepository.save(updatedProduct)).thenReturn(updatedProduct);
-    	when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-
+    	mockProductsForUpdate();
     	// mock wf objects
     	mockGetWFObjectsForUpdate(adminId, instanceId, wfProductId, superAdmin1Id, updatedProduct,taskId);
     	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyUpdateHistory(productTransactionHistoryId, product, updatedColor, updatedPrice, updatedStockQuantity));
     	
-    	// mock admin and super admin
-    	User superAdmin1 = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-    	User superAdmin2 = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdmin1Id)).thenReturn(Optional.of(superAdmin1));
-        when(userService.getUserById(superAdmin2Id)).thenReturn(Optional.of(superAdmin2));
+    	// mock 2 super admins
+    	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
+    	mockUser(superAdmin2Id,RoleEnum.SUPER_ADMIN);
         
         // act
         assertThrows(BusinessException.class,()->wfProductService.respondToTask(taskId, superAdmin2Id, "reject", "note", "unsuitable"));
@@ -771,35 +302,19 @@ public class ProductWorkflowServiceUnitTest {
     
     @Test
     public void approveDeleteAsValidSuperAdmin() {
-    	Long superAdminId = 1L;
-    	Long adminId = 2L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
-    	Long productId = 1L;
-    	Long productTransactionHistoryId = 1L;
-    	Product product = dummyProduct();
-    	
-    	// mock product
-    	product.setId(productId);
-    	when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-    	doNothing().when(productRepository).deleteById(any());
-
+    	mockProductsForDelete();
     	// mock wf objects
-    	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdminId, product,taskId);
+    	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
     	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyDeleteHistory(productTransactionHistoryId, product));
     	
     	// mock admin and super admin
-    	User superAdmin = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdminId)).thenReturn(Optional.of(superAdmin));
+    	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
         
         // act
-        wfProductService.respondToTask(taskId, superAdminId, "approve", "note", null);
+        wfProductService.respondToTask(taskId, superAdmin1Id, "approve", "note", null);
         
         // arguments capture
-        verify(productRepository,times(1)).deleteById(longCaptor.capture());
+        verify(productService,times(1)).deleteProduct(longCaptor.capture(),any());
         Long capturedId = longCaptor.getValue();
         assertEquals(capturedId, productId);
         
@@ -814,33 +329,14 @@ public class ProductWorkflowServiceUnitTest {
 
     @Test
     public void approveDeleteAsInvalidAdmin() {
-    	Long superAdminId = 1L;
-    	Long adminId = 2L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
-    	Long productId = 1L;
-    	Long productTransactionHistoryId = 1L;
-    	Product product = dummyProduct();
-    	
-    	// mock product
-    	product.setId(productId);
-    	when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-    	doNothing().when(productRepository).deleteById(any());
-
+    	mockProductsForDelete();
     	// mock wf objects
-    	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdminId, product,taskId);
+    	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
     	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyDeleteHistory(productTransactionHistoryId, product));
     	
     	// mock admin and super admin
-    	User superAdmin = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-    	User admin = new User("John", "Doe", RoleEnum.ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdminId)).thenReturn(Optional.of(superAdmin));
-        when(userService.getUserById(adminId)).thenReturn(Optional.of(admin));
+    	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
+    	mockUser(adminId,RoleEnum.ADMIN);
         
         // act
         assertThrows(BusinessException.class,() -> wfProductService.respondToTask(taskId, adminId, "approve", "note", null));
@@ -851,34 +347,16 @@ public class ProductWorkflowServiceUnitTest {
     
     @Test
     public void approveDeleteAsInvalidCustomer() {
-    	Long superAdminId = 1L;
-    	Long customerId = 2L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
-    	Long productId = 1L;
-    	Long productTransactionHistoryId = 1L;
-    	Product product = dummyProduct();
-    	
     	// mock product
-    	product.setId(productId);
-    	when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-    	doNothing().when(productRepository).deleteById(any());
-
+    	mockProductsForDelete();
     	// mock wf objects
-    	mockGetWFObjectsForDelete(customerId, instanceId, wfProductId, superAdminId, product,taskId);
+    	mockGetWFObjectsForDelete(customerId, instanceId, wfProductId, superAdmin1Id, product,taskId);
     	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyDeleteHistory(productTransactionHistoryId, product));
     	
-    	// mock admin and super admin
-    	User superAdmin = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-    	User customer = new User("John", "Doe", RoleEnum.CUSTOMER.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdminId)).thenReturn(Optional.of(superAdmin));
-        when(userService.getUserById(customerId)).thenReturn(Optional.of(customer));
-        
+    	// mock super admin and customer
+    	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
+    	mockUser(customerId,RoleEnum.CUSTOMER);
+    	
         // act
         assertThrows(BusinessException.class,() -> wfProductService.respondToTask(taskId, customerId, "approve", "note", null));
         // arguments capture
@@ -888,41 +366,14 @@ public class ProductWorkflowServiceUnitTest {
     
     @Test
     public void approveDeleteAsIncorrectSuperAdmin() {
-    	Long superAdmin1Id = 1L;
-    	Long superAdmin2Id = 2L;
-    	Long adminId = 2L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
-    	Long productId = 1L;
-    	Long productTransactionHistoryId = 1L;
-    	Product product = dummyProduct();
-    	
-    	// Updated product variables
-    	String updatedColor = "Cyan";
-    	Double updatedPrice = product.getPrice() + 20;
-    	Integer updatedStockQuantity = product.getStockQuantity() + 30;
-    	Product updatedProduct = Product.builder().id(productId).productName("Laptop").price(updatedPrice).color(updatedColor).stockQuantity(updatedStockQuantity)
-                .description("High-performance laptop").build();
-    	
-    	// mock product
-    	product.setId(productId);
-    	when(productRepository.save(updatedProduct)).thenReturn(updatedProduct);
-    	when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-
+    	mockProductsForDelete();
     	// mock wf objects
-    	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdmin1Id, updatedProduct,taskId);
+    	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
     	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyUpdateHistory(productTransactionHistoryId, product, updatedColor, updatedPrice, updatedStockQuantity));
     	
     	// mock admin and super admin
-    	User superAdmin1 = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-    	User superAdmin2 = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdmin1Id)).thenReturn(Optional.of(superAdmin1));
-        when(userService.getUserById(superAdmin2Id)).thenReturn(Optional.of(superAdmin2));
+    	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
+    	mockUser(superAdmin2Id,RoleEnum.SUPER_ADMIN);
         
         // act
         assertThrows(BusinessException.class,()->wfProductService.respondToTask(taskId, superAdmin2Id, "approve", "note", null));
@@ -937,30 +388,14 @@ public class ProductWorkflowServiceUnitTest {
     
     @Test
     public void rejectDeleteAsValidSuperAdmin() {
-    	Long superAdminId = 1L;
-    	Long adminId = 2L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
-
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
     	// mock products
-    	Product product = dummyProduct();
-    	when(productRepository.save(product)).thenReturn(product);
-    	when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
-
+    	mockProductsForDelete();
     	// mock wf objects
-    	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdminId, product,taskId);
-    	// mock admin and super admin
-    	User superAdmin = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdminId)).thenReturn(Optional.of(superAdmin));
-        
+    	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
+    	// mock super admin
+    	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
         // act
-        wfProductService.respondToTask(taskId, superAdminId, "reject", "note", "not good enough");
+        wfProductService.respondToTask(taskId, superAdmin1Id, "reject", "note", "not good enough");
         
         // arguments capture
         verify(productRepository,times(0)).deleteById(any());
@@ -968,27 +403,13 @@ public class ProductWorkflowServiceUnitTest {
     
     @Test
     public void rejectDeleteAsInvalidAdmin() {
-    	Long superAdminId = 1L;
-    	Long adminId = 2L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
-
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
     	// mock products
-    	Product product = dummyProduct();
-    	when(productRepository.save(product)).thenReturn(product);
-    	when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
+    	mockProductsForDelete();
 
     	// mock wf objects
-    	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdminId, product,taskId);
+    	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
     	// mock admin and super admin
-    	User admin = new User("John", "Doe", RoleEnum.ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(adminId)).thenReturn(Optional.of(admin));
+    	mockUser(adminId,RoleEnum.ADMIN);
         
         // act
         assertThrows(BusinessException.class,() -> wfProductService.respondToTask(taskId, adminId, "reject", "note", "rejection note"));
@@ -999,33 +420,15 @@ public class ProductWorkflowServiceUnitTest {
     
     @Test
     public void rejectDeleteAsInvalidCustomer() {
-    	Long superAdminId = 1L;
-    	Long customerId = 2L;
-    	Long adminId = 3L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
-
-    	// partial mock of productService
-    	productService = spy(productService);
-    	
     	// mock products
-    	Product product = dummyProduct();
-    	when(productRepository.save(product)).thenReturn(product);
-    	when(productRepository.findById(anyLong())).thenReturn(Optional.of(product));
+    	mockProductsForDelete();
 
-      	// mock admin and super admin
-    	User superAdmin = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-    	User customer = new User("John", "Doe", RoleEnum.CUSTOMER.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdminId)).thenReturn(Optional.of(superAdmin));
-        when(userService.getUserById(customerId)).thenReturn(Optional.of(customer));
+    	// mock customer and super admin
+    	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
+    	mockUser(customerId,RoleEnum.CUSTOMER);
     	
         // mock wf objects
-    	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdminId, product,taskId);
+    	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
 
         // act
         assertThrows(BusinessException.class,() -> wfProductService.respondToTask(taskId, customerId, "reject", "note", "not suitable"));
@@ -1036,41 +439,15 @@ public class ProductWorkflowServiceUnitTest {
 
     @Test
     public void rejectDeleteAsIncorrectSuperAdmin() {
-    	Long superAdmin1Id = 1L;
-    	Long superAdmin2Id = 2L;
-    	Long adminId = 2L;
-    	Long instanceId = 1L;
-    	Long wfProductId = 1L;
-    	Long taskId = 1L; 
-    	Long productId = 1L;
-    	Long productTransactionHistoryId = 1L;
-    	Product product = dummyProduct();
-    	
-    	// Updated product variables
-    	String updatedColor = "Cyan";
-    	Double updatedPrice = product.getPrice() + 20;
-    	Integer updatedStockQuantity = product.getStockQuantity() + 30;
-    	Product updatedProduct = Product.builder().id(productId).productName("Laptop").price(updatedPrice).color(updatedColor).stockQuantity(updatedStockQuantity)
-                .description("High-performance laptop").build();
-    	
-    	// mock product
-    	product.setId(productId);
-    	when(productRepository.save(updatedProduct)).thenReturn(updatedProduct);
-    	when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-
+    	mockProductsForDelete();
     	// mock wf objects
-    	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdmin1Id, updatedProduct,taskId);
+    	mockGetWFObjectsForDelete(adminId, instanceId, wfProductId, superAdmin1Id, product,taskId);
     	when(productTransactionHistoryRepository.save(any())).thenReturn(dummyUpdateHistory(productTransactionHistoryId, product, updatedColor, updatedPrice, updatedStockQuantity));
     	
     	// mock admin and super admin
-    	User superAdmin1 = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-    	User superAdmin2 = new User("John", "Doe", RoleEnum.SUPER_ADMIN.getCode(), "password123", "john.doe@example.com", 
-                "123 Main St", "1234567890", "American", "Male", 
-                new Date(), new Date());
-        when(userService.getUserById(superAdmin1Id)).thenReturn(Optional.of(superAdmin1));
-        when(userService.getUserById(superAdmin2Id)).thenReturn(Optional.of(superAdmin2));
+    	mockUser(superAdmin1Id,RoleEnum.SUPER_ADMIN);
+    	mockUser(superAdmin2Id,RoleEnum.SUPER_ADMIN);
+
         
         // act
         assertThrows(BusinessException.class,()->wfProductService.respondToTask(taskId, superAdmin2Id, "reject", "note", null));
@@ -1105,6 +482,32 @@ public class ProductWorkflowServiceUnitTest {
         when(wfProductRepository.findByWfInstanceId(any())).thenReturn(Optional.of(dummyDeleteWfProduct(product, instanceId, wfProductId)));
         when(wfTaskRepository.findById(any())).thenReturn(Optional.of(dummyWfTask(instanceId, superAdminId)));
 	}
+	
+
+	private void mockUser(Long userId, RoleEnum role) {
+		// mock admin and super admin
+    	User user = new User("John", "Doe", role.getCode(), "password123", "john.doe@example.com", 
+                "123 Main St", "1234567890", "American", "Male", 
+                new Date(), new Date());
+    	user.setId(userId);        
+    	when(userService.getUserById(userId)).thenReturn(Optional.of(user));
+	}
+
+	private void mockProductsForUpdate() {
+    	product = dummyProduct();
+		updatedProduct = Product.builder().id(productId).productName("Laptop").price(updatedPrice).color(updatedColor).stockQuantity(updatedStockQuantity)
+                .description("High-performance laptop").build();
+    	// mock product
+    	when(productRepository.save(updatedProduct)).thenReturn(updatedProduct);
+        when(productService.findById(productId)).thenReturn(product);
+        
+	}
+	private void mockProductsForDelete() {
+    	product = dummyProduct();
+        when(productService.findById(productId)).thenReturn(product);
+    	doNothing().when(productRepository).deleteById(any());
+	}
+	
 	private WFTask dummyWfTask(Long instanceId, Long superAdminId) {
 		return new WFTask(instanceId,superAdminId,WFAssigneeRoleEnum.SUPERADMIN.getRole(),new Date());
 	}

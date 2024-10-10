@@ -52,6 +52,7 @@ public class ProductWorkflowServiceTest {
 
     @Autowired
     private OrderRepository orderRepository;
+    
     @Autowired
     public UserService userService;
 	
@@ -213,7 +214,7 @@ public class ProductWorkflowServiceTest {
     @Test
     public void saveProductAsUnderApproval_validAdminId() {
     	long productCountBefore = productRepository.count();
-        productService.save(dummyProduct(), mytestAdmin.getId(),true);
+        productService.save(dummyProduct(), mytestAdmin.getId());
         // get instance using taskid
     	List<WFInstance> wfInstances = wfInstanceRepository.findByRequesterId(mytestAdmin.getId());
     	// assert that it exists
@@ -244,7 +245,7 @@ public class ProductWorkflowServiceTest {
     @Test
     public void saveProduct_ValidSuperAdminId() {
     	long productCountBefore = productRepository.count();
-    	productService.save(dummyProduct(), testSuperAdmin1.getId(),true);
+    	productService.save(dummyProduct(), testSuperAdmin1.getId());
         // get last added product and check status
     	// check number of products before and after
     	long productCountAfter = productRepository.count();
@@ -431,6 +432,7 @@ public class ProductWorkflowServiceTest {
         // Get product using WFProduct
         Product product = productRepository.findById(wfProduct.getProductId()).orElse(null);
         
+        assertTrue(product!=null);
         // Check that task is updated to show action id of reject
         task1 = wfTaskRepository.findById(task1.getId()).orElse(null);
         assertEquals(WFActionEnum.REJECTED.getAction(), task1.getActionId());

@@ -20,20 +20,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import com.example.demo.enums.workflow.WFStatusEnum;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.dto.OrderResponseDto;
 import com.example.demo.model.dto.ProductDto;
 import com.example.demo.model.orm.Order;
 import com.example.demo.model.orm.OrderDetails;
+import com.example.demo.model.orm.OrderDetailsData;
 import com.example.demo.model.orm.Product;
 import com.example.demo.model.orm.User;
-import com.example.demo.model.orm.OrderDetailsData;
+import com.example.demo.repository.OrderDetailsDataRepository;
 import com.example.demo.repository.OrderDetailsRepository;
 import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.UserRepository;
-import com.example.demo.repository.OrderDetailsDataRepository;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
@@ -390,8 +389,8 @@ public class OrderServiceTest {
 		Product p1 = new Product(productIds[0], "Blouse", 29.99, "Red", 50, "Premium material", new Date());
 		Product p2 = new Product(productIds[1], "Dress", 59.99, "Blue", 75, "Premium material", new Date());
 
-		Mockito.when(productService.findbyId(p1.getId())).thenReturn(p1);
-		Mockito.when(productService.findbyId(p2.getId())).thenReturn(p2);
+		Mockito.when(productService.findById(p1.getId())).thenReturn(p1);
+		Mockito.when(productService.findById(p2.getId())).thenReturn(p2);
 
 	}
 

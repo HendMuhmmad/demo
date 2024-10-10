@@ -8,15 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.enums.workflow.WFStatusEnum;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.orm.Order;
 import com.example.demo.model.orm.OrderDetails;
+import com.example.demo.model.orm.OrderDetailsData;
 import com.example.demo.model.orm.Product;
 import com.example.demo.model.orm.User;
-import com.example.demo.model.orm.OrderDetailsData;
-import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.OrderDetailsDataRepository;
+import com.example.demo.repository.OrderRepository;
 
 @Service
 @Transactional
@@ -167,6 +166,6 @@ public class OrderServiceImpl implements OrderService {
 	if (productId == null) {
 	    throw new BusinessException("product does not exist");
 	}
-	return productService.findbyId(productId);
+	return productService.findById(productId);
     }
 }
