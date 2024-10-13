@@ -19,8 +19,9 @@ public interface ProductService {
 
     public void updateProductQuantityWithOutAuth(Long productId, int newQuantity) throws BusinessException;
 
-	public String request(Product theProduct,Long loginId);
+	public String request(Product theProduct,Long loginId,Long operation);
 	
-	public void respondToRequest(TaskRequestDto taskRequest);
+	public String requestDeleteProduct(Long productId,Long loginId);
+//	public void respondToRequest(TaskRequestDto taskRequest);
 
 }

@@ -40,5 +40,5 @@ public class WFProduct {
     private String description;
 
     @Column(name = "STATUS")
-    private Integer status;
+    private Long status;
 }

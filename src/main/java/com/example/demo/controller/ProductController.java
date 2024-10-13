@@ -15,15 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.enums.workflow.WFProcessesEnum;
+import com.example.demo.enums.workflow.WFProductEnum;
 import com.example.demo.mapper.ProductMapper;
 import com.example.demo.model.dto.ProductDto;
 import com.example.demo.model.dto.ProductUpdateDto;
 import com.example.demo.model.dto.ProductUpdateStockQuantityDTO;
-import com.example.demo.model.dto.TaskRequestDto;
 import com.example.demo.model.orm.Product;
-import com.example.demo.model.orm.workflow.WFTaskDetails;
 import com.example.demo.service.ProductService;
-import com.example.demo.service.WFProductService;
 
 @RestController
 @RequestMapping("/api/product")
@@ -36,9 +35,8 @@ public class ProductController {
     @PostMapping("/createProduct")
     public ResponseEntity<String> createProduct(@RequestBody ProductDto productDto) {
         Long loginId = productDto.getLoginId();
-        System.out.println(productDto);
         Product product = ProductMapper.INSTANCE.mapCreateProduct(productDto);
-        String msg = productService.request(product, loginId);
+        String msg = productService.request(product, loginId,WFProcessesEnum.ADD_PRODUCT.getCode());
         return ResponseEntity.status(HttpStatus.OK).body(msg);
     }
 
@@ -52,15 +50,16 @@ public class ProductController {
 
     @PutMapping("/updateProduct")
     public ResponseEntity<String> updateProduct(@RequestBody ProductUpdateDto productUpdateDto) {
-	productService.save(ProductMapper.INSTANCE.mapUpdateProduct(productUpdateDto), productUpdateDto.getLoginId());
-	return ResponseEntity.ok("Product updated successfully");
+    String msg = productService.request(ProductMapper.INSTANCE.mapUpdateProduct(productUpdateDto), productUpdateDto.getLoginId(),WFProcessesEnum.UPDATE_PRODUCT.getCode());
+    return ResponseEntity.status(HttpStatus.OK).body(msg);
 
     }
 
     @DeleteMapping("/deleteProduct/{productId}")
     public ResponseEntity<String> deleteProduct(@PathVariable Long productId, @RequestParam Long loginId) {
-	productService.deleteProduct(productId, loginId);
-	return ResponseEntity.ok("Product deleted successfully");
+    String msg = productService.requestDeleteProduct(productId, loginId);
+    return ResponseEntity.status(HttpStatus.OK).body(msg);
+
 
     }
 

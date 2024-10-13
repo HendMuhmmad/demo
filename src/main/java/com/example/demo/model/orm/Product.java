@@ -51,9 +51,6 @@ public class Product {
     @Column(name = "Description")
     private String description;
     
-//    @Column(name = "WF_STATUS")
-//    private long wfStatus;
-
     @Column(name = "Creation_Date")
     @Temporal(TemporalType.DATE)
     private Date creationDate;

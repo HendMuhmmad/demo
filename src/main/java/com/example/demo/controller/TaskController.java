@@ -43,7 +43,7 @@ public class TaskController {
     
     @PostMapping("/tasks/respondToRequest")
     public ResponseEntity<String> respondToRequest(@RequestBody TaskRequestDto taskRequest) {
-        productService.respondToRequest(taskRequest); 
+    	wfProductService.respondToRequest(taskRequest); 
         return ResponseEntity.ok("{\"message\":\"The task is finished successfully\"}");
     }
 }

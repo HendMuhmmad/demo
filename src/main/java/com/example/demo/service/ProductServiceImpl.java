@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,10 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.enums.RoleEnum;
 import com.example.demo.enums.workflow.WFProcessesEnum;
-import com.example.demo.enums.workflow.WFStatusEnum;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.dto.TaskRequestDto;
 import com.example.demo.model.orm.Product;
+import com.example.demo.model.orm.WFProduct;
+import com.example.demo.model.orm.workflow.ProductTrnsHistory;
 import com.example.demo.repository.ProductRepository;
 
 @Service
@@ -25,6 +27,9 @@ public class ProductServiceImpl implements ProductService {
 	
 	@Autowired
 	public WFProductService wfProductService;
+	
+	@Autowired
+	public ProductTrnsHistoryService productTrnsHistoryService;
 
 	@Override
 	public Product findbyId(Long productId) {
@@ -86,7 +91,7 @@ public class ProductServiceImpl implements ProductService {
 		} else {
 			throw new BusinessException("Product addition failed - Unauthorized");
 		}
-	}
+		}
 
 	@Override
 	public List<Product> getAllProduct() {
@@ -94,47 +99,71 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Transactional
-	public String request(Product theProduct, Long loginId) {
-		if (theProduct.getPrice() == 0 || theProduct.getProductName() == null) {
-			throw new BusinessException("Product price and name shoud not be null");
+	public String request(Product theProduct, Long loginId,Long operation) {
+	    validateProduct(theProduct);
+		if(operation == WFProcessesEnum.ADD_PRODUCT.getCode()) {
+			return requestCreateProduct(theProduct,loginId);
 		}
+		else if(operation == WFProcessesEnum.UPDATE_PRODUCT.getCode()) {
+			return requestUpdateProduct(theProduct,loginId);
+		}
+		else {
+			throw new BusinessException("Opeation error");
+		}
+	}
+	private String requestCreateProduct(Product theProduct, Long loginId) {
 	    Long roleId = userService.getUserById(loginId).get().getRoleId();
-	    System.out.println(theProduct);
 	    if (roleId == RoleEnum.SUPER_ADMIN.getCode()) {
-//	    	theProduct.setWfStatus(WFStatusEnum.APPROVED.getCode());
 	    	productRepository.save(theProduct);
-			return "Your product is done successfully"; 
+			return "Your product is created successfully"; 
 	    }
 	    else if(roleId == RoleEnum.ADMIN.getCode()) {
-//	    	theProduct.setWfStatus(WFStatusEnum.UNDER_APPROVAL.getCode());
-//	    	productRepository.save(theProduct);
-	    	wfProductService.initWFProduct(theProduct.getId(), loginId, WFProcessesEnum.ADD_PRODUCT.getCode());
+	    	wfProductService.initWFProduct(theProduct, loginId, WFProcessesEnum.ADD_PRODUCT.getCode());
 	    	return "Your request is sent successfully";
 	    }
 	    else {
-			throw new BusinessException("You are not authorizted to create a product");
+			throw new BusinessException("You are not authorized to create a product");
+	    }
+	}
+	private String requestUpdateProduct(Product theProduct, Long loginId) {
+		validateProductFound(theProduct);
+	    Long roleId = userService.getUserById(loginId).get().getRoleId();
+	    if(roleId == RoleEnum.ADMIN.getCode()||roleId == RoleEnum.SUPER_ADMIN.getCode()) {
+	    	wfProductService.initWFProduct(theProduct, loginId, WFProcessesEnum.UPDATE_PRODUCT.getCode());
+	    	return "Your request is sent successfully";
+	    }
+	    else {
+			throw new BusinessException("You are not authorized to update a product");
 	    }
 	}
 
 	@Override
-	@Transactional
-	public void respondToRequest(TaskRequestDto taskRequest) {
-		long productId = wfProductService.respondToRequest(taskRequest);
-		Optional<Product> tempProduct = productRepository.findById(productId);
-		if(!tempProduct.isPresent()) {
-			throw new BusinessException("There isn't a product with this id");
+	public String requestDeleteProduct(Long productId, Long loginId) {
+		Long roleId = userService.getUserById(loginId).get().getRoleId();
+
+		if (roleId == RoleEnum.SUPER_ADMIN.getCode() || roleId == RoleEnum.ADMIN.getCode()) {
+			Optional<Product> productTemp = productRepository.findById(productId);
+			if(!productTemp.isPresent()) {
+				throw new BusinessException("There is no product with this Id");
+			}
+			Product product = productTemp.get();
+			wfProductService.initWFProduct(product, loginId, WFProcessesEnum.DELETE_PRODUCT.getCode());
+			return  "Your request is sent successfully";
+		} else {
+			throw new BusinessException("Product addition failed - Unauthorized");
 		}
-		Product product = tempProduct.get();
-		if(product.getWfStatus() != 0) {
-			throw new BusinessException("This task is already done");			
+	}
+	
+	private void validateProduct(Product theProduct) {
+		if (theProduct.getPrice() == 0 || theProduct.getProductName() == null) {
+			throw new BusinessException("Product price and name should not be null");
 		}
-		if(taskRequest.getIsApproved()) {
-			product.setWfStatus(WFStatusEnum.APPROVED.getCode());
-		}else {
-			product.setWfStatus(WFStatusEnum.REJECTED.getCode());
-		}
-		productRepository.save(product);
-		
+	}
+	private void validateProductFound(Product product) {
+		Optional<Product> productOptional = productRepository.findById(product.getId());
+	    if (!productOptional.isPresent()) {
+			throw new BusinessException("There is no product with this Id");
+	    }
 	}
 	
 
