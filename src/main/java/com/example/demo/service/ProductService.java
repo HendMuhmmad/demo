@@ -15,7 +15,9 @@ public interface ProductService {
     public void updateProductQuantity(Long productId, int newQuantity, Long loginId);
 
     public List<Product> getAllProduct();
-
+//    public void changeWFProductRequestStatus(Integer taskId, Long userId, boolean isApproved);
     public void updateProductQuantityWithOutAuth(Long productId, int newQuantity) throws BusinessException;
-
+//    public boolean requestCreateProduct(Product theProduct, Long loginId);
+//    public boolean requestUpdateProduct(Product theProduct, Long loginId);
+//    public boolean requestDeleteProduct(Product theProduct, Long loginId);
 }

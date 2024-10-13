@@ -1,9 +1,17 @@
 package com.example.demo.service;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -13,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.example.demo.enums.RoleEnum;
+import com.example.demo.enums.WFStatusEnum;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.model.orm.Product;
 import com.example.demo.model.orm.User;
@@ -28,6 +37,10 @@ public class ProductServiceTest {
 
     @MockBean
     public UserService userService;
+    
+    
+    @MockBean
+	public WFProductService wFProductService;
 
     @Test
     public void saveProduct_ValidAdminId() {
@@ -206,7 +219,9 @@ public class ProductServiceTest {
             productService.updateProductQuantity(1L, 50, headOfDepartment.getId());
         });
     }
-
+    
+ 
+    
     private User createUserWithRoleId(Long roleId) {
     	return new User(1L, "", "", roleId, "", "", "", "", "", "", new Date(), new Date(), null);
     }

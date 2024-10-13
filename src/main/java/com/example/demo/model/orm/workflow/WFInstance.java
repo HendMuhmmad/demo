@@ -24,11 +24,11 @@ import lombok.Setter;
 public class WFInstance {
 
     @Id
-    @SequenceGenerator(name = "WF_INSTANCES_SEQ",
-	    sequenceName = "WF_INSTANCES_SEQ",
+    @SequenceGenerator(name = "ECO_INSTANCES_SEQ",
+	    sequenceName = "ECO_INSTANCES_SEQ",
 	    allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE,
-	    generator = "WF_INSTANCES_SEQ")
+	    generator = "ECO_INSTANCES_SEQ")
     @Column(name = "ID")
     private Long id;
 
@@ -42,9 +42,9 @@ public class WFInstance {
     @Temporal(TemporalType.TIMESTAMP)
     private Date requestDate;
 
-    @Column(name = "HIJRI_REQUEST_DATE")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date hijriRequestDate;
+//    @Column(name = "HIJRI_REQUEST_DATE")
+//    @Temporal(TemporalType.TIMESTAMP)
+//    private Date hijriRequestDate;
 
     @Column(name = "STATUS")
     private Integer status;

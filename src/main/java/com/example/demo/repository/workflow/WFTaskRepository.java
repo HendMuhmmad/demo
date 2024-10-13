@@ -14,10 +14,10 @@ public interface WFTaskRepository extends JpaRepository<WFTask, Long> {
 
     // List<WFTask> findByInstanceIdAndAssigneeWfRoleOrderByIdAsc(long instanceId, String assigneeWFRole);
 
-    @Query(value = " select count(t.id) from WFTask t "
-	    + " where t.instanceId = :P_INSTANCE_ID "
-	    + " and t.action is NULL ")
-    Long countRunningTaskByInstanceId(@Param("P_INSTANCE_ID") Long instanceId);
+//    @Query(value = " select count(t.id) from WFTask t "
+//	    + " where t.instanceId = :P_INSTANCE_ID "
+//	    + " and t.action is NULL ")
+//    Long countRunningTaskByInstanceId(@Param("P_INSTANCE_ID") Long instanceId);
 
     public void deleteByInstanceId(Long instanceId);
 

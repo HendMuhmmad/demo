@@ -1,24 +1,61 @@
 package com.example.demo.model.orm;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import javax.persistence.*;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "ECO_WF_PRODUCT")
 @Data
-public class WFProduct{
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class WFProduct {
 
-    @Id
-    @Column(name = "ID")
-    @SequenceGenerator(name = "ECO_WF_PRODUCT_SEQ",
-	    sequenceName = "ECO_WF_PRODUCT_SEQ",
-	    allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE,
-	    generator = "ECO_WF_PRODUCT_SEQ")
-    private Long id;
+  @Id
+  @Column(name = "ID")
+  @SequenceGenerator(name = "ECO_WF_PRODUCT_SEQ",
+    sequenceName = "ECO_WF_PRODUCT_SEQ",
+    allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE,
+    generator = "ECO_WF_PRODUCT_SEQ")
+  private Long id;
 
-    @Column(name = "PRODUCT_ID")
-    private Long productId;
+  @Column(name = "PRODUCT_ID")
+  private Long productId;
 
-    @Column(name = "WF_INSTANCE_ID")
-    private Long wfInstanceId;
+  @Column(name = "WF_INSTANCE_ID")
+  private Long wfInstanceId;
+
+  @Column(name = "Product_Name",
+    nullable = false)
+  private String productName;
+
+  @Column(name = "Price",
+    nullable = false)
+  private double price;
+
+  @Column(name = "Color")
+  private String color;
+
+  @Column(name = "Stock_Quantity")
+  private Integer stockQuantity;
+
+  @Column(name = "Description")
+  private String description;
+  
+  @Column(name = "Status")
+  private long status;
 }
+
+

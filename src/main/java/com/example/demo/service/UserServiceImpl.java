@@ -34,6 +34,13 @@ public class UserServiceImpl implements UserService {
 
 	}
 
+	@Override
+	public List<User> getUsesrByRole(long roleId) {
+		return userRepository.findByRoleId(roleId);
+
+	}
+
+	
 	public User createUser(User user) {
 		if (!isOperationAllowed(user.getLoginId(), user.getRoleId())) {
 			throw new BusinessException("Cannot create this user");
